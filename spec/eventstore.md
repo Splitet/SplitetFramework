@@ -16,10 +16,12 @@ At a high level the eventstore provides a channel to publish events and subscrib
 
 # Events
 - Transaction Id
+- Event Id
 - Type
 - Status (New states should be handled as new events)
 - TTL
 - Data
+- Datetime
 
 # Event States
 - Created
