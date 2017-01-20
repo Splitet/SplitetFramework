@@ -5,9 +5,11 @@ This specification defines an Eventstore, consisting of a event pub/sub layer, e
 The goal of this specification is to enable the creation of interoperable tools for building an Eventstore. 
 
 ## Table of Contents
-- [Introduction](spec.md)
+- [Introduction](#eventstore-specification)
 - [Overview](#overview)
-- [Overview](#overview)
+- [Events](#events)
+- [Event States](#event-states)
+- [Eventstore](#eventstore)
 
 # Overview
 At a high level the eventstore provides a channel to publish events and subscribe to event streams.
@@ -15,12 +17,15 @@ At a high level the eventstore provides a channel to publish events and subscrib
 # Events
 - Transaction Id
 - Type
-- Status (Should be handled as new events)
+- Status (New states should be handled as new events)
+- TTL
+- Data
 
 # Event States
 - Created
 - Running
 - Timedout
+- Cancelled
 - Failed
 - Succedeed
 
