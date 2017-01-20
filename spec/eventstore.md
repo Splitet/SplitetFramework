@@ -22,12 +22,10 @@ At a high level the eventstore provides a channel to publish events and subscrib
 - TTL
 - Data
 - Datetime
+- Initiator
 
 # Event States
 - Created
-- Running
-- Timedout
-- Cancelled
 - Failed
 - Succedeed
 - TXN Failed
