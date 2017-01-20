@@ -30,6 +30,8 @@ At a high level the eventstore provides a channel to publish events and subscrib
 - Cancelled
 - Failed
 - Succedeed
+- TXN Failed
+- TXN Succedeed
 
 # Eventstore
 - Publish to multi-instance of a service is optinal
