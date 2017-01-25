@@ -7,7 +7,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>eventapis</name>
+    <name>eventapis-parent</name>
     <description>An event database to enable event sourcing and distributed transactions for applications that use the microservice architecture.</description>
 
     <properties>

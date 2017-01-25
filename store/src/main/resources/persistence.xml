@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<persistence keyspace="test1" table="test2_table">
+
+    <keyspaceOptions>
+        REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor' : 3}
+        AND DURABLE_WRITES = true
+    </keyspaceOptions>
+
+    <!-- Cassandra table options which should be used to create provided table if it doesn't exist -->
+    <tableOptions>
+        comment = 'A most excellent and useful table'
+        AND read_repair_chance = 0.2
+    </tableOptions>
+    <!-- By default Java standard serialization is going to be used -->
+<!--    <keyPersistence class="java.lang.Long"
+                    strategy="BLOB"
+                    column="key"/>-->
+    <keyPersistence class="java.util.UUID" strategy="PRIMITIVE" column="key"/>
+
+
+    <!-- Kryo serialization specified to be used -->
+    <valuePersistence class="com.kloia.eventapis.store.pojos.Transaction"
+                      strategy="POJO"
+                      serializer="org.apache.ignite.cache.store.cassandra.serializer.JavaSerializer">
+        <field name="eventType" column="event_type" index="true"/>
+        <field name="status" index="true" />
+
+    </valuePersistence>
+</persistence>
