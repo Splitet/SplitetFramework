@@ -10,9 +10,16 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.kloia.eventapis</groupId>
     <artifactId>sample-client</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.kloia.eventapis</groupId>
+            <artifactId>java-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
     
 </project>

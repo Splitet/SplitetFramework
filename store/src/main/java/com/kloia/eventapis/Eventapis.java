@@ -1,29 +1,24 @@
 package com.kloia.eventapis;
 
-import com.kloia.eventapis.store.pojos.Transaction;
+import com.kloia.eventapis.pojos.Event;
+import com.kloia.eventapis.pojos.Transaction;
+import com.kloia.eventapis.pojos.TransactionState;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.*;
 import org.apache.ignite.cache.CachePeekMode;
-import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.CollectionConfiguration;
-import org.apache.ignite.configuration.IgniteConfiguration;
-import org.apache.ignite.internal.IgniteProperties;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.UUID;
-import java.util.concurrent.locks.LockSupport;
 
 /**
  * Created by mali on 20/01/2017.
@@ -59,8 +54,8 @@ public class Eventapis {
         IgniteQueue<Object> queue = ignite.queue("main", 0, cfg);
         IgniteCache<UUID, Transaction> transactionCache = ignite.cache("transactionCache");
         log.info("Application is started for KeySizes:"+ transactionCache.size(CachePeekMode.PRIMARY));
-        transactionCache.put(UUID.randomUUID(), new Transaction("Entity","ok"));
+        transactionCache.put(UUID.randomUUID(), new Transaction(new ArrayList<Event>(), TransactionState.RUNNING ));
         log.info("Application is started for KeySizes:"+ transactionCache.size(CachePeekMode.PRIMARY));
-        log.info(transactionCache.get(UUID.fromString("4447a089-e5f7-477c-9807-79210fafa296")).toString());
+//        log.info(transactionCache.get(UUID.fromString("4447a089-e5f7-477c-9807-79210fafa296")).toString());
     }
 }
