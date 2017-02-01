@@ -1,22 +1,20 @@
 package com.kloia.eventapis.impl;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.kloia.eventapis.pojos.Aggregate;
 import com.kloia.eventapis.pojos.Event;
 import com.kloia.eventapis.pojos.EventContext;
 import com.kloia.eventapis.pojos.IEventType;
-import com.sun.deploy.security.EnhancedJarVerifier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteQueue;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.configuration.CollectionConfiguration;
-import org.jetbrains.annotations.NotNull;
 
-
-import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by zeldalozdemir on 26/01/2017.
@@ -50,7 +48,7 @@ public class EventRepository {
                         EventContext.setEventContext(new EventContext(poll.getTransactionId()));
                         Event result = aggregate.handleEvent(poll);
                         queue.offer(result);
-                    }catch(Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     } finally {
                         EventContext.setEventContext(null);
