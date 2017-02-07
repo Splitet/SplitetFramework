@@ -1,4 +1,4 @@
-package com.kloia.eventapis.rest;
+package com.kloia.eventapis.filter;
 
 import org.apache.commons.io.output.TeeOutputStream;
 import org.slf4j.Logger;

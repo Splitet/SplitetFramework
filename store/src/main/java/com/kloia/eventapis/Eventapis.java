@@ -1,5 +1,6 @@
 package com.kloia.eventapis;
 
+import com.kloia.eventapis.filter.EntityRestTemplate;
 import com.kloia.eventapis.pojos.Event;
 import com.kloia.eventapis.pojos.Transaction;
 import com.kloia.eventapis.pojos.TransactionState;
@@ -15,6 +16,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
+import org.springframework.web.client.AsyncRestTemplate;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -57,5 +60,17 @@ public class Eventapis {
         transactionCache.put(UUID.randomUUID(), new Transaction(new ArrayList<Event>(), TransactionState.RUNNING ));
         log.info("Application is started for KeySizes:"+ transactionCache.size(CachePeekMode.PRIMARY));
 //        log.info(transactionCache.get(UUID.fromString("4447a089-e5f7-477c-9807-79210fafa296")).toString());
+    }
+
+    @Bean
+    public EntityRestTemplate entityRestTemplate() {
+        return new EntityRestTemplate();
+
+    }
+
+    @Bean
+    public AsyncRestTemplate asyncRestTemplate() {
+        return new AsyncRestTemplate();
+
     }
 }
