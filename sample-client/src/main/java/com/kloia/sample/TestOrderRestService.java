@@ -37,7 +37,7 @@ public class TestOrderRestService {
     public ResponseEntity<?> aggregateCreateOrder(@RequestBody @Valid OrderCreateAggDTO orderCreateAggDTO) {
 //        TemplateAccount saved = createTemplateAccountService.create(orderCreateDTO);
         log.info("Template account saved: " + orderCreateAggDTO);
-        AggregateEvent aggregateEvent = new AggregateEvent(new AggregateKey(12,"CREATE_ORDER", UUID.randomUUID(), new Date()), "CREATED",orderCreateAggDTO.toString());
+        AggregateEvent aggregateEvent = new AggregateEvent(new AggregateKey(12,new Date(), UUID.randomUUID(),"CREATE_ORDER"), "CREATED",orderCreateAggDTO.toString());
         AggregateEvent eventRecorded = aggregateRepository.recordAggregate(aggregateEvent);
         return new ResponseEntity<Object>(eventRecorded, HttpStatus.CREATED);
     }
