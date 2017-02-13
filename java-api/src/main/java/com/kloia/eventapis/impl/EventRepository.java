@@ -1,16 +1,15 @@
 package com.kloia.eventapis.impl;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.kloia.eventapis.pojos.Aggregate;
-import com.kloia.eventapis.pojos.Event;
-import com.kloia.eventapis.pojos.EventContext;
-import com.kloia.eventapis.pojos.IEventType;
+import com.kloia.eventapis.pojos.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.Ignite;
+import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteQueue;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.configuration.CollectionConfiguration;
 
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -24,9 +23,11 @@ public class EventRepository {
 
 
     private Ignite ignite;
+    private final IgniteCache<UUID, Operation> transactionCache;
 
     public EventRepository(Ignite ignite) {
         this.ignite = ignite;
+        transactionCache = ignite.cache("transactionCache");
 
     }
 
@@ -61,5 +62,21 @@ public class EventRepository {
         IgniteQueue<Event> queue = ignite.queue(eventName, 100000, null);
         Event event = EventContext.createNewEvent(IEventType.EXECUTE, params);
         queue.offer(event);
+    }
+
+    public Operation getOrCreateOperation(String mainAggregateName, UUID opid) {
+        Operation operation;
+        if(opid == null){
+            operation = new Operation(null,TransactionState.RUNNING);
+            opid = UUID.randomUUID();
+            transactionCache.putIfAbsent(opid, operation);
+        }else
+            return transactionCache.get(opid);
+        return operation;
+    }
+
+    public void publishEvent(Event event) {
+
+
     }
 }

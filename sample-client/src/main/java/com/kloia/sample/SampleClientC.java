@@ -1,5 +1,6 @@
-package com.kloia.eventapis;
+package com.kloia.sample;
 
+import com.kloia.eventapis.StoreApi;
 import com.kloia.eventapis.impl.AggregateBuilder;
 import com.kloia.eventapis.impl.EventRepository;
 import com.kloia.eventapis.pojos.Aggregate;
@@ -12,7 +13,8 @@ import java.util.concurrent.locks.LockSupport;
 /**
  * Created by zeldalozdemir on 30/01/2017.
  */
-public class SampleClientA {
+
+public class SampleClientC {
 
     public static void main(String[] args) {
 
@@ -20,21 +22,19 @@ public class SampleClientA {
 
         EventRepository eventRepository = storeApi.getEventRepository();
         AggregateBuilder aggregateBuilder = storeApi.getAggregateBuilder();
-//        AggregateBuilder aggregateBuilder = new AggregateBuilder(eventRepository);
 
 
         Aggregate aggregate = aggregateBuilder.createAggregate(new IAggregate() {
             public void execute(EventRepository eventRepository, String... params) {
-                System.out.println("Executing A:" + Arrays.toString(params));
-                eventRepository.sendEvent("UPDATE_EVENT_B", params);
-                eventRepository.sendEvent("UPDATE_EVENT_C", params);
+                System.out.println("Executing: C" + Arrays.toString(params));
             }
         });
 
-        eventRepository.registerForEvent(aggregate, "UPDATE_EVENT_A", "INSERT_EVENT_XA");
+        eventRepository.registerForEvent(aggregate, "UPDATE_EVENT_C");
 
 
-        aggregate.execute(  "First", "Event");
+//        aggregate.execute("First", "Event");
+
         LockSupport.park();
     }
 }

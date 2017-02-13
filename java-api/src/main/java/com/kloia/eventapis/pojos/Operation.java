@@ -16,15 +16,15 @@ import java.util.List;
  * Created by zeldalozdemir on 25/01/2017.
  */
 @Data
-public class Transaction implements Externalizable, Binarylizable {
+public class Operation implements Externalizable, Binarylizable {
     private List<Event> events;
 
     private TransactionState transactionState;
 
-    public Transaction() {
+    public Operation() {
     }
 
-    public Transaction(List<Event> events, TransactionState transactionState) {
+    public Operation(List<Event> events, TransactionState transactionState) {
         this.events = events;
         this.transactionState = transactionState;
     }
@@ -48,4 +48,5 @@ public class Transaction implements Externalizable, Binarylizable {
         // todo fill
 
     }
+
 }

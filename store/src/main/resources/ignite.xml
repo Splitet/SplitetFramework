@@ -85,7 +85,7 @@
                         <list>
                             <bean class="org.apache.ignite.cache.QueryEntity">
                                 <property name="keyType" value="java.util.UUID"/>
-                                <property name="valueType" value="com.kloia.eventapis.pojos.Transaction"/>
+                                <property name="valueType" value="com.kloia.eventapis.pojos.Operation"/>
 
                                 <property name="fields">
                                     <map>

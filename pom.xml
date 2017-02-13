@@ -16,12 +16,13 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <ignite.version>1.8.2</ignite.version>
-        <spring.version>1.4.3.RELEASE</spring.version>
+        <spring.version>1.4.4.RELEASE</spring.version>
     </properties>
     <modules>
         <module>store</module>
         <module>java-api</module>
         <module>sample-client</module>
+        <module>evented-common</module>
     </modules>
 
     <dependencyManagement>

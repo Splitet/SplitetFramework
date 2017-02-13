@@ -1,15 +1,13 @@
 package com.kloia.eventapis.filter;
 
 import com.kloia.eventapis.pojos.Event;
-import com.kloia.eventapis.pojos.Transaction;
+import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
-import org.apache.ignite.IgniteQueue;
 import org.apache.ignite.cache.CachePeekMode;
-import org.apache.ignite.configuration.CollectionConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -17,7 +15,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Created by mesutcan.gurle on 02/02/17.
@@ -32,10 +33,10 @@ public class EntityRestTemplate extends RestTemplate {
         Optional<ResponseEntity<?>> responseEntity = Optional.empty();
         try {
             responseEntity = Optional.ofNullable(exchange(url, method, new HttpEntity<>(entity, header), returnType, urlVariable));
-            IgniteCache<UUID, Transaction> transactionCache = ignite.cache("transactionCache");
+            IgniteCache<UUID, Operation> transactionCache = ignite.cache("transactionCache");
             log.info("Application is started for KeySizes:"+ transactionCache.size(CachePeekMode.PRIMARY));
             responseEntity.ifPresent( e -> {
-                transactionCache.put(UUID.randomUUID(), new Transaction(new ArrayList<Event>(), TransactionState.RUNNING));
+                transactionCache.put(UUID.randomUUID(), new Operation(new ArrayList<Event>(), TransactionState.RUNNING));
                 log.info("Application is started for KeySizes:" + transactionCache.size(CachePeekMode.PRIMARY));
             });
 
