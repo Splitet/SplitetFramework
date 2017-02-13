@@ -11,7 +11,7 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
 public class Components {
     @Bean
     public StoreApi getStoreApi() {
-        return StoreApi.createStoreApi("127.0.0.1:7500");
+        return StoreApi.createStoreApi("127.0.0.1:7500,127.0.0.1:7501,127.0.0.1:7502");
     }
     @Bean
     public AggregateRepository createAggregateRepository(@Autowired CassandraTemplate cassandraTemplate){

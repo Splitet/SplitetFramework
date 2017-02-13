@@ -1,12 +1,12 @@
 package com.kloia.eventapis.pojos;
 
 
-import com.kloia.eventapis.impl.EventRepository;
+import com.kloia.eventapis.impl.OperationRepository;
 
 /**
  * Created by zeldalozdemir on 30/01/2017.
  */
 public interface IAggregate {
-    void execute(EventRepository eventRepository, String... params);
+    void execute(OperationRepository operationRepository, String... params);
 }
 /**/

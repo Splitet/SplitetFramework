@@ -71,8 +71,8 @@
 
         <property name="cacheConfiguration">
             <array>
-                <bean class="org.apache.ignite.configuration.CacheConfiguration">
-                    <property name="name" value="transactionCache"/>
+                <bean class="org.apache.ignite.configuration.CacheConfiguration" name="operationCache">
+                    <property name="name" value="operationCache"/>
                     <property name="atomicityMode" value="ATOMIC"/>
                     <property name="cacheMode" value="REPLICATED"/>
                     <property name="memoryMode" value="ONHEAP_TIERED"/>
@@ -81,7 +81,7 @@
                     <property name="nearConfiguration">
                         <bean class="org.apache.ignite.configuration.NearCacheConfiguration"/>
                     </property>
-                    <property name="queryEntities">
+<!--                    <property name="queryEntities">
                         <list>
                             <bean class="org.apache.ignite.cache.QueryEntity">
                                 <property name="keyType" value="java.util.UUID"/>
@@ -89,24 +89,20 @@
 
                                 <property name="fields">
                                     <map>
-                                        <entry key="eventType" value="java.lang.String"/>
-                                        <entry key="status" value="java.lang.String"/>
+                                        <entry key="mainAggregateName" value="java.lang.String"/>
                                     </map>
                                 </property>
 
                                 <property name="indexes">
                                     <list>
                                         <bean class="org.apache.ignite.cache.QueryIndex">
-                                            <constructor-arg value="eventType"/>
-                                        </bean>
-                                        <bean class="org.apache.ignite.cache.QueryIndex">
-                                            <constructor-arg value="status"/>
+                                            <constructor-arg value="mainAggregateName"/>
                                         </bean>
                                     </list>
                                 </property>
                             </bean>
                         </list>
-                    </property>
+                    </property>-->
                     <property name="readThrough" value="true"/>
                     <property name="writeThrough" value="true"/>
                     <!-- Specifying CacheStoreFactory -->

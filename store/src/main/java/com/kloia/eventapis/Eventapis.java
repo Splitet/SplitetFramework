@@ -62,10 +62,10 @@ public class Eventapis {
         log.info("Application is started for Node:" + ignite.cluster().nodes());
         CollectionConfiguration cfg = new CollectionConfiguration();
         IgniteQueue<Object> queue = ignite.queue("main", 0, cfg);
-        IgniteCache<UUID, Operation> transactionCache = ignite.cache("transactionCache");
-        log.info("Application is started for KeySizes:" + transactionCache.size(CachePeekMode.PRIMARY));
-        transactionCache.put(UUID.randomUUID(), new Operation(new ArrayList<Event>(), TransactionState.RUNNING));
-        log.info("Application is started for KeySizes:" + transactionCache.size(CachePeekMode.PRIMARY));
+        IgniteCache<UUID, Operation> operationCache = ignite.cache("operationCache");
+        log.info("Application is started for KeySizes:" + operationCache.size(CachePeekMode.PRIMARY));
+        operationCache.put(UUID.randomUUID(), new Operation("",new ArrayList<Event>(), TransactionState.RUNNING));
+        log.info("Application is started for KeySizes:" + operationCache.size(CachePeekMode.PRIMARY));
 //        log.info(transactionCache.get(UUID.fromString("4447a089-e5f7-477c-9807-79210fafa296")).toString());
     }
 

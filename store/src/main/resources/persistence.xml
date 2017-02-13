@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<persistence keyspace="test1" table="test2_table">
+<persistence keyspace="operation_store_1" table="operations">
 
     <keyspaceOptions>
         REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor' : 3}
@@ -24,6 +24,7 @@
                       strategy="POJO"
                       serializer="org.apache.ignite.cache.store.cassandra.serializer.JavaSerializer">
         <field name="transactionState" column="transaction_state" index="true"/>
+        <field name="mainAggregateName" column="mainAggregateName" index="true"/>
         <field name="events" />
 
     </valuePersistence>

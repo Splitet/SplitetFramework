@@ -1,5 +1,8 @@
 package com.kloia.sample;
 
+import com.kloia.eventapis.StoreApi;
+import com.kloia.eventapis.impl.OperationRepository;
+import com.kloia.eventapis.pojos.Operation;
 import com.kloia.evented.AggregateEvent;
 import com.kloia.evented.AggregateKey;
 import com.kloia.evented.AggregateRepository;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -29,7 +33,11 @@ public class TestOrderRestService {
     @Autowired
     private AggregateRepository aggregateRepository;
 
+    @Autowired
+    private StoreApi storeApi;
+
     public TestOrderRestService() {
+
 
     }
 
@@ -37,7 +45,10 @@ public class TestOrderRestService {
     public ResponseEntity<?> aggregateCreateOrder(@RequestBody @Valid OrderCreateAggDTO orderCreateAggDTO) {
 //        TemplateAccount saved = createTemplateAccountService.create(orderCreateDTO);
         log.info("Template account saved: " + orderCreateAggDTO);
-        AggregateEvent aggregateEvent = new AggregateEvent(new AggregateKey(12,new Date(), UUID.randomUUID(),"CREATE_ORDER"), "CREATED",orderCreateAggDTO.toString());
+        OperationRepository operationRepository = storeApi.getOperationRepository();
+
+        Map.Entry<UUID, Operation> context = operationRepository.getContext();
+        AggregateEvent aggregateEvent = new AggregateEvent(new AggregateKey(orderCreateAggDTO.getOrderId(),new Date(), context.getKey(),"CREATE_ORDER"), "CREATED",orderCreateAggDTO.toString());
         AggregateEvent eventRecorded = aggregateRepository.recordAggregate(aggregateEvent);
         return new ResponseEntity<Object>(eventRecorded, HttpStatus.CREATED);
     }

@@ -2,9 +2,8 @@ package com.kloia.sample;
 
 import com.kloia.eventapis.StoreApi;
 import com.kloia.eventapis.impl.AggregateBuilder;
-import com.kloia.eventapis.impl.EventRepository;
+import com.kloia.eventapis.impl.OperationRepository;
 import com.kloia.eventapis.pojos.Aggregate;
-import com.kloia.eventapis.pojos.Event;
 import com.kloia.eventapis.pojos.IAggregate;
 
 import java.util.Arrays;
@@ -19,20 +18,20 @@ public class SampleClientA {
 
         StoreApi storeApi = StoreApi.createStoreApi("127.0.0.1:7500");
 
-        EventRepository eventRepository = storeApi.getEventRepository();
+        OperationRepository operationRepository = storeApi.getOperationRepository();
         AggregateBuilder aggregateBuilder = storeApi.getAggregateBuilder();
 //        AggregateBuilder aggregateBuilder = new AggregateBuilder(eventRepository);
 
 
         Aggregate aggregate = aggregateBuilder.createAggregate(new IAggregate() {
-            public void execute(EventRepository eventRepository, String... params) {
+            public void execute(OperationRepository eventRepository, String... params) {
                 System.out.println("Executing A:" + Arrays.toString(params));
                 eventRepository.sendEvent("UPDATE_EVENT_B", params);
                 eventRepository.sendEvent("UPDATE_EVENT_C", params);
             }
         });
 
-        eventRepository.registerForEvent(aggregate, "UPDATE_EVENT_A", "INSERT_EVENT_XA");
+        operationRepository.registerForEvent(aggregate, "UPDATE_EVENT_A", "INSERT_EVENT_XA");
 
 
         aggregate.execute(  "First", "Event");

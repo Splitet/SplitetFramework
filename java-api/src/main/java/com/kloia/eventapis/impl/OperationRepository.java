@@ -9,6 +9,9 @@ import org.apache.ignite.IgniteQueue;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.configuration.CollectionConfiguration;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,15 +22,22 @@ import java.util.concurrent.TimeUnit;
  * Created by zeldalozdemir on 26/01/2017.
  */
 @Slf4j
-public class EventRepository {
+public class OperationRepository {
 
 
     private Ignite ignite;
-    private final IgniteCache<UUID, Operation> transactionCache;
+    private final IgniteCache<UUID, Operation> operationCache;
 
-    public EventRepository(Ignite ignite) {
+    ThreadLocal<AbstractMap.SimpleEntry<UUID,Operation>> operationContext = new ThreadLocal<AbstractMap.SimpleEntry<UUID,Operation>>(){
+        @Override
+        protected AbstractMap.SimpleEntry<UUID, Operation> initialValue() {
+            return super.initialValue();
+        }
+    };
+
+    public OperationRepository(Ignite ignite) {
         this.ignite = ignite;
-        transactionCache = ignite.cache("transactionCache");
+        operationCache = ignite.cache("operationCache");
 
     }
 
@@ -64,19 +74,30 @@ public class EventRepository {
         queue.offer(event);
     }
 
-    public Operation getOrCreateOperation(String mainAggregateName, UUID opid) {
-        Operation operation;
-        if(opid == null){
-            operation = new Operation(null,TransactionState.RUNNING);
-            opid = UUID.randomUUID();
-            transactionCache.putIfAbsent(opid, operation);
-        }else
-            return transactionCache.get(opid);
-        return operation;
+    public Map.Entry<UUID, Operation> createOperation(String mainAggregateName) {
+        Operation operation = new Operation(mainAggregateName, new ArrayList<>(), TransactionState.RUNNING);
+        UUID opid = UUID.randomUUID();
+        operationCache.putIfAbsent(opid, operation);
+        return new AbstractMap.SimpleEntry<UUID, Operation>(opid, operation);
+    }
+
+    public Operation getOperation(UUID opid) {
+        return operationCache.get(opid);
+    }
+    public void switchContext(UUID opid, Operation operation){
+        operationContext.set(new AbstractMap.SimpleEntry<UUID, Operation>(opid,operation));
+    }
+
+    public Map.Entry<UUID, Operation>  getContext(){
+        return operationContext.get();
     }
 
     public void publishEvent(Event event) {
 
 
+    }
+
+    public void clearContext() {
+        operationContext.remove();
     }
 }

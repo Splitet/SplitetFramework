@@ -9,7 +9,7 @@ import org.springframework.data.cassandra.repository.config.EnableCassandraRepos
  * Created by zeldalozdemir on 30/01/2017.
  */
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.kloia.sample","com.kloia.evented"})
+@ComponentScan(basePackages = {"com.kloia.sample","com.kloia.evented","com.kloia.eventapis"})
 @EnableCassandraRepositories(  basePackages = "com.kloia.evented")
 public class RestCallAggregateMain {
 

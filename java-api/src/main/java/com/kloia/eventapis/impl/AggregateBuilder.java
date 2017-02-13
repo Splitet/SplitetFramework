@@ -7,14 +7,14 @@ import com.kloia.eventapis.pojos.IAggregate;
  * Created by zeldalozdemir on 30/01/2017.
  */
 public class AggregateBuilder {
-    private EventRepository eventRepository;
+    private OperationRepository operationRepository;
 
-    public AggregateBuilder(EventRepository eventRepository) {
-        this.eventRepository = eventRepository;
+    public AggregateBuilder(OperationRepository operationRepository) {
+        this.operationRepository = operationRepository;
     }
 
     public Aggregate createAggregate(IAggregate aggregate) {
-        return new Aggregate(eventRepository, aggregate);
+        return new Aggregate(operationRepository, aggregate);
     }
 
 

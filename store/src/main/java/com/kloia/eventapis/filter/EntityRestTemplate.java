@@ -36,7 +36,7 @@ public class EntityRestTemplate extends RestTemplate {
             IgniteCache<UUID, Operation> transactionCache = ignite.cache("transactionCache");
             log.info("Application is started for KeySizes:"+ transactionCache.size(CachePeekMode.PRIMARY));
             responseEntity.ifPresent( e -> {
-                transactionCache.put(UUID.randomUUID(), new Operation(new ArrayList<Event>(), TransactionState.RUNNING));
+                transactionCache.put(UUID.randomUUID(), new Operation("",new ArrayList<Event>(), TransactionState.RUNNING));
                 log.info("Application is started for KeySizes:" + transactionCache.size(CachePeekMode.PRIMARY));
             });
 

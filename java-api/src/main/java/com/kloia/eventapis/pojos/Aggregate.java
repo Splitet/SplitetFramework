@@ -1,22 +1,22 @@
 package com.kloia.eventapis.pojos;
 
 
-import com.kloia.eventapis.impl.EventRepository;
+import com.kloia.eventapis.impl.OperationRepository;
 
 /**
  * Created by zeldalozdemir on 30/01/2017.
  */
 public class Aggregate {
-    EventRepository eventRepository;
+    OperationRepository operationRepository;
     IAggregate iAggregate ;
 
-    public Aggregate(EventRepository eventRepository, IAggregate iAggregate) {
-        this.eventRepository = eventRepository;
+    public Aggregate(OperationRepository operationRepository, IAggregate iAggregate) {
+        this.operationRepository = operationRepository;
         this.iAggregate = iAggregate;
     }
 
     public void execute( String... params){
-        iAggregate.execute(eventRepository,params);
+        iAggregate.execute(operationRepository,params);
     }
 
     public Event handleEvent(Event event) {
