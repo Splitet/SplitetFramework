@@ -3,11 +3,10 @@ package com.kloia.eventapis.api.store;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.policies.RoundRobinPolicy;
 import com.kloia.eventapis.api.store.filter.EntityRestTemplate;
-import com.kloia.eventapis.api.store.filter.ReqInterceptor;
+import com.kloia.eventapis.api.store.filter.RequestInterceptor;
 import com.kloia.eventapis.api.pojos.Event;
 import com.kloia.eventapis.api.pojos.Operation;
 import com.kloia.eventapis.api.pojos.TransactionState;
-import jdk.nashorn.api.scripting.NashornScriptEngine;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.*;
 import org.apache.ignite.cache.CachePeekMode;
@@ -25,8 +24,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ResourceLoader;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -95,7 +92,7 @@ public class Eventapis {
     @Bean
     public EntityRestTemplate entityRestTemplate() {
         EntityRestTemplate entityRestTemplate = new EntityRestTemplate();
-        entityRestTemplate.getInterceptors().add(new ReqInterceptor());
+        entityRestTemplate.getInterceptors().add(new RequestInterceptor());
         return new EntityRestTemplate();
 
     }

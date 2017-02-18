@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Locale;
 
 @Component
-public class ReqRespDumpFilter extends AbstractRequestLoggingFilter {
+public class RequestResponseDumpFilter extends AbstractRequestLoggingFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(com.kloia.eventapis.api.filter.ReqRespDumpFilter.class);
 

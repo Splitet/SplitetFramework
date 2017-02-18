@@ -36,7 +36,7 @@ public class EventController {
         String url ="http://google.com";
         HttpMethod method = HttpMethod.GET;
 
-        Map<String,String> urlVariable = new HashMap<String, String>();
+        Map<String,String> urlVariable = new HashMap<>();
         urlVariable.put("q", "Concretepage");
 
         restTemplate.executeAsync(url, method, urlVariable, header(), null, Void.class);
