@@ -13,6 +13,10 @@ import com.kloia.sample.dto.OrderCreateAggDTO;
 import com.kloia.sample.dto.OrderProcessAggDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -30,8 +35,9 @@ import java.util.UUID;
  * Created by zeldalozdemir on 09/02/2017.
  */
 @Slf4j
-@RestController()
+@SpringBootApplication
 @RequestMapping(value = "/aggr/v1/order/")
+@SpringBootConfiguration()
 public class TestOrderRestService {
 
     @Autowired
@@ -68,6 +74,16 @@ public class TestOrderRestService {
         Order order = aggregateRepository.getAggregate(orderProcessAggDTO.getOrderId(),Order.class);
         log.info("Template account saved: " + orderProcessAggDTO);
         return new ResponseEntity<Object>(order, HttpStatus.OK);
+    }
+
+    public static void main(String[] args) {
+        HashMap<String, Object> props = new HashMap<>();
+        props.put("server.port", 9999);
+
+        new SpringApplicationBuilder()
+                .sources(TestOrderRestService.class)
+                .properties(props)
+                .run(args);
     }
 
 }

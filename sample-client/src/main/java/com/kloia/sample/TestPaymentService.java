@@ -10,6 +10,8 @@ import com.kloia.sample.dto.OrderCreateAggDTO;
 import com.kloia.sample.dto.OrderProcessAggDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,8 +28,8 @@ import java.util.UUID;
  * Created by zeldalozdemir on 09/02/2017.
  */
 @Slf4j
-@RestController()
 @RequestMapping(value = "/aggr/v1/payment/")
+@SpringBootApplication
 public class TestPaymentService {
 
     @Autowired
@@ -56,4 +58,7 @@ public class TestPaymentService {
         return new ResponseEntity<Object>(orderProcessAggDTO, HttpStatus.OK);
     }
 
+    public static void main(String[] args) {
+        SpringApplication.run(TestPaymentService.class, args);
+    }
 }
