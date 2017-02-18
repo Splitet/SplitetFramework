@@ -33,11 +33,11 @@ public class EntityRestTemplate extends RestTemplate {
         Optional<ResponseEntity<?>> responseEntity = Optional.empty();
         try {
             responseEntity = Optional.ofNullable(exchange(url, method, new HttpEntity<>(entity, header), returnType, urlVariable));
-            IgniteCache<UUID, Operation> transactionCache = ignite.cache("transactionCache");
-            log.info("Application is started for KeySizes:"+ transactionCache.size(CachePeekMode.PRIMARY));
-            responseEntity.ifPresent( e -> {
-                transactionCache.put(UUID.randomUUID(), new Operation("",new ArrayList<Event>(), TransactionState.RUNNING));
-                log.info("Application is started for KeySizes:" + transactionCache.size(CachePeekMode.PRIMARY));
+            IgniteCache<UUID, Operation> operationCache = ignite.cache("operationCache");
+            log.info("Service invoked for KeySizes:" + operationCache.size(CachePeekMode.PRIMARY));
+            responseEntity.ifPresent(e -> {
+                operationCache.put(UUID.randomUUID(), new Operation("", new ArrayList<Event>(), TransactionState.RUNNING));
+                log.info("Service invoked for KeySizes:" + operationCache.size(CachePeekMode.PRIMARY));
             });
 
         } catch (Exception e) {
