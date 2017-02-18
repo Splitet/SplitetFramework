@@ -1,10 +1,10 @@
 package com.kloia.sample;
 
-import com.kloia.eventapis.StoreApi;
-import com.kloia.eventapis.impl.AggregateBuilder;
-import com.kloia.eventapis.impl.OperationRepository;
-import com.kloia.eventapis.pojos.Aggregate;
-import com.kloia.eventapis.pojos.IAggregate;
+import com.kloia.eventapis.api.StoreApi;
+import com.kloia.eventapis.api.impl.AggregateBuilder;
+import com.kloia.eventapis.api.impl.OperationRepository;
+import com.kloia.eventapis.api.pojos.Aggregate;
+import com.kloia.eventapis.api.pojos.IAggregate;
 
 import java.util.Arrays;
 import java.util.concurrent.locks.LockSupport;

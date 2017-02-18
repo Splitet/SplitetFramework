@@ -1,13 +1,13 @@
-package com.kloia.eventapis;
+package com.kloia.eventapis.api;
 
-import com.kloia.eventapis.impl.AggregateBuilder;
-import com.kloia.eventapis.impl.OperationRepository;
+
+import com.kloia.eventapis.api.impl.AggregateBuilder;
+import com.kloia.eventapis.api.impl.OperationRepository;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
-import org.springframework.context.annotation.Bean;
 
 import java.util.Arrays;
 

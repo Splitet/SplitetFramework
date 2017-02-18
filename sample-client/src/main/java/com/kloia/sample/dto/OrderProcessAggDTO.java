@@ -11,7 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderProcessAggDTO {
-    private long productId;
+    private long orderId;
+    private long price;
     private int orderAmount ;
-    private String Description;
+    private String address;
+    private String description;
+    private PaymentProcessAggDTO paymentProcessAggDTO;
 }

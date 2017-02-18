@@ -1,6 +1,6 @@
-package com.kloia.eventapis.rest;
+package com.kloia.eventapis.api.store.rest;
 
-import com.kloia.eventapis.filter.EntityRestTemplate;
+import com.kloia.eventapis.api.store.filter.EntityRestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;

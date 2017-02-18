@@ -1,9 +1,11 @@
-package com.kloia.eventapis.filter;
+package com.kloia.eventapis.api.filter;
 
+import com.kloia.eventapis.api.StoreApi;
+import com.kloia.eventapis.api.impl.OperationRepository;
+import com.kloia.eventapis.api.pojos.Operation;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.AbstractRequestLoggingFilter;
 
 import javax.servlet.*;
@@ -12,37 +14,71 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.Collection;
-import java.util.Locale;
+import java.util.*;
 
-@Component
 public class ReqRespDumpFilter extends AbstractRequestLoggingFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(ReqRespDumpFilter.class);
 
+    private StoreApi storeApi;
+
+    public ReqRespDumpFilter(StoreApi storeApi) {
+        this.storeApi = storeApi;
+    }
+
+    public static final List<String> aggregateMethods = Collections.unmodifiableList(Arrays.asList("POST", "PUT", "DELETE"));
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
-        try {
-            BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
-            BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);
-            StringBuilder logBuilder = new StringBuilder(150);
-            logBuilder.append("Request : method=");
-            logBuilder.append(httpServletRequest.getMethod());
-            logBuilder.append(",requestUri=");
-            logBuilder.append(httpServletRequest.getRequestURI());
-            logBuilder.append(",requestBody=");
-            logBuilder.append(bufferedRequest.getRequestBody());
-            logBuilder.append(" ");
-            filterChain.doFilter(bufferedRequest, bufferedResponse);
-            logBuilder.append("Response : content=");
-            logBuilder.append(bufferedResponse.getContent());
-            logger.info(logBuilder.toString());
-        } catch (IOException e) {
-            logger.error("IOException : " + e.getMessage(), e.getStackTrace());
-        } catch (ServletException e) {
-            logger.error("ServletException : " + e.getMessage(), e.getStackTrace());
-        }
+        String method = httpServletRequest.getMethod();
+        String requestURI = httpServletRequest.getRequestURI();
+
+        if ( (aggregateMethods.contains(method)))
+            try {
+                OperationRepository operationRepository = storeApi.getOperationRepository();
+
+//            BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
+//            BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);
+
+
+                StringBuilder logBuilder = new StringBuilder(150);
+                logBuilder.append("Request : method=");
+                logBuilder.append(method);
+                logBuilder.append(",requestUri=");
+                logBuilder.append(requestURI);
+                logBuilder.append(",requestBody=");
+//            logBuilder.append(bufferedRequest.getRequestBody());
+                logBuilder.append(" ");
+
+                String opIdStr = httpServletRequest.getHeader("opId");
+                UUID opId = null;
+                Operation operation;
+                if (opIdStr != null) {
+                    opId = UUID.fromString(opIdStr);
+                    operation = operationRepository.getOperation(opId);
+                } else {
+                    Map.Entry<UUID, Operation> orderCreate = operationRepository.createOperation(requestURI);
+                    opId = orderCreate.getKey();
+                    operation = orderCreate.getValue();
+                }
+                operationRepository.switchContext(opId, operation);
+                try {
+                    filterChain.doFilter(httpServletRequest, httpServletResponse);
+//                logBuilder.append("Response : content=");
+//                logBuilder.append(bufferedResponse.getContent());
+                    logger.info(logBuilder.toString());
+                } finally {
+                    operationRepository.clearContext();
+                }
+            } catch (IOException e) {
+                logger.error("IOException : " + e.getMessage(), e.getStackTrace());
+            } catch (ServletException e) {
+                logger.error("ServletException : " + e.getMessage(), e.getStackTrace());
+            }
+        else
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 
     @Override

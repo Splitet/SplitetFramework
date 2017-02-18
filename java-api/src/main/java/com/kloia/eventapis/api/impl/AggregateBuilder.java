@@ -1,7 +1,7 @@
-package com.kloia.eventapis.impl;
+package com.kloia.eventapis.api.impl;
 
-import com.kloia.eventapis.pojos.Aggregate;
-import com.kloia.eventapis.pojos.IAggregate;
+import com.kloia.eventapis.api.pojos.Aggregate;
+import com.kloia.eventapis.api.pojos.IAggregate;
 
 /**
  * Created by zeldalozdemir on 30/01/2017.

@@ -1,4 +1,4 @@
-package com.kloia.eventapis.filter;
+package com.kloia.eventapis.api.store.filter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpRequest;

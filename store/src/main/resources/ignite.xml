@@ -28,14 +28,14 @@
         http://www.springframework.org/schema/util/spring-util.xsd">
 
     <!-- Cassandra connection settings -->
-    <import resource="classpath:cassandra/connection-settings.xml"/>
+    <!--<import resource="classpath:cassandra/connection-settings.xml"/>-->
 
 
     <!-- Persistence settings for 'cache1' -->
-    <bean id="cache1_persistence_settings"
+<!--    <bean id="cache1_persistence_settings"
           class="org.apache.ignite.cache.store.cassandra.persistence.KeyValuePersistenceSettings">
         <constructor-arg type="org.springframework.core.io.Resource" value="classpath:persistence.xml"/>
-    </bean>
+    </bean>-->
 
     <bean id="ignite.cfg" class="org.apache.ignite.configuration.IgniteConfiguration">
         <!-- Set to true to enable distributed class loading for examples, default is false. -->
@@ -111,7 +111,7 @@
                             <!-- Datasource configuration bean which is responsible for Cassandra connection details -->
                             <property name="dataSourceBean" value="cassandraAdminDataSource"/>
                             <!-- Persistent settings bean which is responsible for the details of how objects will be persisted to Cassandra -->
-                            <property name="persistenceSettingsBean" value="cache1_persistence_settings"/>
+                            <property name="persistenceSettingsBean" value="keyValuePersistenceSettings"/>
                         </bean>
                     </property>
                 </bean>

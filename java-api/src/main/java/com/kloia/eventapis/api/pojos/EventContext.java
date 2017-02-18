@@ -1,4 +1,4 @@
-package com.kloia.eventapis.pojos;
+package com.kloia.eventapis.api.pojos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,8 +1,8 @@
-package com.kloia.eventapis.filter;
+package com.kloia.eventapis.api.store.filter;
 
-import com.kloia.eventapis.pojos.Event;
-import com.kloia.eventapis.pojos.Operation;
-import com.kloia.eventapis.pojos.TransactionState;
+import com.kloia.eventapis.api.pojos.Event;
+import com.kloia.eventapis.api.pojos.Operation;
+import com.kloia.eventapis.api.pojos.TransactionState;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.Ignite;

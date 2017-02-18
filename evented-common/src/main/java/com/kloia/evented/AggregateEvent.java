@@ -15,8 +15,10 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(value = "AggregateEvent")
+@Table(value = AggregateEvent.AGGREGATE_EVENT_TABLE)
 public class AggregateEvent {
+
+    public static final String AGGREGATE_EVENT_TABLE = "AggregateEvent";
 
     @PrimaryKey
     private AggregateKey aggregateKey;

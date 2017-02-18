@@ -1,7 +1,7 @@
-package com.kloia.eventapis.impl;
+package com.kloia.eventapis.api.impl;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.kloia.eventapis.pojos.*;
+import com.kloia.eventapis.api.pojos.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;

@@ -1,14 +1,18 @@
-package com.kloia.eventapis;
+package com.kloia.eventapis.api.store;
 
-import com.kloia.eventapis.filter.EntityRestTemplate;
-import com.kloia.eventapis.filter.ReqInterceptor;
-import com.kloia.eventapis.pojos.Event;
-import com.kloia.eventapis.pojos.Operation;
-import com.kloia.eventapis.pojos.TransactionState;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.policies.RoundRobinPolicy;
+import com.kloia.eventapis.api.store.filter.EntityRestTemplate;
+import com.kloia.eventapis.api.store.filter.ReqInterceptor;
+import com.kloia.eventapis.api.pojos.Event;
+import com.kloia.eventapis.api.pojos.Operation;
+import com.kloia.eventapis.api.pojos.TransactionState;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.*;
 import org.apache.ignite.cache.CachePeekMode;
+import org.apache.ignite.cache.store.cassandra.datasource.DataSource;
+import org.apache.ignite.cache.store.cassandra.persistence.KeyValuePersistenceSettings;
 import org.apache.ignite.configuration.CollectionConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -18,9 +22,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.ResourceLoader;
 
 import javax.annotation.PostConstruct;
-import javax.script.ScriptEngine;
+import javax.annotation.Resource;
 import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -40,9 +45,6 @@ public class Eventapis {
         System.setProperty(IgniteSystemProperties.IGNITE_UPDATE_NOTIFIER, String.valueOf(false));
         ConfigurableApplicationContext context = SpringApplication.run(Eventapis.class, args);
 
-
-        ScriptEngineManager manager = new ScriptEngineManager();
-        NashornScriptEngine engine = (NashornScriptEngine) manager.getEngineByName("nashorn");
     }
 
 
@@ -50,7 +52,28 @@ public class Eventapis {
     @Scope("singleton")
     @Primary
     public Ignite createIgnite() throws IgniteCheckedException {
-        return Ignition.start(IGNITE_CONFIGURATION_FILE);
+        return IgniteSpring.start(IGNITE_CONFIGURATION_FILE,applicationContext);
+    }
+
+    @Autowired
+    private ResourceLoader resourceLoader;
+
+
+    @Bean("keyValuePersistenceSettings")
+    @Primary
+    public KeyValuePersistenceSettings createKeyValuePersistenceSettings() {
+        return new KeyValuePersistenceSettings(resourceLoader.getResource("classpath:persistence.xml"));
+    }
+    @Bean("cassandraAdminDataSource")
+    @Primary
+    public DataSource createDataSource() {
+        DataSource dataSource = new DataSource();
+        dataSource.setContactPoints("127.0.0.1");
+        dataSource.setPort(9042);
+        dataSource.setReadConsistency(ConsistencyLevel.ONE.name());
+        dataSource.setWriteConsistency(ConsistencyLevel.ONE.name());
+        dataSource.setLoadBalancingPolicy(new RoundRobinPolicy());
+        return dataSource;
     }
 
     @Autowired
