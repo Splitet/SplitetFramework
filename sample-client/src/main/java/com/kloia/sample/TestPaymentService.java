@@ -8,6 +8,7 @@ import com.kloia.evented.AggregateKey;
 import com.kloia.evented.AggregateRepository;
 import com.kloia.sample.dto.OrderCreateAggDTO;
 import com.kloia.sample.dto.OrderProcessAggDTO;
+import com.kloia.sample.dto.PaymentProcessAggDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -43,22 +44,11 @@ public class TestPaymentService {
 
     }
 
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ResponseEntity<?> aggregateCreateOrder(@RequestBody @Valid OrderCreateAggDTO orderCreateAggDTO) {
-        //        TemplateAccount saved = createTemplateAccountService.create(orderCreateDTO);
-        log.info("Template account saved: " + orderCreateAggDTO);
-        return new ResponseEntity<Object>(orderCreateAggDTO, HttpStatus.OK);
-    }
-
 
     @RequestMapping(value = "/process", method = RequestMethod.POST)
-    public ResponseEntity<?> aggregateProcessOrder(@RequestBody @Valid OrderProcessAggDTO orderProcessAggDTO) {
+    public ResponseEntity<?> aggregateProcessOrder(@RequestBody @Valid PaymentProcessAggDTO paymentProcessAggDTO) {
 //        TemplateAccount saved = createTemplateAccountService.create(orderCreateDTO);
-        log.info("Template account saved: " + orderProcessAggDTO);
-        return new ResponseEntity<Object>(orderProcessAggDTO, HttpStatus.OK);
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(TestPaymentService.class, args);
+        log.info("PaymentProcessAggDTO saved: " + paymentProcessAggDTO);
+        return new ResponseEntity<Object>(paymentProcessAggDTO, HttpStatus.OK);
     }
 }

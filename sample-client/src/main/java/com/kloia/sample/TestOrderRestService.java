@@ -63,6 +63,9 @@ public class TestOrderRestService {
     @Autowired
     private ObjectMapper objectMapper;
 
+
+    @Autowired PaymentEndpoint paymentEndpoint;
+
     public TestOrderRestService() {
 
 
@@ -78,8 +81,8 @@ public class TestOrderRestService {
         String description = objectMapper.writer().writeValueAsString(orderCreateAggDTO);
         AggregateEvent aggregateEvent = new AggregateEvent(new AggregateKey(orderCreateAggDTO.getOrderId(),new Date(), context.getKey(),"CREATE_ORDER"), "CREATED", description);
 //        AggregateEvent eventRecorded = aggregateRepository.recordAggregate(aggregateEvent);
-        PaymentEndpoint paymentEndpoint = Feign.builder().decoder(feignDecoder()).encoder(feignEncoder()).target(PaymentEndpoint.class, "http://localhost:8080");
-        OrderCreateAggDTO orderCreateAggDTO1 = paymentEndpoint.create(orderCreateAggDTO);
+//        PaymentEndpoint paymentEndpoint = Feign.builder().decoder(feignDecoder()).encoder(feignEncoder()).target(PaymentEndpoint.class, "http://localhost:8080");
+        OrderCreateAggDTO orderCreateAggDTO1 = paymentEndpoint.process(orderCreateAggDTO);
         return new ResponseEntity<Object>(orderCreateAggDTO1, HttpStatus.CREATED);
     }
 
@@ -92,31 +95,6 @@ public class TestOrderRestService {
         return new ResponseEntity<Object>(order, HttpStatus.OK);
     }
 
-    public static void main(String[] args) {
-        HashMap<String, Object> props = new HashMap<>();
-        props.put("server.port", 9999);
-
-        new SpringApplicationBuilder()
-                .sources(TestOrderRestService.class)
-                .properties(props)
-                .run(args);
-    }
-    public Decoder feignDecoder() {
-        HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter(new ObjectMapper());
-        ObjectFactory<HttpMessageConverters> objectFactory = () -> new HttpMessageConverters(jacksonConverter);
-        return new ResponseEntityDecoder(new SpringDecoder(objectFactory));
-    }
-
-    public Encoder feignEncoder() {
-        HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter(new ObjectMapper());
-        ObjectFactory<HttpMessageConverters> objectFactory = () -> new HttpMessageConverters(jacksonConverter);
-        return new SpringEncoder(objectFactory);
-    }
 
 }
 
-interface PaymentEndpoint{
-    //@RequestMapping(value = "/aggr/v1/payment/create", method = RequestMethod.POST)
-    @RequestLine("GET /aggr/v1/payment/create")
-    OrderCreateAggDTO create(@RequestBody OrderCreateAggDTO orderCreateAggDTO);
-}
