@@ -2,6 +2,9 @@ package com.kloia.eventapis.api.filter;
 
 import com.kloia.eventapis.api.StoreApi;
 import com.kloia.eventapis.api.impl.OperationRepository;
+import com.kloia.eventapis.api.pojos.Event;
+import com.kloia.eventapis.api.pojos.EventState;
+import com.kloia.eventapis.api.pojos.IEventType;
 import com.kloia.eventapis.api.pojos.Operation;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.slf4j.Logger;
@@ -69,6 +72,8 @@ public class ReqRespDumpFilter extends AbstractRequestLoggingFilter {
 //                logBuilder.append("Response : content=");
 //                logBuilder.append(bufferedResponse.getContent());
                     logger.info(logBuilder.toString());
+
+                    operationRepository.appendEvent(opId,new Event(UUID.randomUUID(), IEventType.EXECUTE, EventState.SUCCEDEED, null));
                 } finally {
                     operationRepository.clearContext();
                 }

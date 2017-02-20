@@ -32,6 +32,7 @@ public class StoreApi {
         discoSpi.setIpFinder(ipFinder);
         cfg.setDiscoverySpi(discoSpi);
         Ignite ignite = Ignition.start(cfg);
+        cfg.setMetricsLogFrequency(0);
         return new StoreApi(ignite,new OperationRepository(ignite));
     }
 

@@ -18,7 +18,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Event implements Externalizable, Binarylizable, Cloneable {
-    private UUID transactionId;
     private UUID eventId;
     private IEventType eventType;
     private EventState eventState;
@@ -26,13 +25,11 @@ public class Event implements Externalizable, Binarylizable, Cloneable {
 
 
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeUTF(transactionId.toString());
         out.writeUTF(eventId.toString());
         out.writeUTF(eventState.name());
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        transactionId = UUID.fromString(in.readUTF());
         eventId = UUID.fromString(in.readUTF());
         eventState = EventState.valueOf(EventState.class, in.readUTF());
 
@@ -40,7 +37,6 @@ public class Event implements Externalizable, Binarylizable, Cloneable {
 
     public void writeBinary(BinaryWriter writer) throws BinaryObjectException {
         BinaryRawWriter binaryRawWriter = writer.rawWriter();
-        binaryRawWriter.writeUuid(transactionId);
         binaryRawWriter.writeUuid(eventId);
         binaryRawWriter.writeObject(eventType);
         binaryRawWriter.writeEnum(eventState);
@@ -49,7 +45,6 @@ public class Event implements Externalizable, Binarylizable, Cloneable {
 
     public void readBinary(BinaryReader reader) throws BinaryObjectException {
         BinaryRawReader binaryRawReader = reader.rawReader();
-        transactionId = binaryRawReader.readUuid();
         eventId = binaryRawReader.readUuid();
         eventType = binaryRawReader.readObject();
         eventState = binaryRawReader.readEnum();
