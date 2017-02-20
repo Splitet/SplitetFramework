@@ -13,10 +13,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Created by zeldalozdemir on 26/01/2017.
@@ -41,7 +38,7 @@ public class OperationRepository {
 
     }
 
-    public void registerForEvent(Aggregate aggregate, String... events) {
+/*    public void registerForEvent(Aggregate aggregate, String... events) {
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("my-sad-thread-%d").build();
 
@@ -56,7 +53,7 @@ public class OperationRepository {
                 if (poll != null)
                     try {
                         System.out.println("Polled:" + poll);
-                        EventContext.setEventContext(new EventContext(poll.getTransactionId()));
+                        EventContext.setEventContext(new EventContext(poll.get()));
                         Event result = aggregate.handleEvent(poll);
                         queue.offer(result);
                     } catch (Exception e) {
@@ -66,13 +63,13 @@ public class OperationRepository {
                     }
             }, 1, 1, TimeUnit.SECONDS);
         }
-    }
+    }*/
 
-    public void sendEvent(String eventName, String[] params) {
+/*    public void sendEvent(String eventName, String[] params) {
         IgniteQueue<Event> queue = ignite.queue(eventName, 100000, null);
         Event event = EventContext.createNewEvent(IEventType.EXECUTE, params);
         queue.offer(event);
-    }
+    }*/
 
     public Map.Entry<UUID, Operation> createOperation(String mainAggregateName) {
         Operation operation = new Operation(mainAggregateName, new ArrayList<>(), TransactionState.RUNNING);
@@ -99,5 +96,12 @@ public class OperationRepository {
 
     public void clearContext() {
         operationContext.remove();
+    }
+
+    public void appendEvent(UUID key, Event event) {
+        operationCache.invoke(key,(entry, arguments) -> {
+            entry.getValue().getEvents().add((Event) arguments[0]);
+            return null;
+        },event);
     }
 }

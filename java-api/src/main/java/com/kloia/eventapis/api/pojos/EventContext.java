@@ -18,7 +18,7 @@ public class EventContext {
         return eventThreadLocal.get();
     }
 
-    public static Event createNewEvent(IEventType iEventType, String[] params){
+/*    public static Event createNewEvent(IEventType iEventType, String[] params){
         EventContext eventContext = eventThreadLocal.get();
         if(eventContext == null){
            eventContext = new EventContext(UUID.randomUUID()); // todo: Notify Event Store
@@ -26,7 +26,7 @@ public class EventContext {
            eventThreadLocal.set(eventContext);
         }
         return new Event(eventContext.getTransactionId(),UUID.randomUUID(),iEventType,EventState.CREATED, params);
-    }
+    }*/
     public static void setEventContext(EventContext eventContext){
         eventThreadLocal.set(eventContext);
     }

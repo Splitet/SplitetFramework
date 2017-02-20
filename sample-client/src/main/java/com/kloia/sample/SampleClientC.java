@@ -15,7 +15,7 @@ import java.util.concurrent.locks.LockSupport;
 
 public class SampleClientC {
 
-    public static void main(String[] args) {
+/*    public static void main(String[] args) {
 
         StoreApi storeApi = StoreApi.createStoreApi("127.0.0.1:7500");
 
@@ -35,5 +35,5 @@ public class SampleClientC {
 //        aggregate.execute("First", "Event");
 
         LockSupport.park();
-    }
+    }*/
 }
