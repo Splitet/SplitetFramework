@@ -3,9 +3,11 @@ package com.kloia.sample.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.StoreApi;
 import com.kloia.evented.AggregateRepository;
+import feign.Feign;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import sun.jvm.hotspot.runtime.ObjectMonitor;
 
@@ -19,6 +21,12 @@ public class Components {
     public AggregateRepository createAggregateRepository(@Autowired CassandraTemplate cassandraTemplate, @Autowired ObjectMapper objectMapper){
         return new AggregateRepository(cassandraTemplate,objectMapper);
     }
+
+/*    @Bean
+    @Scope("prototype")
+    public Feign.Builder feignBuilder() {
+        return Feign.builder();
+    }*/
 
 
 
