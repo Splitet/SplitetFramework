@@ -21,18 +21,12 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @PrimaryKeyClass
-public class AggregateKey implements Serializable {
+public class EventKey implements Serializable {
 
     @PrimaryKeyColumn(name = "entityId", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
     private long entityId;
 
-    @PrimaryKeyColumn(name= "opDate",ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
-    private Date opDate;
-
-    @PrimaryKeyColumn(name = "opId", ordinal = 2,type = PrimaryKeyType.CLUSTERED)
-    private UUID opId;
-
-    @PrimaryKeyColumn(name = "aggregateName", ordinal = 3, type = PrimaryKeyType.CLUSTERED)
-    private String aggregateName;
+    @PrimaryKeyColumn(name= "version",ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
+    private long version;
 
 }

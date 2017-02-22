@@ -8,6 +8,7 @@ import org.apache.ignite.Ignition;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.Arrays;
 
@@ -25,7 +26,7 @@ public class StoreApi {
     public static StoreApi createStoreApi(String igniteUrl){
         IgniteConfiguration cfg = new IgniteConfiguration();
         cfg.setClientMode(true);
-        cfg.setPeerClassLoadingEnabled(false);
+        cfg.setPeerClassLoadingEnabled(true);
         TcpDiscoverySpi discoSpi = new TcpDiscoverySpi();
         TcpDiscoveryVmIpFinder ipFinder = new TcpDiscoveryVmIpFinder();
         ipFinder.setAddresses(Arrays.asList(igniteUrl.split(",")));
