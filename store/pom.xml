@@ -100,6 +100,11 @@
             <version>${ignite.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-cassandra-serializers</artifactId>
+            <version>${ignite.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
             <version>3.1.3</version>

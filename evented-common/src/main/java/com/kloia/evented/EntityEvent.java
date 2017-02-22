@@ -7,6 +7,7 @@ import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
 
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -15,19 +16,28 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(value = AggregateEvent.AGGREGATE_EVENT_TABLE)
-public class AggregateEvent {
+@Table(value = EntityEvent.AGGREGATE_EVENT_TABLE)
+public class EntityEvent {
 
     public static final String AGGREGATE_EVENT_TABLE = "AggregateEvent";
 
     @PrimaryKey
-    private AggregateKey aggregateKey;
+    private EventKey eventKey;
+
+    @Column(value = "opId")
+    private UUID opId;
+
+    @Column(value= "opDate")
+    private Date opDate;
+
+    @Column(value = "aggregateName")
+    private String aggregateName;
 
     @Column(value = "status")
     private String status;
 
-    @Column(value = "description")
-    private String description;
+    @Column(value = "eventData")
+    private String eventData;
 
 
 }

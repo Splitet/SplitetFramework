@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<persistence keyspace="operation_store_1" table="operations">
+<persistence keyspace="operation_store_3" table="operations">
 
     <keyspaceOptions>
         REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor' : 3}
@@ -22,10 +22,10 @@
     <!-- Kryo serialization specified to be used -->
     <valuePersistence class="com.kloia.eventapis.api.pojos.Operation"
                       strategy="POJO"
-                      serializer="org.apache.ignite.cache.store.cassandra.serializer.JavaSerializer">
-        <field name="transactionState" column="transaction_state" index="true"/>
+                      serializer="org.apache.ignite.cache.store.cassandra.serializer.KryoSerializer">
+        <field name="transactionState" column="transactionState" index="true"/>
         <field name="mainAggregateName" column="mainAggregateName" index="true"/>
-        <field name="events" />
+        <field name="events"  column="events" />
 
     </valuePersistence>
 </persistence>

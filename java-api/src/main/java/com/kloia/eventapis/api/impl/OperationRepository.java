@@ -7,13 +7,16 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteQueue;
 import org.apache.ignite.cache.CacheAtomicityMode;
+import org.apache.ignite.cache.CacheEntryProcessor;
 import org.apache.ignite.configuration.CollectionConfiguration;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.UUID;
+import javax.cache.processor.EntryProcessor;
+import javax.cache.processor.EntryProcessorException;
+import javax.cache.processor.MutableEntry;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Created by zeldalozdemir on 26/01/2017.
@@ -98,10 +101,23 @@ public class OperationRepository {
         operationContext.remove();
     }
 
-    public void appendEvent(UUID key, Event event) {
-        operationCache.invoke(key,(entry, arguments) -> {
+    public void appendEvent(UUID opId, Event event) {
+        operationCache.invoke(opId,(entry, arguments) -> {
             entry.getValue().getEvents().add((Event) arguments[0]);
             return null;
         },event);
+    }
+
+    public void updateEvent(UUID opId, UUID eventId, SerializableConsumer<Event> action) {
+//        new ArrayList<Event>().forEach();
+        operationCache.invoke(opId, (CacheEntryProcessor<UUID, Operation, Operation>) (entry, arguments) -> {
+            UUID eventIdArg = (UUID) arguments[0];
+            SerializableConsumer<Event> actionArg = (SerializableConsumer<Event>) arguments[1];
+            Operation operation = entry.getValue();
+            Optional<Event> first = operation.getEventFor(eventIdArg);
+            first.ifPresent(actionArg::accept);
+            return operation;
+        }, eventId, action);
+
     }
 }

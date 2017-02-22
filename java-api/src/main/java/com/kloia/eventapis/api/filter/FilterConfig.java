@@ -18,7 +18,7 @@ public class FilterConfig {
     @Bean
     public FilterRegistrationBean shallowEtagHeaderFilter(@Autowired StoreApi storeApi) {
         FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(new ReqRespDumpFilter(storeApi));
+        registration.setFilter(new ReqRepOperationFilter(storeApi));
         registration.setDispatcherTypes(EnumSet.allOf(DispatcherType.class));
         registration.addUrlPatterns("/aggr/*");
         return registration;

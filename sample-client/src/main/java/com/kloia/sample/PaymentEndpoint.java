@@ -1,8 +1,8 @@
 package com.kloia.sample;
 
-import com.kloia.sample.configuration.FeignConfiguration;
+import com.kloia.eventapis.api.filter.FeignConfiguration;
 import com.kloia.sample.dto.OrderCreateAggDTO;
-import feign.RequestLine;
+import com.kloia.sample.dto.OrderProcessAggDTO;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
  */
 @FeignClient(value = "payment",url = "${payment.url}", configuration = FeignConfiguration.class)
 interface PaymentEndpoint{
-    @RequestMapping(value = "/aggr/v1/payment/process", method = RequestMethod.POST)
-    OrderCreateAggDTO process(@RequestBody OrderCreateAggDTO orderCreateAggDTO);
+//    @RequestMapping(value = "/aggr/v1/payment/process", method = RequestMethod.POST)
+    @RequestMapping(value = "${payment.process.path}", method = RequestMethod.POST)
+
+    OrderCreateAggDTO process(@RequestBody OrderProcessAggDTO orderProcessAggDTO);
 }

@@ -1,5 +1,6 @@
 package com.kloia.sample.dto;
 
+import com.kloia.evented.IEventDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,11 +11,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderProcessAggDTO {
+public class OrderProcessAggDTO implements IEventDto {
     private long orderId;
     private long price;
-    private int orderAmount ;
     private String address;
-    private String description;
     private PaymentProcessAggDTO paymentProcessAggDTO;
 }

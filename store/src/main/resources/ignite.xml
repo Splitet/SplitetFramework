@@ -39,7 +39,7 @@
 
     <bean id="ignite.cfg" class="org.apache.ignite.configuration.IgniteConfiguration">
         <!-- Set to true to enable distributed class loading for examples, default is false. -->
-        <property name="peerClassLoadingEnabled" value="false"/>
+        <property name="peerClassLoadingEnabled" value="true"/>
 
 
         <!-- Explicitly configure TCP discovery SPI to provide list of initial nodes. -->
@@ -109,7 +109,7 @@
                     <property name="cacheStoreFactory">
                         <bean class="org.apache.ignite.cache.store.cassandra.CassandraCacheStoreFactory">
                             <!-- Datasource configuration bean which is responsible for Cassandra connection details -->
-                            <property name="dataSourceBean" value="cassandraAdminDataSource"/>
+                            <property name="dataSourceBean" value="cassandraDataSource"/>
                             <!-- Persistent settings bean which is responsible for the details of how objects will be persisted to Cassandra -->
                             <property name="persistenceSettingsBean" value="keyValuePersistenceSettings"/>
                         </bean>
