@@ -2,31 +2,19 @@ package com.kloia.eventapis.api.store.configuration;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.policies.RoundRobinPolicy;
-import com.kloia.eventapis.api.pojos.Event;
-import com.kloia.eventapis.api.pojos.Operation;
-import com.kloia.eventapis.api.pojos.TransactionState;
 import com.kloia.eventapis.api.store.filter.EntityRestTemplate;
 import com.kloia.eventapis.api.store.filter.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.*;
-import org.apache.ignite.cache.CachePeekMode;
 import org.apache.ignite.cache.store.cassandra.datasource.DataSource;
 import org.apache.ignite.cache.store.cassandra.persistence.KeyValuePersistenceSettings;
-import org.apache.ignite.configuration.CollectionConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ResourceLoader;
-
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.UUID;
 
 /**
  * Created by mali on 20/01/2017.

@@ -2,10 +2,10 @@ package com.kloia.eventapis.api.filter;
 
 import com.kloia.eventapis.api.StoreApi;
 import com.kloia.eventapis.api.impl.OperationRepository;
-import com.kloia.eventapis.api.pojos.Event;
-import com.kloia.eventapis.api.pojos.EventState;
-import com.kloia.eventapis.api.pojos.IEventType;
-import com.kloia.eventapis.api.pojos.Operation;
+import com.kloia.eventapis.pojos.Event;
+import com.kloia.eventapis.pojos.EventState;
+import com.kloia.eventapis.pojos.IEventType;
+import com.kloia.eventapis.pojos.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.AbstractRequestLoggingFilter;
@@ -20,10 +20,10 @@ public class ReqRepOperationFilter extends AbstractRequestLoggingFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(ReqRepOperationFilter.class);
 
-    private StoreApi storeApi;
+    private OperationRepository operationRepository;
 
-    public ReqRepOperationFilter(StoreApi storeApi) {
-        this.storeApi = storeApi;
+    public ReqRepOperationFilter(OperationRepository operationRepository) {
+        this.operationRepository = operationRepository;
     }
 
     public static final List<String> aggregateMethods = Collections.unmodifiableList(Arrays.asList("POST", "PUT", "DELETE"));
@@ -37,7 +37,6 @@ public class ReqRepOperationFilter extends AbstractRequestLoggingFilter {
 
         if ( (aggregateMethods.contains(method)))
             try {
-                OperationRepository operationRepository = storeApi.getOperationRepository();
 
                 StringBuilder logBuilder = new StringBuilder(150);
                 logBuilder.append("Request : method=");
@@ -69,10 +68,12 @@ public class ReqRepOperationFilter extends AbstractRequestLoggingFilter {
                 } finally {
                     operationRepository.clearContext();
                 }
-            } catch (IOException e) {
-                logger.error("IOException : " + e.getMessage(), e.getStackTrace());
-            } catch (ServletException e) {
-                logger.error("ServletException : " + e.getMessage(), e.getStackTrace());
+            } catch (IOException|ServletException e) {
+                throw e;
+            }
+            catch (Exception e) {
+                logger.error("Unexpected Exception : " + e.getMessage(), e);
+                throw e;
             }
         else
             filterChain.doFilter(httpServletRequest, httpServletResponse);

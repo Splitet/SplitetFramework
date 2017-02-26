@@ -1,27 +1,22 @@
 package com.kloia.eventapis.api.impl;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.kloia.eventapis.api.pojos.*;
+import com.kloia.eventapis.pojos.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
-import org.apache.ignite.IgniteQueue;
-import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.cache.CacheEntryProcessor;
-import org.apache.ignite.configuration.CollectionConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import javax.cache.processor.EntryProcessor;
-import javax.cache.processor.EntryProcessorException;
-import javax.cache.processor.MutableEntry;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Created by zeldalozdemir on 26/01/2017.
  */
 @Slf4j
+@Component
 public class OperationRepository {
 
 
@@ -35,7 +30,8 @@ public class OperationRepository {
         }
     };
 
-    public OperationRepository(Ignite ignite) {
+    @Autowired
+    public OperationRepository(@Qualifier("operationIgniteClient") Ignite ignite) {
         this.ignite = ignite;
         operationCache = ignite.cache("operationCache");
 

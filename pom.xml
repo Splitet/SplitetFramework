@@ -25,7 +25,7 @@
     <modules>
         <module>store</module>
         <module>java-api</module>
-        <module>sample-client</module>
+        <!--<module>sample-client</module>-->
         <module>evented-common</module>
     </modules>
 

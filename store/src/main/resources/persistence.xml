@@ -20,7 +20,7 @@
 
 
     <!-- Kryo serialization specified to be used -->
-    <valuePersistence class="com.kloia.eventapis.api.pojos.Operation"
+    <valuePersistence class="com.kloia.eventapis.pojos.Operation"
                       strategy="POJO"
                       serializer="org.apache.ignite.cache.store.cassandra.serializer.KryoSerializer">
         <field name="transactionState" column="transactionState" index="true"/>

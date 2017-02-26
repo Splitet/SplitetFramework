@@ -3,7 +3,7 @@ package com.kloia.sample;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.impl.OperationRepository;
-import com.kloia.eventapis.api.pojos.Operation;
+import com.kloia.eventapis.pojos.Operation;
 import com.kloia.evented.*;
 import com.kloia.sample.commands.CreateOrderCommand;
 import com.kloia.sample.commands.ProcessOrderCommand;
