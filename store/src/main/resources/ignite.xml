@@ -39,7 +39,7 @@
 
     <bean id="ignite.cfg" class="org.apache.ignite.configuration.IgniteConfiguration">
         <!-- Set to true to enable distributed class loading for examples, default is false. -->
-        <property name="peerClassLoadingEnabled" value="true"/>
+        <property name="peerClassLoadingEnabled" value="false"/>
 
 
         <!-- Explicitly configure TCP discovery SPI to provide list of initial nodes. -->

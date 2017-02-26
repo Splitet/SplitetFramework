@@ -16,25 +16,23 @@ import java.util.Map;
 /**
  * Created by zeldalozdemir on 12/02/2017.
  */
-@Component
 public class CassandraEventRepository<T extends Entity> implements IEventRepository<T> {
 
+    private String tableName;
     private CassandraTemplate cassandraOperations;
-    private ObjectMapper objectMapper;
     private Map<String, AggregateFunction<T>> functionMap = new HashMap<>();
 
 
-    @Autowired
-    public CassandraEventRepository(CassandraTemplate cassandraOperations, ObjectMapper objectMapper) {
+    public CassandraEventRepository(String tableName, CassandraTemplate cassandraOperations) {
+        this.tableName = tableName;
         this.cassandraOperations = cassandraOperations;
-        this.objectMapper = objectMapper;
     }
 
 
 
     @Override
     public T queryEntity(long entityId) throws EventStoreException {
-        Select select = QueryBuilder.select().from(EntityEvent.AGGREGATE_EVENT_TABLE);
+        Select select = QueryBuilder.select().from(tableName);
         select.where(QueryBuilder.eq("entityId", entityId));
         List<EntityEvent> entityEvents = cassandraOperations.select(select, EntityEvent.class);
 
@@ -54,10 +52,10 @@ public class CassandraEventRepository<T extends Entity> implements IEventReposit
 
     @Override
     public void recordAggregateEvent(EntityEvent entityEvent) throws EventStoreException {
-        Insert insertQuery = cassandraOperations.createInsertQuery(EntityEvent.AGGREGATE_EVENT_TABLE, entityEvent, null, cassandraOperations.getConverter());
+        Insert insertQuery = cassandraOperations.createInsertQuery(tableName, entityEvent, null, cassandraOperations.getConverter());
         insertQuery.ifNotExists();
         cassandraOperations.execute(insertQuery);
-        Select select = QueryBuilder.select().from(EntityEvent.AGGREGATE_EVENT_TABLE);
+        Select select = QueryBuilder.select().from(tableName);
         select.where(QueryBuilder.eq("entityId", entityEvent.getEventKey().getEntityId()));
         select.where(QueryBuilder.eq("version", entityEvent.getEventKey().getVersion()) );
         EntityEvent appliedEntityEvent = cassandraOperations.selectOne(select, EntityEvent.class);

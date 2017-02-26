@@ -1,4 +1,4 @@
-package com.kloia.eventapis.api.pojos;
+package com.kloia.eventapis.pojos;
 
 /**
  * Created by zeldalozdemir on 26/01/2017.

@@ -1,14 +1,12 @@
 package com.kloia.eventapis.api.store.rest;
 
-import com.kloia.eventapis.api.pojos.*;
-import com.kloia.eventapis.api.store.filter.EntityRestTemplate;
+import com.kloia.eventapis.pojos.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteQueue;
 import org.apache.ignite.cache.CachePeekMode;
 import org.apache.ignite.configuration.CollectionConfiguration;
-import org.apache.ignite.internal.SkipDaemon;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;

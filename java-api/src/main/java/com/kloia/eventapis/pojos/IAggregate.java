@@ -1,4 +1,4 @@
-package com.kloia.eventapis.api.pojos;
+package com.kloia.eventapis.pojos;
 
 
 import com.kloia.eventapis.api.impl.OperationRepository;
