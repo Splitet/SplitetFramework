@@ -1,8 +1,9 @@
-package com.kloia.eventapis.api.pojos;
+package com.kloia.eventapis.pojos;
 
 import lombok.Data;
 import org.apache.ignite.binary.*;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,7 +14,8 @@ import java.util.stream.Stream;
  * Created by zeldalozdemir on 25/01/2017.
  */
 @Data
-public class Operation implements /*Externalizable,*/ Binarylizable {
+public class Operation implements /*Externalizable,*/ Binarylizable, Serializable {
+    private static final long serialVersionUID = -2003849346218727591L;
     private List<Event> events;
 
     private TransactionState transactionState;

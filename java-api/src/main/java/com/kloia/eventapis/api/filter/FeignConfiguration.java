@@ -22,14 +22,14 @@ public class FeignConfiguration {
             return new BasicAuthRequestInterceptor("user", "password");
         }*/
     @Autowired
-    StoreApi storeApi;
+    OperationRepository operationRepository;
 
 
     @Bean
     @Scope("prototype")
     public Feign.Builder feignBuilder() {
         return Feign.builder().requestInterceptor(template -> {
-            UUID key = storeApi.getOperationRepository().getContext().getKey();
+            UUID key = operationRepository.getContext().getKey();
             if(key != null )
                 template.header("opId", key.toString());
         });
