@@ -5,7 +5,10 @@ import org.apache.ignite.IgniteSystemProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+<<<<<<< HEAD
 import org.springframework.context.annotation.ComponentScan;
+=======
+>>>>>>> fe1c6bd...  - Evented DB usage examples
 
 /**
  * Created by mali on 20/01/2017.

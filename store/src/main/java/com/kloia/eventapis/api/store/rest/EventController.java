@@ -7,7 +7,10 @@ import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteQueue;
 import org.apache.ignite.cache.CachePeekMode;
 import org.apache.ignite.configuration.CollectionConfiguration;
+<<<<<<< HEAD
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+=======
+>>>>>>> fe1c6bd...  - Evented DB usage examples
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
