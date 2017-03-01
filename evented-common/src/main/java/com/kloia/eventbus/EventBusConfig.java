@@ -1,11 +1,15 @@
 package com.kloia.eventbus;
 
+<<<<<<< HEAD
 import com.kloia.eventapis.pojos.Operation;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+=======
+>>>>>>> 5cb7fff...  - Event bus implementation examples
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+<<<<<<< HEAD
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -19,11 +23,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+=======
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+
+import java.util.HashMap;
+>>>>>>> 5cb7fff...  - Event bus implementation examples
 
 /**
  * Created by zeldalozdemir on 26/02/2017.
  */
 @Configuration
+<<<<<<< HEAD
 @EnableKafka
 @PropertySources({
         @PropertySource("classpath:application.properties"),
@@ -91,6 +102,18 @@ public class EventBusConfig {
         factory.setConcurrency(3);
         factory.getContainerProperties().setPollTimeout(3000);
         return factory;
+=======
+public class EventBusConfig {
+
+    @Value("eventbus.servers")
+    private String kafkaServerAddresses;
+
+    @Bean
+    public KafkaTemplate<Integer, String> kafkaTemplate() {
+        HashMap<String, Object> configs = new HashMap<>();
+        configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,kafkaServerAddresses);
+        return new KafkaTemplate<Integer, String>(new DefaultKafkaProducerFactory<>(configs));
+>>>>>>> 5cb7fff...  - Event bus implementation examples
     }
 
 }
