@@ -8,6 +8,7 @@ import com.kloia.eventapis.pojos.IEventType;
 import com.kloia.eventapis.pojos.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.filter.AbstractRequestLoggingFilter;
 
 import javax.servlet.*;
@@ -62,7 +63,12 @@ public class ReqRepOperationFilter extends AbstractRequestLoggingFilter {
                 operationRepository.appendEvent(opId, event);
 
                 try {
-                    filterChain.doFilter(httpServletRequest, httpServletResponse);
+                    try {
+                        filterChain.doFilter(httpServletRequest, httpServletResponse);
+                    } catch (Exception e) {
+                        operationRepository.failOperation(opId,event.getEventId(),event1 -> event1.setEventState(EventState.FAILED));
+                        throw e;
+                    }
                     logger.info(logBuilder.toString());
                     operationRepository.updateEvent(opId,event.getEventId(),event1 -> event1.setEventState(EventState.SUCCEDEED));
                 } finally {

@@ -5,12 +5,15 @@ import org.apache.ignite.IgniteSystemProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * Created by mali on 20/01/2017.
  */
 @Slf4j
 @SpringBootApplication
+@ComponentScan(basePackages = {"com.kloia.eventapis.api.store","com.kloia.eventbus"})
+
 public class Eventapis {
 
 
