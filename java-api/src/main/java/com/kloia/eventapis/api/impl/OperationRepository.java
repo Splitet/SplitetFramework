@@ -8,9 +8,13 @@ import org.apache.ignite.cache.CacheEntryProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import org.springframework.kafka.core.KafkaTemplate;
 =======
 >>>>>>> fe1c6bd...  - Evented DB usage examples
+=======
+import org.springframework.kafka.core.KafkaTemplate;
+>>>>>>> dc25faf...  - Event bus implementation examples
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -38,10 +42,14 @@ public class OperationRepository {
 
     @Autowired
 <<<<<<< HEAD
+<<<<<<< HEAD
     public OperationRepository(@Qualifier("operationIgniteClient") Ignite ignite, KafkaTemplate kafkaTemplate) {
 =======
     public OperationRepository(@Qualifier("operationIgniteClient") Ignite ignite) {
 >>>>>>> fe1c6bd...  - Evented DB usage examples
+=======
+    public OperationRepository(@Qualifier("operationIgniteClient") Ignite ignite, KafkaTemplate kafkaTemplate) {
+>>>>>>> dc25faf...  - Event bus implementation examples
         this.ignite = ignite;
         operationCache = ignite.cache("operationCache");
 
