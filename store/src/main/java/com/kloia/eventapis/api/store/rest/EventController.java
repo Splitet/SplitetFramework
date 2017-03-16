@@ -7,20 +7,23 @@ import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteQueue;
 import org.apache.ignite.cache.CachePeekMode;
 import org.apache.ignite.configuration.CollectionConfiguration;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by zeldalozdemir on 22/01/2017.
@@ -57,6 +60,16 @@ public class EventController {
     @Autowired
     Ignite ignite;
 
+    @Autowired
+    KafkaTemplate kafkaTemplate;
+
+    @KafkaListener( id = "op-listener",topics = "operation-events")
+    private void listenOperations(ConsumerRecord<UUID,Operation> data){
+        log.warn("Incoming Message: "+data.value());
+
+    }
+
+
     @PostConstruct
     public void start() {
         log.info("Application is started for Node:" + ignite.cluster().nodes());
@@ -68,6 +81,15 @@ public class EventController {
         events.add(new Event(UUID.randomUUID(), IEventType.EXECUTE, EventState.CREATED, new String[]{"firstpar1","firstpar2"}));
         operationCache.put(UUID.randomUUID(), new Operation("TEST_CREATE", events, TransactionState.RUNNING));
         log.info("Application is started for KeySizes:" + operationCache.size(CachePeekMode.PRIMARY));
+        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                kafkaTemplate.send("operation-events",UUID.randomUUID(),
+                        new Operation("blaaggre",Arrays.asList(new Event()),TransactionState.RUNNING));
+
+            }
+        }, 3,3, TimeUnit.SECONDS);
+
 //        log.info(transactionCache.get(UUID.fromString("4447a089-e5f7-477c-9807-79210fafa296")).toString());
     }
 }

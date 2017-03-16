@@ -3,15 +3,12 @@ package com.kloia.evented;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by zeldalozdemir on 12/02/2017.
@@ -61,5 +58,17 @@ public class CassandraEventRepository<T extends Entity> implements IEventReposit
         EntityEvent appliedEntityEvent = cassandraOperations.selectOne(select, EntityEvent.class);
         if(! appliedEntityEvent.getOpId().equals(entityEvent.getOpId()))
             throw new EventStoreException("Concurrent Event from Op:"+ appliedEntityEvent.getOpId());
+    }
+
+    @Override
+    public void markFail(UUID key) {
+        Select select = QueryBuilder.select().from(tableName);
+        select.where(QueryBuilder.eq("opId", key));
+        List<EntityEvent> entityEvents = cassandraOperations.select(select, EntityEvent.class);
+
+        entityEvents.forEach(entityEvent -> {
+            entityEvent.setStatus("FAILED");
+        });
+        cassandraOperations.update(entityEvents);
     }
 }

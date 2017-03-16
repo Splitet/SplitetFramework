@@ -38,6 +38,17 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.kloia.eventapis</groupId>
+            <artifactId>evented-common</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
@@ -126,7 +137,16 @@
 
 
     <build>
-        <finalName>eventapis</finalName>
+        <!--<finalName>eventapis</finalName>-->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/static</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
 <!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
