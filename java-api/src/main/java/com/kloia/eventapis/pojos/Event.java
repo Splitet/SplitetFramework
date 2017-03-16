@@ -23,7 +23,6 @@ public class Event implements Externalizable, Binarylizable, Cloneable {
     private EventState eventState;
     private String[] params;
 
-
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeUTF(eventId.toString());
         out.writeUTF(eventState.name());

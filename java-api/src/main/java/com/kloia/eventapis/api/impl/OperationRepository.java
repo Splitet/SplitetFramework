@@ -7,6 +7,7 @@ import org.apache.ignite.IgniteCache;
 import org.apache.ignite.cache.CacheEntryProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ public class OperationRepository {
 
     private Ignite ignite;
     private final IgniteCache<UUID, Operation> operationCache;
+    private KafkaTemplate kafkaTemplate;
 
     ThreadLocal<AbstractMap.SimpleEntry<UUID,Operation>> operationContext = new ThreadLocal<AbstractMap.SimpleEntry<UUID,Operation>>(){
         @Override
@@ -29,12 +31,14 @@ public class OperationRepository {
             return super.initialValue();
         }
     };
+    public static String topic = "operation-events";
 
     @Autowired
-    public OperationRepository(@Qualifier("operationIgniteClient") Ignite ignite) {
+    public OperationRepository(@Qualifier("operationIgniteClient") Ignite ignite, KafkaTemplate kafkaTemplate) {
         this.ignite = ignite;
         operationCache = ignite.cache("operationCache");
 
+        this.kafkaTemplate = kafkaTemplate;
     }
 
 /*    public void registerForEvent(Aggregate aggregate, String... events) {
@@ -74,7 +78,9 @@ public class OperationRepository {
         Operation operation = new Operation(mainAggregateName, new ArrayList<>(), TransactionState.RUNNING);
         UUID opid = UUID.randomUUID();
         operationCache.putIfAbsent(opid, operation);
-        return new AbstractMap.SimpleEntry<UUID, Operation>(opid, operation);
+        AbstractMap.SimpleEntry<UUID, Operation> uuidOperationSimpleEntry = new AbstractMap.SimpleEntry<>(opid, operation);
+        kafkaTemplate.send(topic,opid,operation);
+        return uuidOperationSimpleEntry;
     }
 
     public Operation getOperation(UUID opid) {
@@ -98,10 +104,11 @@ public class OperationRepository {
     }
 
     public void appendEvent(UUID opId, Event event) {
-        operationCache.invoke(opId,(entry, arguments) -> {
+        Operation result = operationCache.invoke(opId, (entry, arguments) -> {
             entry.getValue().getEvents().add((Event) arguments[0]);
-            return null;
-        },event);
+            return entry.getValue();
+        }, event);
+        kafkaTemplate.send(topic,opId,result);
     }
 
     public void updateEvent(UUID opId, UUID eventId, SerializableConsumer<Event> action) {
@@ -114,6 +121,19 @@ public class OperationRepository {
             first.ifPresent(actionArg::accept);
             return operation;
         }, eventId, action);
+    }
 
+    public void failOperation(UUID opId, UUID eventId, SerializableConsumer<Event> action) {
+//        new ArrayList<Event>().forEach();
+        Operation result = operationCache.invoke(opId, (CacheEntryProcessor<UUID, Operation, Operation>) (entry, arguments) -> {
+            UUID eventIdArg = (UUID) arguments[0];
+            SerializableConsumer<Event> actionArg = (SerializableConsumer<Event>) arguments[1];
+            Operation operation = entry.getValue();
+            Optional<Event> first = operation.getEventFor(eventIdArg);
+            first.ifPresent(actionArg::accept);
+            operation.setTransactionState(TransactionState.TXN_FAILED);
+            return operation;
+        }, eventId, action);
+        kafkaTemplate.send(topic,opId,result);
     }
 }
