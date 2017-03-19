@@ -3,6 +3,7 @@ package com.kloia.evented;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 
 import java.util.HashMap;
@@ -36,7 +37,8 @@ public class CassandraEventRepository<T extends Entity> implements IEventReposit
         T result = null;
         for (EntityEvent entityEvent : entityEvents) {
             result = functionMap.get(entityEvent.getAggregateName()).apply(result, entityEvent);
-            result.setVersion(entityEvent.getEventKey().getVersion());
+            if(result != null)
+                result.setVersion(entityEvent.getEventKey().getVersion());
         }
         return result;
     }
@@ -68,7 +70,9 @@ public class CassandraEventRepository<T extends Entity> implements IEventReposit
 
         entityEvents.forEach(entityEvent -> {
             entityEvent.setStatus("FAILED");
+            Update updateQuery = cassandraOperations.createUpdateQuery(tableName, entityEvent, null, cassandraOperations.getConverter());
+            cassandraOperations.execute(updateQuery);
         });
-        cassandraOperations.update(entityEvents);
+
     }
 }

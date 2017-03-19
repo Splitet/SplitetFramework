@@ -66,7 +66,6 @@ public class EventController {
     @KafkaListener( id = "op-listener",topics = "operation-events")
     private void listenOperations(ConsumerRecord<UUID,Operation> data){
         log.warn("Incoming Message: "+data.value());
-
     }
 
 
@@ -81,14 +80,14 @@ public class EventController {
         events.add(new Event(UUID.randomUUID(), IEventType.EXECUTE, EventState.CREATED, new String[]{"firstpar1","firstpar2"}));
         operationCache.put(UUID.randomUUID(), new Operation("TEST_CREATE", events, TransactionState.RUNNING));
         log.info("Application is started for KeySizes:" + operationCache.size(CachePeekMode.PRIMARY));
-        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(new Runnable() {
+/*        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 kafkaTemplate.send("operation-events",UUID.randomUUID(),
                         new Operation("blaaggre",Arrays.asList(new Event()),TransactionState.RUNNING));
 
             }
-        }, 3,3, TimeUnit.SECONDS);
+        }, 3,3, TimeUnit.SECONDS);*/
 
 //        log.info(transactionCache.get(UUID.fromString("4447a089-e5f7-477c-9807-79210fafa296")).toString());
     }
