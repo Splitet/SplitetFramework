@@ -1,12 +1,10 @@
 package com.kloia.eventapis.api.filter;
 
-import com.kloia.eventapis.api.StoreApi;
-import com.kloia.eventapis.api.impl.OperationRepository;
+import com.kloia.eventapis.api.impl.OperationContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.core.KafkaTemplate;
 
 import javax.servlet.DispatcherType;
 import java.util.EnumSet;
@@ -18,11 +16,10 @@ import java.util.EnumSet;
 public class FilterConfig {
 
     @Bean
-    public FilterRegistrationBean shallowEtagHeaderFilter(@Autowired OperationRepository operationRepository) {
+    public FilterRegistrationBean shallowEtagHeaderFilter(@Autowired OperationContext operationContext) {
         FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(new ReqRepOperationFilter(operationRepository));
+        registration.setFilter(new OpContextFilter(operationContext));
         registration.setDispatcherTypes(EnumSet.allOf(DispatcherType.class));
-        registration.addUrlPatterns("/aggr/*");
         return registration;
     }
 

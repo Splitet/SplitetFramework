@@ -3,6 +3,8 @@ package com.kloia.eventbus;
 <<<<<<< HEAD
 <<<<<<< HEAD
 import com.kloia.eventapis.pojos.Operation;
+import com.kloia.evented.Command;
+import com.kloia.evented.CommandExecutionInterceptor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 =======
 >>>>>>> 5cb7fff...  - Event bus implementation examples
@@ -11,7 +13,12 @@ import com.kloia.eventapis.pojos.Operation;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 >>>>>>> dc25faf...  - Event bus implementation examples
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.aop.Advisor;
+import org.springframework.aop.aspectj.AspectJExpressionPointcut;
+import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.beans.factory.annotation.Value;
+<<<<<<< HEAD
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 <<<<<<< HEAD
@@ -20,6 +27,9 @@ import org.springframework.context.annotation.Configuration;
 >>>>>>> dc25faf...  - Event bus implementation examples
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
+=======
+import org.springframework.context.annotation.*;
+>>>>>>> 939bca8...  - Event api implementation examples
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
@@ -198,5 +208,7 @@ public class EventBusConfig {
         return factory;
 >>>>>>> dc25faf...  - Event bus implementation examples
     }
+
+
 
 }

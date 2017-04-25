@@ -24,7 +24,7 @@ import java.util.UUID;
 public class EventKey implements Serializable {
 
     @PrimaryKeyColumn(name = "entityId", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-    private long entityId;
+    private UUID entityId;
 
     @PrimaryKeyColumn(name= "version",ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
     private long version;

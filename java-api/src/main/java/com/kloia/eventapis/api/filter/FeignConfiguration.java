@@ -1,10 +1,8 @@
 package com.kloia.eventapis.api.filter;
 
-import com.kloia.eventapis.api.StoreApi;
-import com.kloia.eventapis.api.impl.OperationRepository;
+import com.kloia.eventapis.api.impl.OperationContext;
 import feign.Feign;
 import feign.RequestInterceptor;
-import feign.RequestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,17 +20,18 @@ public class FeignConfiguration {
             return new BasicAuthRequestInterceptor("user", "password");
         }*/
     @Autowired
-    OperationRepository operationRepository;
+    OperationContext operationContext;
 
 
     @Bean
     @Scope("prototype")
     public Feign.Builder feignBuilder() {
-        return Feign.builder().requestInterceptor(template -> {
-            UUID key = operationRepository.getContext().getKey();
-            if(key != null )
+        RequestInterceptor opIdInjector= template -> {
+            UUID key = operationContext.getContext();
+            if (key != null)
                 template.header("opId", key.toString());
-        });
+        };
+        return Feign.builder().requestInterceptor(opIdInjector);
     }
 
 

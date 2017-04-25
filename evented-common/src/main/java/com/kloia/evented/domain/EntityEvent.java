@@ -1,5 +1,6 @@
-package com.kloia.evented;
+package com.kloia.evented.domain;
 
+import com.kloia.evented.EventKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

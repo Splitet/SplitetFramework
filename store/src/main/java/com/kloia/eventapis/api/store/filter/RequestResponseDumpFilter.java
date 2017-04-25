@@ -1,6 +1,6 @@
 package com.kloia.eventapis.api.store.filter;
 
-import com.kloia.eventapis.api.filter.ReqRepOperationFilter;
+import com.kloia.eventapis.api.filter.OpContextFilter;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,7 @@ import java.util.Locale;
 @Component
 public class RequestResponseDumpFilter extends AbstractRequestLoggingFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReqRepOperationFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(OpContextFilter.class);
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {

@@ -71,8 +71,8 @@ public class EventController {
     KafkaTemplate kafkaTemplate;
 
     @KafkaListener( id = "op-listener",topics = "operation-events")
-    private void listenOperations(ConsumerRecord<UUID,Operation> data){
-        log.warn("Incoming Message: "+data.value());
+    private void listenOperations(ConsumerRecord<UUID,IOperationEvents> data){
+        log.warn("Incoming Message: "+data);
     }
 
 
