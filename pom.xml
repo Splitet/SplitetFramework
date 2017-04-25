@@ -26,10 +26,6 @@
         <module>store</module>
         <module>java-api</module>
         <!--<module>sample-client</module>-->
-<<<<<<< HEAD
-=======
-        <!--<module>samples</module>-->
->>>>>>> 939bca8...  - Event api implementation examples
 
         <module>evented-common</module>
     </modules>

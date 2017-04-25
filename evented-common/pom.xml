@@ -31,20 +31,11 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
         <dependency>
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> dc25faf...  - Event bus implementation examples
             <groupId>com.kloia.eventapis</groupId>
             <artifactId>java-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-<<<<<<< HEAD
-=======
->>>>>>> 5cb7fff...  - Event bus implementation examples
-=======
->>>>>>> dc25faf...  - Event bus implementation examples
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
             <version>3.1.3</version>

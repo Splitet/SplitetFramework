@@ -5,14 +5,7 @@ import org.apache.ignite.IgniteSystemProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-<<<<<<< HEAD
-<<<<<<< HEAD
 import org.springframework.context.annotation.ComponentScan;
-=======
->>>>>>> fe1c6bd...  - Evented DB usage examples
-=======
-import org.springframework.context.annotation.ComponentScan;
->>>>>>> dc25faf...  - Event bus implementation examples
 
 /**
  * Created by mali on 20/01/2017.

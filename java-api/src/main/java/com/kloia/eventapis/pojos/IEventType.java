@@ -1,9 +1,4 @@
 package com.kloia.eventapis.pojos;
-<<<<<<< HEAD:java-api/src/main/java/com/kloia/eventapis/pojos/IEventType.java
-
-import lombok.Data;
-=======
->>>>>>> fe1c6bd...  - Evented DB usage examples:java-api/src/main/java/com/kloia/eventapis/pojos/IEventType.java
 
 /**
  * Created by zeldalozdemir on 30/01/2017.
