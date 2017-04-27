@@ -92,7 +92,7 @@
         <repository>
         <id>bintray-kloia-eventapis</id>
         <name>kloia-eventapis</name>
-        <url>https://api.bintray.com/maven/kloia/eventapis/eventapis/;publish=1</url>
+        <url>https://api.bintray.com/maven/kloia/eventapis/${project.artifactId}/;publish=1</url>
         </repository>
     </distributionManagement>
 
