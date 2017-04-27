@@ -2,6 +2,7 @@ package com.kloia.eventapis.api.impl;
 
 import com.kloia.eventapis.pojos.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -12,16 +13,19 @@ import java.util.UUID;
  */
 @Service
 public class KafkaOperationRepository implements IOperationRepository {
-    private KafkaTemplate kafkaTemplate;
+    private KafkaTemplate operationsKafka;
+    private KafkaTemplate eventsKafka;
 
     @Autowired
-    public KafkaOperationRepository(KafkaTemplate kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
+    public KafkaOperationRepository(@Qualifier("operationsKafka") KafkaTemplate operationsKafka,
+                                    @Qualifier("eventsKafka") KafkaTemplate eventsKafka) {
+        this.eventsKafka = eventsKafka;
+        this.operationsKafka = operationsKafka;
     }
 
     @Override
     public void createOperation(String eventName, UUID opId) {
-        kafkaTemplate.send("operation-events",opId, new CreateOperationEvent(eventName));
+        operationsKafka.send("operation-events",opId, new CreateOperationEvent(eventName));
     }
 
 
@@ -33,20 +37,20 @@ public class KafkaOperationRepository implements IOperationRepository {
 
     @Override
     public void appendEvent(UUID opId, Event event) {
-        kafkaTemplate.send("operation-events",opId, new AppendEventToOperation(event));
+        operationsKafka.send("operation-events",opId, new AppendEventToOperation(event));
     }
 
     @Override
     public void updateEvent(UUID opId, UUID eventId, SerializableConsumer<Event> action) {
-        kafkaTemplate.send("operation-events",opId, new UpdateOperationEvent(eventId,action));
+        operationsKafka.send("operation-events",opId, new UpdateOperationEvent(eventId,action));
     }
 
     @Override
     public void failOperation(UUID opId, UUID eventId, SerializableConsumer<Event> action) {
-        kafkaTemplate.send("operation-events",opId, new FailOperationEvent(eventId,action));
+        operationsKafka.send("operation-events",opId, new FailOperationEvent(eventId,action));
     }
 
-    public void publishEvent(String name, Object event) {
-        kafkaTemplate.send(name,event); // todo improve this
+    public void publishEvent(String name, PublishedEventWrapper event) {
+        eventsKafka.send(name,event.getOpId(),event); // todo improve this
     }
 }

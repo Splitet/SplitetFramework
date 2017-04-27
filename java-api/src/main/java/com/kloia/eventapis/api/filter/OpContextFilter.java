@@ -32,8 +32,9 @@ public class OpContextFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
-        if (changeMethods.contains(httpServletRequest.getMethod()))
-            try {
+        try {
+            if (changeMethods.contains(httpServletRequest.getMethod())) {
+
                 String opIdStr = httpServletRequest.getHeader("opId");
                 UUID opId;
                 if (opIdStr != null) {
@@ -42,10 +43,11 @@ public class OpContextFilter extends OncePerRequestFilter {
                     opId = UUID.randomUUID();
                 }
                 operationContext.switchContext(opId);
-                filterChain.doFilter(httpServletRequest, httpServletResponse);
-            } finally {
-                operationContext.clearContext();
             }
+        } finally {
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
+            operationContext.clearContext();
+        }
     }
 
 

@@ -4,9 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.impl.KafkaOperationRepository;
 import com.kloia.eventapis.api.impl.OperationContext;
+import com.kloia.eventapis.pojos.PublishedEvent;
+import com.kloia.eventapis.pojos.PublishedEventWrapper;
 import com.kloia.evented.domain.EntityEvent;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -34,8 +37,9 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
     }
 
     @Override
-    public void publishEvent(Event event) {
-        kafka.publishEvent(event.getClass().getSimpleName(),event);
+    public <P extends PublishedEvent> void publishEvent(P publishedEvent) throws IOException {
+        PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContext(), objectMapper.valueToTree(publishedEvent)); //todo add UserContext too
+        kafka.publishEvent(publishedEvent.getClass().getSimpleName(), publishedEventWrapper);
     }
 
     @Override

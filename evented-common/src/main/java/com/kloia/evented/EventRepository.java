@@ -1,5 +1,8 @@
 package com.kloia.evented;
 
+import com.kloia.eventapis.pojos.PublishedEvent;
+
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
@@ -7,7 +10,7 @@ import java.util.List;
  * Created by zeldalozdemir on 21/04/2017.
  */
 public interface EventRepository<E extends Entity>{
-    void publishEvent(Event event);
+    <P extends PublishedEvent> void publishEvent(P publishedEvent) throws IOException;
 
     void addAggregateSpecs(List<EntityFunctionSpec<E, ?>> commandSpec);
 

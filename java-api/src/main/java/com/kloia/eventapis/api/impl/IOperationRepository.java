@@ -1,7 +1,7 @@
 package com.kloia.eventapis.api.impl;
 
-import com.kloia.eventapis.api.impl.SerializableConsumer;
 import com.kloia.eventapis.pojos.Event;
+import com.kloia.eventapis.pojos.PublishedEventWrapper;
 
 import java.util.UUID;
 
@@ -13,7 +13,7 @@ public interface IOperationRepository {
 
 //    Operation getOperation(UUID opid);
 
-//    void publishEvent(Event event);
+    void publishEvent(String name, PublishedEventWrapper event);
 
     void appendEvent(UUID opId, Event event);
 

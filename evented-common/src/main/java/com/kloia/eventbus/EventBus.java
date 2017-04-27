@@ -2,6 +2,7 @@ package com.kloia.eventbus;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,8 @@ import org.springframework.stereotype.Component;
 @Data
 public class EventBus {
     @Autowired
-    KafkaTemplate kafkaTemplate;
+    @Qualifier("eventsKafka")
+    KafkaTemplate eventsKafkaTemplate;
 
 
 }

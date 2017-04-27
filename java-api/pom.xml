@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>com.kloia.eventapis</groupId>
-        <artifactId>parent</artifactId>
+        <artifactId>eventapis-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
@@ -61,6 +61,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

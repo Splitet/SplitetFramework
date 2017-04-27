@@ -4,6 +4,7 @@ import com.kloia.eventapis.api.impl.IOperationRepository;
 import com.kloia.eventapis.api.impl.SerializableConsumer;
 import com.kloia.eventapis.pojos.Event;
 import com.kloia.eventapis.pojos.Operation;
+import com.kloia.eventapis.pojos.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.TransactionState;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.Ignite;
@@ -50,6 +51,11 @@ public class IgniteOperationRepository implements IOperationRepository {
         UUID opid = UUID.randomUUID();
         operationCache.putIfAbsent(opid, operation);
         kafkaTemplate.send(topic,opid,operation);
+    }
+
+    @Override
+    public void publishEvent(String name, PublishedEventWrapper event) {
+        kafkaTemplate.send(name,event);
     }
 
     @Override
