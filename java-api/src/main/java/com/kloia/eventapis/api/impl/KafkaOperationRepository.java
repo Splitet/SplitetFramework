@@ -13,19 +13,19 @@ import java.util.UUID;
  */
 @Service
 public class KafkaOperationRepository implements IOperationRepository {
-    private KafkaTemplate operationsKafka;
-    private KafkaTemplate eventsKafka;
+    private KafkaTemplate<UUID,Operation> operationsKafka;
+    private KafkaTemplate<UUID,PublishedEventWrapper> eventsKafka;
 
     @Autowired
-    public KafkaOperationRepository(@Qualifier("operationsKafka") KafkaTemplate operationsKafka,
-                                    @Qualifier("eventsKafka") KafkaTemplate eventsKafka) {
+    public KafkaOperationRepository(@Qualifier("operationsKafka") KafkaTemplate<UUID,Operation> operationsKafka,
+                                    @Qualifier("eventsKafka") KafkaTemplate<UUID,PublishedEventWrapper> eventsKafka) {
         this.eventsKafka = eventsKafka;
         this.operationsKafka = operationsKafka;
     }
 
     @Override
     public void createOperation(String eventName, UUID opId) {
-        operationsKafka.send("operation-events",opId, new CreateOperationEvent(eventName));
+//        operationsKafka.send("operation-events",opId, new CreateOperationEvent(eventName));
     }
 
 
@@ -37,17 +37,19 @@ public class KafkaOperationRepository implements IOperationRepository {
 
     @Override
     public void appendEvent(UUID opId, Event event) {
-        operationsKafka.send("operation-events",opId, new AppendEventToOperation(event));
+//        operationsKafka.send("operation-events",opId, new AppendEventToOperation(event));
     }
 
     @Override
     public void updateEvent(UUID opId, UUID eventId, SerializableConsumer<Event> action) {
-        operationsKafka.send("operation-events",opId, new UpdateOperationEvent(eventId,action));
+//        operationsKafka.send("operation-events",opId, new UpdateOperationEvent(eventId,action));
     }
 
     @Override
     public void failOperation(UUID opId, UUID eventId, SerializableConsumer<Event> action) {
-        operationsKafka.send("operation-events",opId, new FailOperationEvent(eventId,action));
+        Operation operation = new Operation();
+        operation.setTransactionState(TransactionState.TXN_FAILED);
+        operationsKafka.send("operation-events",opId, operation);
     }
 
     public void publishEvent(String name, PublishedEventWrapper event) {
