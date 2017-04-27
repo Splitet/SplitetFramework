@@ -32,19 +32,19 @@ public class CommandExecutionInterceptor {
     public void before( Object object) throws Throwable {
         UUID eventId = UUID.randomUUID();
         operationContext.setCommandContext(eventId);
-        kafkaOperationRepository.appendEvent(operationContext.getContext(),new Event(eventId, IEventType.EXECUTE, EventState.CREATED,null));
         log.info("before method:"+(object == null ? "" : object.toString()));
     }
 
     @AfterReturning(value = "within(Command+) && execution(* execute(..))",returning="retVal")
     public void afterReturning( Object retVal) throws Throwable {
-        kafkaOperationRepository.updateEvent(operationContext.getContext(),operationContext.clearCommandContext(),event -> event.setEventState(EventState.SUCCEDEED));
+//        kafkaOperationRepository.updateEvent(operationContext.getContext(),operationContext.clearCommandContext(),event -> event.setEventState(EventState.SUCCEDEED));
         log.info("AfterReturning:"+ (retVal == null ? "" : retVal.toString()));
     }
 
     @AfterThrowing(value = "within(Command+) && execution(* execute(..))", throwing = "e")
     public void afterThrowing( Exception e) throws Throwable {
         log.info("afterThrowing method:"+e);
+        kafkaOperationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),event -> event.setEventState(EventState.FAILED));
     }
 
     @Around(value = " @annotation(org.springframework.kafka.annotation.KafkaListener))")

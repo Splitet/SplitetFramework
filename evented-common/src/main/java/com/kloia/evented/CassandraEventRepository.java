@@ -40,6 +40,8 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
 
         E result = null;
         for (EntityEvent entityEvent : entityEvents) {
+            if(entityEvent.getStatus().equals("FAILED"))
+                continue;
             EntityFunctionSpec<E, ?> functionSpec = functionMap.get(entityEvent.getAggregateName());
             EntityEventWrapper eventWrapper = new EntityEventWrapper<>(functionSpec.getQueryType(),objectMapper,entityEvent);
             EntityFunction<E, ?> entityFunction = functionSpec.getEntityFunction();

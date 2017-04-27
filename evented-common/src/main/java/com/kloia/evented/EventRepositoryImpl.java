@@ -43,7 +43,7 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
     }
 
     @Override
-    public void addAggregateSpecs(List<EntityFunctionSpec<E, ?>> commandSpec) {
+    public void addCommandSpecs(List<EntityFunctionSpec<E, ?>> commandSpec) {
         cassandraEventRepository.addAggregateSpecs(commandSpec);
     }
 
@@ -70,5 +70,10 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
     public <D extends Serializable> EventKey recordEntityEvent(Class<? extends EntityFunctionSpec<E, D>> entitySpecClass, D eventData) throws EventStoreException {
         EventKey eventKey = new EventKey(UUID.randomUUID(),0); // todo sequence or random
         return recordInternal(entitySpecClass, eventData, eventKey);
+    }
+
+    @Override
+    public void markFail(UUID opId) {
+        cassandraEventRepository.markFail(opId);
     }
 }
