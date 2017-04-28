@@ -11,7 +11,7 @@ import java.util.UUID;
  * Created by zeldalozdemir on 21/04/2017.
  */
 public interface EventRepository<E extends Entity>{
-    <P extends PublishedEvent> void publishEvent(P publishedEvent) throws IOException;
+    <P extends PublishedEvent> void publishEvent(P publishedEvent) throws EventPulisherException;
 
     void addCommandSpecs(List<EntityFunctionSpec<E, ?>> commandSpec);
 

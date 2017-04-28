@@ -3,6 +3,7 @@ package com.kloia.eventapis.api.filter;
 import com.kloia.eventapis.api.impl.OperationContext;
 import feign.Feign;
 import feign.RequestInterceptor;
+import feign.RequestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +15,7 @@ import java.util.UUID;
  * Created by zeldalozdemir on 20/02/2017.
  */
 @Configuration
-public class FeignConfiguration {
+public class RequestInterceptorConfiguration {
     /*    @Bean
         public BasicAuthRequestInterceptor basicAuthRequestInterceptor() {
             return new BasicAuthRequestInterceptor("user", "password");
@@ -23,7 +24,7 @@ public class FeignConfiguration {
     OperationContext operationContext;
 
 
-    @Bean
+/*    @Bean
     @Scope("prototype")
     public Feign.Builder feignBuilder() {
         RequestInterceptor opIdInjector= template -> {
@@ -32,7 +33,19 @@ public class FeignConfiguration {
                 template.header("opId", key.toString());
         };
         return Feign.builder().requestInterceptor(opIdInjector);
+    }*/
+
+
+    @Bean
+    @Scope("prototype")
+    public RequestInterceptor opIdInterceptor() {
+        return template -> {
+            UUID key = operationContext.getContext();
+            if (key != null)
+                template.header("opId", key.toString());
+        };
     }
+
 
 
 }

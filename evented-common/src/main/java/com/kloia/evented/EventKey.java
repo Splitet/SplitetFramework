@@ -1,6 +1,7 @@
 package com.kloia.evented;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.cassandra.core.Ordering;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @PrimaryKeyClass
+@Builder
 public class EventKey implements Serializable {
 
     @PrimaryKeyColumn(name = "entityId", ordinal = 0, type = PrimaryKeyType.PARTITIONED)

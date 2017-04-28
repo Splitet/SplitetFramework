@@ -37,9 +37,13 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
     }
 
     @Override
-    public <P extends PublishedEvent> void publishEvent(P publishedEvent) throws IOException {
-        PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContext(), objectMapper.valueToTree(publishedEvent)); //todo add UserContext too
-        kafka.publishEvent(publishedEvent.getClass().getSimpleName(), publishedEventWrapper);
+    public <P extends PublishedEvent> void publishEvent(P publishedEvent) throws EventPulisherException {
+        try {
+            PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContext(), objectMapper.valueToTree(publishedEvent)); //todo add UserContext too
+            kafka.publishEvent(publishedEvent.getClass().getSimpleName(), publishedEventWrapper);
+        } catch (IOException e) {
+            throw new EventPulisherException(e);
+        }
     }
 
     @Override
@@ -61,7 +65,7 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
         } catch (JsonProcessingException e) {
             throw new EventStoreException(e.getMessage(),e);
         }
-        EntityEvent entityEvent = new EntityEvent(eventKey, opId,new Date(), eventData.getClass().getName(),ENTITY_EVENT_CREATED, eventData1);
+        EntityEvent entityEvent = new EntityEvent(eventKey, opId,new Date(), eventData.getClass().getSimpleName(),ENTITY_EVENT_CREATED, eventData1);
         cassandraEventRepository.recordEntityEvent(entityEvent);
         return eventKey;
     }

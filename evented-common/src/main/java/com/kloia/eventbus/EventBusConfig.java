@@ -25,8 +25,8 @@ import java.util.UUID;
 @Configuration
 @EnableKafka
 @PropertySources({
-        @PropertySource("classpath:application.properties"),
-        @PropertySource("classpath:project.properties")
+        @PropertySource("classpath:application.yml"),
+        @PropertySource("classpath:bootstrap.yml")
 })
 public class EventBusConfig {
 
@@ -34,7 +34,7 @@ public class EventBusConfig {
     private String kafkaServerAddresses;
 
 
-    @Value("${artifactId}")
+    @Value("${info.build.artifact}")
     private String artifactId;
 
 

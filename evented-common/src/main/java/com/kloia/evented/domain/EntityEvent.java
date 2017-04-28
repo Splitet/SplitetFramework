@@ -29,8 +29,8 @@ public class EntityEvent {
     @Column(value= "opDate")
     private Date opDate;
 
-    @Column(value = "aggregateName")
-    private String aggregateName;
+    @Column(value = "eventType")
+    private String eventType;
 
     @Column(value = "status")
     private String status;

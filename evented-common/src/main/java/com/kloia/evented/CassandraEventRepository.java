@@ -41,7 +41,7 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
         E result = null;
         for (EntityEvent entityEvent : entityEvents) {
             if(!entityEvent.getStatus().equals("FAILED")){
-                EntityFunctionSpec<E, ?> functionSpec = functionMap.get(entityEvent.getAggregateName());
+                EntityFunctionSpec<E, ?> functionSpec = functionMap.get(entityEvent.getEventType());
                 EntityEventWrapper eventWrapper = new EntityEventWrapper<>(functionSpec.getQueryType(),objectMapper,entityEvent);
                 EntityFunction<E, ?> entityFunction = functionSpec.getEntityFunction();
                 result = (E) entityFunction.apply(result, eventWrapper);
@@ -58,7 +58,7 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
     @Override
     public void addAggregateSpecs(List<EntityFunctionSpec<E, ?>> commandSpec) {
         for (EntityFunctionSpec<E, ?> functionSpec : commandSpec) {
-            functionMap.put(functionSpec.getQueryType().getName(), functionSpec);
+            functionMap.put(functionSpec.getQueryType().getSimpleName(), functionSpec);
         }
     }
 

@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.kloia.eventapis</groupId>
         <artifactId>eventapis-parent</artifactId>
-        <version>0.0.2</version>
+        <version>0.0.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>evented-common</artifactId>
@@ -29,6 +29,10 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
         <dependency>
             <groupId>com.kloia.eventapis</groupId>
