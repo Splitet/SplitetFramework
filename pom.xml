@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.kloia.eventapis</groupId>
     <artifactId>eventapis-parent</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>eventapis-parent</name>
-    <description>An event database to enable event sourcing and distributed transactions for applications that use the microservice architecture.</description>
+    <description>An event database to enable event sourcing and distributed transactions for applications that use the
+        microservice architecture.
+    </description>
 
     <properties>
 
@@ -100,10 +103,15 @@
     </repositories>
 
     <distributionManagement>
+        <snapshotRepository>
+            <id>oss-snapshots</id>
+            <name>OSS Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
         <repository>
-        <id>bintray-kloia-eventapis</id>
-        <name>kloia-eventapis</name>
-        <url>https://api.bintray.com/maven/kloia/eventapis/${project.artifactId}/;publish=1</url>
+            <id>bintray-kloia-eventapis</id>
+            <name>kloia-eventapis</name>
+            <url>https://api.bintray.com/maven/kloia/eventapis/${project.artifactId}/;publish=1</url>
         </repository>
     </distributionManagement>
 

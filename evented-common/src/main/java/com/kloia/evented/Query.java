@@ -1,8 +1,6 @@
 package com.kloia.evented;
 
 
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-
 import java.util.UUID;
 
 /**

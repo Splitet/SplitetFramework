@@ -7,7 +7,6 @@ import com.kloia.eventapis.api.impl.OperationContext;
 import com.kloia.eventapis.pojos.PublishedEvent;
 import com.kloia.eventapis.pojos.PublishedEventWrapper;
 import com.kloia.evented.domain.EntityEvent;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -18,10 +17,9 @@ import java.util.UUID;
 /**
  * Created by zeldalozdemir on 24/04/2017.
  */
-@Service
 public class EventRepositoryImpl<E extends Entity> implements EventRepository<E> {
 
-    private CassandraEventRepository<E> cassandraEventRepository;
+    private IEventRepository<E> eventRepository;
     private OperationContext operationContext;
     private ObjectMapper  objectMapper;
     private KafkaOperationRepository kafka;
@@ -29,8 +27,8 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
 
 
 
-    public EventRepositoryImpl(CassandraEventRepository<E> cassandraEventRepository, OperationContext operationContext, ObjectMapper objectMapper, KafkaOperationRepository kafka) {
-        this.cassandraEventRepository = cassandraEventRepository;
+    public EventRepositoryImpl(IEventRepository<E> eventRepository, OperationContext operationContext, ObjectMapper objectMapper, KafkaOperationRepository kafka) {
+        this.eventRepository = eventRepository;
         this.operationContext = operationContext;
         this.objectMapper = objectMapper;
         this.kafka = kafka;
@@ -48,7 +46,7 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
 
     @Override
     public void addCommandSpecs(List<EntityFunctionSpec<E, ?>> commandSpec) {
-        cassandraEventRepository.addAggregateSpecs(commandSpec);
+        eventRepository.addAggregateSpecs(commandSpec);
     }
 
     @Override
@@ -66,7 +64,7 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
             throw new EventStoreException(e.getMessage(),e);
         }
         EntityEvent entityEvent = new EntityEvent(eventKey, opId,new Date(), eventData.getClass().getSimpleName(),ENTITY_EVENT_CREATED, eventData1);
-        cassandraEventRepository.recordEntityEvent(entityEvent);
+        eventRepository.recordEntityEvent(entityEvent);
         return eventKey;
     }
 
@@ -78,6 +76,6 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
 
     @Override
     public void markFail(UUID opId) {
-        cassandraEventRepository.markFail(opId);
+        eventRepository.markFail(opId);
     }
 }
