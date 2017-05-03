@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface IEventRepository<T extends Entity> {
     T queryEntity(UUID entityId) throws EventStoreException;
 
-    void addAggregateSpecs(List<EntityFunctionSpec<T, ?>> commandSpec);
+    void addCommandSpecs(List<EntityFunctionSpec<T, ?>> commandSpec);
 
     void recordEntityEvent(EntityEvent entityEvent) throws EventStoreException;
 

@@ -7,5 +7,4 @@ import java.util.List;
  */
 public interface Command<E,D> {
     Object execute(D dto) throws Exception ;
-    List<EntityFunctionSpec<E, ?>> getEntityFunctions();
 }

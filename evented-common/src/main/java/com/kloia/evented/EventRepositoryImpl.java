@@ -45,11 +45,6 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
     }
 
     @Override
-    public void addCommandSpecs(List<EntityFunctionSpec<E, ?>> commandSpec) {
-        eventRepository.addAggregateSpecs(commandSpec);
-    }
-
-    @Override
     public <D extends Serializable> EventKey recordEntityEvent(E previousEntityState, Class<? extends EntityFunctionSpec<E, D>> entitySpecClass, D eventData) throws EventStoreException {
         EventKey eventKey = new EventKey(previousEntityState.getId(), previousEntityState.getVersion() + 1);
         return recordInternal(entitySpecClass, eventData, eventKey);

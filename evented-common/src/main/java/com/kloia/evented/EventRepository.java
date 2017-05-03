@@ -13,8 +13,6 @@ import java.util.UUID;
 public interface EventRepository<E extends Entity>{
     <P extends PublishedEvent> void publishEvent(P publishedEvent) throws EventPulisherException;
 
-    void addCommandSpecs(List<EntityFunctionSpec<E, ?>> commandSpec);
-
     <D extends Serializable> EventKey recordEntityEvent(E previousEntityState, Class<? extends EntityFunctionSpec<E, D>> entitySpecClass, D eventData) throws EventStoreException;
     <D extends Serializable> EventKey recordEntityEvent(Class<? extends EntityFunctionSpec<E, D>> entitySpecClass, D eventData) throws EventStoreException;
 
