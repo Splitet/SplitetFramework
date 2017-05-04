@@ -58,7 +58,7 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
         } catch (JsonProcessingException e) {
             throw new EventStoreException(e.getMessage(),e);
         }
-        EntityEvent entityEvent = new EntityEvent(eventKey, opId,new Date(), eventData.getClass().getSimpleName(),ENTITY_EVENT_CREATED, eventData1);
+        EntityEvent entityEvent = new EntityEvent(eventKey, opId,new Date(), entitySpecClass.getSimpleName(),ENTITY_EVENT_CREATED, eventData1);
         eventRepository.recordEntityEvent(entityEvent);
         return eventKey;
     }

@@ -58,7 +58,7 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
     @Override
     public void addCommandSpecs(List<EntityFunctionSpec<E, ?>> commandSpec) {
         for (EntityFunctionSpec<E, ?> functionSpec : commandSpec) {
-            functionMap.put(functionSpec.getQueryType().getSimpleName(), functionSpec);
+            functionMap.put(functionSpec.getClass().getSimpleName(), functionSpec);
         }
     }
 
