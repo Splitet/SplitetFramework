@@ -43,6 +43,7 @@ public class OpContextFilter extends OncePerRequestFilter {
                     opId = UUID.randomUUID();
                 }
                 operationContext.switchContext(opId);
+                httpServletResponse.setHeader("opId",opId.toString());
             }
         } finally {
             filterChain.doFilter(httpServletRequest, httpServletResponse);
