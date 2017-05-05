@@ -1,6 +1,8 @@
 package com.kloia.evented;
 
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -9,4 +11,5 @@ import java.util.UUID;
 public interface Query<T extends Entity> {
     T queryEntity(UUID entityId) throws EventStoreException;
 
+    List<T> queryByOpId(UUID opId) throws EventStoreException;
 }

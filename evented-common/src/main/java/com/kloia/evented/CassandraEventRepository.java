@@ -8,10 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.evented.domain.EntityEvent;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by zeldalozdemir on 12/02/2017.
@@ -53,6 +50,22 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
 
         }
         return result;
+    }
+
+    @Override
+    public List<E> queryByOpId(UUID opId) throws EventStoreException {
+        Select select = QueryBuilder.select("entityId").from(tableName);
+        select.where(QueryBuilder.eq("opId", opId));
+        List<EntityEvent> entityEvents = cassandraOperations.select(select, EntityEvent.class);
+
+        Map<UUID,E> resultList = new HashMap<>();
+        for (EntityEvent entityEvent : entityEvents) {
+            UUID entityId = entityEvent.getEventKey().getEntityId();
+            if(!resultList.containsKey(entityId)){
+                resultList.put(entityId,queryEntity(entityId));
+            }
+        }
+        return new ArrayList<>(resultList.values());
     }
 
     @Override
