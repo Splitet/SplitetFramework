@@ -24,10 +24,6 @@ import java.util.UUID;
  */
 @Configuration
 @EnableKafka
-@PropertySources({
-        @PropertySource("classpath:application.yml"),
-        @PropertySource("classpath:bootstrap.yml")
-})
 public class EventBusConfig {
 
     @Value("${eventbus.servers}")
