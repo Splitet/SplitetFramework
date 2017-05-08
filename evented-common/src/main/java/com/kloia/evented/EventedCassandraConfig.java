@@ -1,6 +1,9 @@
 package com.kloia.evented;
 
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,16 +40,19 @@ public class EventedCassandraConfig {
         ArrayList<InetSocketAddress> addresses = new ArrayList<>();
         try {
             String[] hostPorts = contactPoints.split(";");
-            for (String hostPort : hostPorts) {
-                String[] split = hostPort.split(":");
+            String[] split = hostPorts[0].split(":");
+            cluster.setContactPoints(split[0]);
+            cluster.setPort(Integer.parseInt(split[1]));
+            for (int i = 1; i < hostPorts.length; i++) {
+                String hostPort = hostPorts[i];
+                split = hostPort.split(":");
                 addresses.add(new InetSocketAddress(split[0], Integer.parseInt(split[1])));
             }
         } catch (Exception e) {
             log.error("cassandra.contact-points must be: host1:port1[;host2:port2]... :",e);
             throw e;
         }
-
-        cluster.setClusterBuilderConfigurer(clusterBuilder -> clusterBuilder.addContactPointsWithPorts(addresses));
+        cluster.setClusterBuilderConfigurer(clusterBuilder -> {return clusterBuilder.addContactPointsWithPorts(addresses);});
 //        cluster.setContactPoints("cassandra1");
         return cluster;
     }
@@ -57,24 +63,24 @@ public class EventedCassandraConfig {
     }
 
     @Bean
-    public CassandraConverter converter() {
-        return new MappingCassandraConverter(mappingContext());
+    public CassandraConverter converter(@Autowired CassandraMappingContext cassandraMappingContext) {
+        return new MappingCassandraConverter(cassandraMappingContext);
     }
 
     @Bean
-    public CassandraSessionFactoryBean session() throws Exception {
+    public CassandraSessionFactoryBean session(@Autowired Cluster cluster, @Autowired CassandraConverter cassandraConverter)  throws Exception {
 
         CassandraSessionFactoryBean session = new CassandraSessionFactoryBean();
-        session.setCluster(cluster().getObject());
+        session.setCluster(cluster);
         session.setKeyspaceName(keyspaceName);
-        session.setConverter(converter());
+        session.setConverter(cassandraConverter);
         session.setSchemaAction(SchemaAction.NONE);
 
         return session;
     }
 
     @Bean
-    public CassandraTemplate cassandraTemplate() throws Exception {
-        return new CassandraTemplate(session().getObject());
+    public CassandraTemplate cassandraTemplate(@Autowired Session session) throws Exception {
+        return new CassandraTemplate(session);
     }
 }
