@@ -1,14 +1,5 @@
 package com.kloia.evented;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kloia.evented.domain.EntityEvent;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
-import java.util.Date;
-import java.util.UUID;
-
 /**
  * Created by zeldalozdemir on 23/02/2017.
  */

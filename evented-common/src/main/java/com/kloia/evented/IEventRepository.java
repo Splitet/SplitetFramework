@@ -1,8 +1,8 @@
 package com.kloia.evented;
 
+import com.datastax.driver.core.querybuilder.Clause;
 import com.kloia.evented.domain.EntityEvent;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,6 +13,8 @@ public interface IEventRepository<T extends Entity> {
     T queryEntity(UUID entityId) throws EventStoreException;
 
     List<T> queryByOpId(UUID opId) throws EventStoreException;
+
+    List<T> queryByField(List<Clause> clauses) throws EventStoreException;
 
     void addCommandSpecs(List<EntityFunctionSpec<T, ?>> commandSpec);
 

@@ -1,6 +1,6 @@
 package com.kloia.evented;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.impl.KafkaOperationRepository;
 import com.kloia.eventapis.api.impl.OperationContext;
@@ -11,7 +11,6 @@ import com.kloia.evented.domain.EntityEvent;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -52,10 +51,10 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
 
     private <D extends Serializable> EventKey recordInternal(Class<? extends EntityFunctionSpec<E, D>> entitySpecClass, D eventData, EventKey eventKey) throws EventStoreException {
         UUID opId = operationContext.getContext();
-        String eventData1 = null;
+        JsonNode eventData1 = null;
         try {
-            eventData1 = objectMapper.writer().writeValueAsString(eventData);
-        } catch (JsonProcessingException e) {
+            eventData1 = objectMapper.valueToTree(eventData);
+        } catch (IllegalArgumentException e) {
             throw new EventStoreException(e.getMessage(),e);
         }
         EntityEvent entityEvent = new EntityEvent(eventKey, opId,new Date(), entitySpecClass.getSimpleName(),ENTITY_EVENT_CREATED, eventData1);

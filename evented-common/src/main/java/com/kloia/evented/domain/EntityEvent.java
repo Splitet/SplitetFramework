@@ -1,5 +1,6 @@
 package com.kloia.evented.domain;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.kloia.evented.EventKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,7 +37,7 @@ public class EntityEvent {
     private String status;
 
     @Column(value = "eventData")
-    private String eventData;
+    private JsonNode eventData;
 
 
 }

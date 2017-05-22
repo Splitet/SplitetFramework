@@ -2,9 +2,7 @@ package com.kloia.evented;
 
 import com.kloia.eventapis.api.impl.KafkaOperationRepository;
 import com.kloia.eventapis.api.impl.OperationContext;
-import com.kloia.eventapis.pojos.Event;
 import com.kloia.eventapis.pojos.EventState;
-import com.kloia.eventapis.pojos.IEventType;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
