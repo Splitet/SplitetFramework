@@ -103,6 +103,7 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
     @Override
     public List<E> queryByField(List<Clause> clauses) throws EventStoreException {
         Select select = QueryBuilder.select("entityId").from(tableName);
+
         if(clauses.size() > 1)
             select.allowFiltering();
         for (Clause clause : clauses) {
@@ -137,7 +138,7 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
             ObjectNode eventData = (ObjectNode) entityEvent.getEventData();
             JsonNode value =  eventData.findValue(indexedField);
             if(value != null){
-                insertQuery.value(indexedField,value.textValue()); // convert by type
+                insertQuery.value(indexedField,value.asText()); // convert by type
                 eventData.remove(indexedField);
             }
         }
