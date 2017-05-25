@@ -1,8 +1,6 @@
 package com.kloia.evented;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -11,9 +9,19 @@ import java.util.UUID;
  * Created by zeldalozdemir on 21/02/2017.
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
+
 public abstract class Entity implements Serializable {
-    protected UUID id;
+    public Entity() {
+    }
+
+    public Entity(String id, Long version) {
+        this.id = id;
+        this.version = version;
+    }
+    public Entity(UUID id, Long version) {
+        this.id = id.toString();
+        this.version = version;
+    }
+    protected String id;
     protected Long version;
 }

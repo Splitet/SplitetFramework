@@ -23,6 +23,7 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
     private ObjectMapper  objectMapper;
     private KafkaOperationRepository kafka;
     private final static String ENTITY_EVENT_CREATED = "CREATED";
+    private IdCreationStrategy idCreationStrategy = new UUIDCreationStrategy();
 
 
 
@@ -31,6 +32,14 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
         this.operationContext = operationContext;
         this.objectMapper = objectMapper;
         this.kafka = kafka;
+    }
+
+    public EventRepositoryImpl(IEventRepository<E> eventRepository, OperationContext operationContext, ObjectMapper objectMapper, KafkaOperationRepository kafka, IdCreationStrategy idCreationStrategy) {
+        this.eventRepository = eventRepository;
+        this.operationContext = operationContext;
+        this.objectMapper = objectMapper;
+        this.kafka = kafka;
+        this.idCreationStrategy = idCreationStrategy;
     }
 
     @Override
@@ -64,7 +73,7 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
 
     @Override
     public <D extends Serializable> EventKey recordEntityEvent(Class<? extends EntityFunctionSpec<E, D>> entitySpecClass, D eventData) throws EventStoreException {
-        EventKey eventKey = new EventKey(UUID.randomUUID(),0); // todo sequence or random
+        EventKey eventKey = new EventKey(idCreationStrategy.nextId(),0); // todo sequence or random
         return recordInternal(entitySpecClass, eventData, eventKey);
     }
 

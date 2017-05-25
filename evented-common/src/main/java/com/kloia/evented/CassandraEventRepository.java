@@ -42,7 +42,7 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
 
 
     @Override
-    public E queryEntity(UUID entityId) throws EventStoreException {
+    public E queryEntity(String entityId) throws EventStoreException {
         Select select = QueryBuilder.select().from(tableName);
         select.where(QueryBuilder.eq("entityId", entityId));
 //        List<EntityEvent> entityEvents = cassandraOperations.select(select, EntityEvent.class);
@@ -69,7 +69,7 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
 
     private EntityEvent convertToEntityEvent(Row entityEventData) throws EventStoreException {
         try {
-            EventKey eventKey = new EventKey(entityEventData.getUUID("entityId"),entityEventData.getLong("version"));
+            EventKey eventKey = new EventKey(entityEventData.getString("entityId"),entityEventData.getLong("version"));
             UUID opId = entityEventData.getUUID("opId");
             String eventData = entityEventData.getString("eventData");
             ObjectNode jsonNode = (ObjectNode)objectMapper.readTree(eventData);
@@ -90,9 +90,9 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
         select.where(QueryBuilder.eq("opId", opId));
         List<EntityEvent> entityEvents = cassandraOperations.select(select, EntityEvent.class);
 
-        Map<UUID,E> resultList = new HashMap<>();
+        Map<String,E> resultList = new HashMap<>();
         for (EntityEvent entityEvent : entityEvents) {
-            UUID entityId = entityEvent.getEventKey().getEntityId();
+            String entityId = entityEvent.getEventKey().getEntityId();
             if(!resultList.containsKey(entityId)){
                 resultList.put(entityId,queryEntity(entityId));
             }
@@ -109,11 +109,11 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
         for (Clause clause : clauses) {
             select.where(clause);
         }
-        List<UUID> entityEvents = cassandraOperations.select(select, UUID.class);
+        List<String> entityEvents = cassandraOperations.select(select, String.class);
 
 
-        Map<UUID,E> resultList = new HashMap<>();
-        for (UUID entityId : entityEvents) {
+        Map<String,E> resultList = new HashMap<>();
+        for (String entityId : entityEvents) {
             if(!resultList.containsKey(entityId)){
                 resultList.put(entityId,queryEntity(entityId));
             }

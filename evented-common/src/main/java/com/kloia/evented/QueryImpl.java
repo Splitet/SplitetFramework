@@ -18,7 +18,7 @@ public class QueryImpl<T extends Entity> implements Query<T> {
     }
 
     @Override
-    public T queryEntity(UUID entityId) throws EventStoreException {
+    public T queryEntity(String entityId) throws EventStoreException {
         return eventRepository.queryEntity(entityId);
     }
 
