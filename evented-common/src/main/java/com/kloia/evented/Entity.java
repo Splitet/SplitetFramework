@@ -14,14 +14,14 @@ public abstract class Entity implements Serializable {
     public Entity() {
     }
 
-    public Entity(String id, Long version) {
+    public Entity(String id, int version) {
         this.id = id;
         this.version = version;
     }
-    public Entity(UUID id, Long version) {
+    public Entity(UUID id, int version) {
         this.id = id.toString();
         this.version = version;
     }
     protected String id;
-    protected Long version;
+    protected int version;
 }

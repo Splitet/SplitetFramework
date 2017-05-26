@@ -69,7 +69,7 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
 
     private EntityEvent convertToEntityEvent(Row entityEventData) throws EventStoreException {
         try {
-            EventKey eventKey = new EventKey(entityEventData.getString("entityId"),entityEventData.getLong("version"));
+            EventKey eventKey = new EventKey(entityEventData.getString("entityId"),entityEventData.getInt("version"));
             UUID opId = entityEventData.getUUID("opId");
             String eventData = entityEventData.getString("eventData");
             ObjectNode jsonNode = (ObjectNode)objectMapper.readTree(eventData);

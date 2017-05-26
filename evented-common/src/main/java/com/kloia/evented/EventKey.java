@@ -26,6 +26,6 @@ public class EventKey implements Serializable {
     private String entityId;
 
     @PrimaryKeyColumn(name= "version",ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
-    private long version;
+    private int version;
 
 }
