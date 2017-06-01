@@ -115,7 +115,9 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
         Map<String,E> resultList = new HashMap<>();
         for (String entityId : entityEvents) {
             if(!resultList.containsKey(entityId)){
-                resultList.put(entityId,queryEntity(entityId));
+                E value = queryEntity(entityId);
+                if(value != null)
+                    resultList.put(entityId, value);
             }
         }
         return new ArrayList<>(resultList.values());
