@@ -159,7 +159,7 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
         for (String indexedField : indexedFields) {
             ObjectNode eventData = (ObjectNode) entityEvent.getEventData();
             JsonNode value = eventData.findValue(indexedField);
-            if (value != null) {
+            if (value != null && !value.isNull()) {
                 insertQuery.value(indexedField, value.asText()); // convert by type
                 eventData.remove(indexedField);
             }
