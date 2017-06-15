@@ -31,4 +31,9 @@ public class QueryImpl<T extends Entity> implements Query<T> {
     public List<T> queryByField(List<Clause> clauses) throws EventStoreException {
         return eventRepository.queryByField(clauses);
     }
+
+    @Override
+    public List<T> multipleQueryByField(List<List<Clause>> clauses) throws EventStoreException {
+        return eventRepository.multipleQueryByField(clauses);
+    }
 }

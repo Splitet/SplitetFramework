@@ -22,4 +22,5 @@ public interface IEventRepository<T extends Entity> {
 
     void markFail(UUID key);
 
+    List<T> multipleQueryByField(List<List<Clause>> clauses) throws EventStoreException;
 }

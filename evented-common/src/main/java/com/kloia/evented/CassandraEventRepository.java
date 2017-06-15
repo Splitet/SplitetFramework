@@ -21,7 +21,7 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
 
     private String tableName;
     private CassandraTemplate cassandraOperations;
-    private Map<String, EntityFunctionSpec<E,?>> functionMap = new HashMap<>();
+    private Map<String, EntityFunctionSpec<E, ?>> functionMap = new HashMap<>();
     private ObjectMapper objectMapper;
     @Getter
     private List<String> indexedFields;
@@ -40,7 +40,6 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
     }
 
 
-
     @Override
     public E queryEntity(String entityId) throws EventStoreException {
         Select select = QueryBuilder.select().from(tableName);
@@ -52,13 +51,13 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
         E result = null;
         for (Row entityEventData : entityEventDatas) {
             EntityEvent entityEvent = convertToEntityEvent(entityEventData);
-            if(!entityEvent.getStatus().equals("FAILED")){
+            if (!entityEvent.getStatus().equals("FAILED")) {
                 EntityFunctionSpec<E, ?> functionSpec = functionMap.get(entityEvent.getEventType());
-                EntityEventWrapper eventWrapper = new EntityEventWrapper<>(functionSpec.getQueryType(),objectMapper,entityEvent);
+                EntityEventWrapper eventWrapper = new EntityEventWrapper<>(functionSpec.getQueryType(), objectMapper, entityEvent);
                 EntityFunction<E, ?> entityFunction = functionSpec.getEntityFunction();
                 result = (E) entityFunction.apply(result, eventWrapper);
             }
-            if(result != null){
+            if (result != null) {
                 result.setId(entityId);
                 result.setVersion(entityEvent.getEventKey().getVersion());
             }
@@ -69,18 +68,18 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
 
     private EntityEvent convertToEntityEvent(Row entityEventData) throws EventStoreException {
         try {
-            EventKey eventKey = new EventKey(entityEventData.getString("entityId"),entityEventData.getInt("version"));
+            EventKey eventKey = new EventKey(entityEventData.getString("entityId"), entityEventData.getInt("version"));
             UUID opId = entityEventData.getUUID("opId");
             String eventData = entityEventData.getString("eventData");
-            ObjectNode jsonNode = (ObjectNode)objectMapper.readTree(eventData);
+            ObjectNode jsonNode = (ObjectNode) objectMapper.readTree(eventData);
             for (String indexedField : indexedFields) {
-                if(entityEventData.getColumnDefinitions().contains(indexedField))
-                    jsonNode.put(indexedField,entityEventData.getString(indexedField));
+                if (entityEventData.getColumnDefinitions().contains(indexedField))
+                    jsonNode.put(indexedField, entityEventData.getString(indexedField));
             }
-            return new EntityEvent(eventKey, opId,entityEventData.getTimestamp("opDate"), entityEventData.getString("eventType"),entityEventData.getString("status"), jsonNode);
+            return new EntityEvent(eventKey, opId, entityEventData.getTimestamp("opDate"), entityEventData.getString("eventType"), entityEventData.getString("status"), jsonNode);
         } catch (IOException e) {
-            log.error(e.getMessage(),e);
-            throw new EventStoreException("Error "+e.getMessage()+ " while Reading Event For:"+entityEventData,e);
+            log.error(e.getMessage(), e);
+            throw new EventStoreException("Error " + e.getMessage() + " while Reading Event For:" + entityEventData, e);
         }
     }
 
@@ -90,12 +89,12 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
         select.where(QueryBuilder.eq("opId", opId));
         List<EntityEvent> entityEvents = cassandraOperations.select(select, EntityEvent.class);
 
-        Map<String,E> resultList = new HashMap<>();
+        Map<String, E> resultList = new HashMap<>();
         for (EntityEvent entityEvent : entityEvents) {
             String entityId = entityEvent.getEventKey().getEntityId();
-            if(!resultList.containsKey(entityId)){
+            if (!resultList.containsKey(entityId)) {
                 E value = queryEntity(entityId);
-                if(value != null)
+                if (value != null)
                     resultList.put(entityId, value);
             }
         }
@@ -106,7 +105,7 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
     public List<E> queryByField(List<Clause> clauses) throws EventStoreException {
         Select select = QueryBuilder.select("entityId").from(tableName);
 
-        if(clauses.size() > 1)
+        if (clauses.size() > 1)
             select.allowFiltering();
         for (Clause clause : clauses) {
             select.where(clause);
@@ -114,17 +113,36 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
         List<String> entityEvents = cassandraOperations.select(select, String.class);
 
 
-        Map<String,E> resultList = new HashMap<>();
+        return queryEntities(entityEvents);
+    }
+
+    @Override
+    public List<E> multipleQueryByField(List<List<Clause>> multipleClauses) throws EventStoreException {
+        List<String> entityEvents = new ArrayList<>();
+        for (List<Clause> clauses : multipleClauses) {
+            Select select = QueryBuilder.select("entityId").from(tableName);
+
+            if (clauses.size() > 1)
+                select.allowFiltering();
+            for (Clause clause : clauses) {
+                select.where(clause);
+            }
+            entityEvents.addAll(cassandraOperations.select(select, String.class));
+        }
+        return queryEntities(entityEvents);
+    }
+
+    private List<E> queryEntities(List<String> entityEvents) throws EventStoreException {
+        Map<String, E> resultList = new HashMap<>();
         for (String entityId : entityEvents) {
-            if(!resultList.containsKey(entityId)){
+            if (!resultList.containsKey(entityId)) {
                 E value = queryEntity(entityId);
-                if(value != null)
+                if (value != null)
                     resultList.put(entityId, value);
             }
         }
         return new ArrayList<>(resultList.values());
     }
-
 
 
     @Override
@@ -140,9 +158,9 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
         Insert insertQuery = cassandraOperations.createInsertQuery(tableName, entityEvent, null, cassandraOperations.getConverter());
         for (String indexedField : indexedFields) {
             ObjectNode eventData = (ObjectNode) entityEvent.getEventData();
-            JsonNode value =  eventData.findValue(indexedField);
-            if(value != null){
-                insertQuery.value(indexedField,value.asText()); // convert by type
+            JsonNode value = eventData.findValue(indexedField);
+            if (value != null) {
+                insertQuery.value(indexedField, value.asText()); // convert by type
                 eventData.remove(indexedField);
             }
         }
@@ -150,10 +168,10 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
         cassandraOperations.execute(insertQuery);
         Select select = QueryBuilder.select().from(tableName);
         select.where(QueryBuilder.eq("entityId", entityEvent.getEventKey().getEntityId()));
-        select.where(QueryBuilder.eq("version", entityEvent.getEventKey().getVersion()) );
+        select.where(QueryBuilder.eq("version", entityEvent.getEventKey().getVersion()));
         EntityEvent appliedEntityEvent = cassandraOperations.selectOne(select, EntityEvent.class);
-        if(! appliedEntityEvent.getOpId().equals(entityEvent.getOpId()))
-            throw new EventStoreException("Concurrent Event from Op:"+ appliedEntityEvent.getOpId());
+        if (!appliedEntityEvent.getOpId().equals(entityEvent.getOpId()))
+            throw new EventStoreException("Concurrent Event from Op:" + appliedEntityEvent.getOpId());
     }
 
     @Override
@@ -169,4 +187,6 @@ public class CassandraEventRepository<E extends Entity> implements IEventReposit
         });
 
     }
+
+
 }

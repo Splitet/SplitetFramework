@@ -16,4 +16,6 @@ public interface Query<T extends Entity> {
 
     List<T> queryByField(List<Clause> clauses) throws EventStoreException;
 
+    List<T> multipleQueryByField(List<List<Clause>> clauses) throws EventStoreException;
+
 }
