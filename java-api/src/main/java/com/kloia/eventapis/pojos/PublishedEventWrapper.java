@@ -1,14 +1,11 @@
 package com.kloia.eventapis.pojos;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -19,8 +16,8 @@ public class PublishedEventWrapper implements Serializable {
 
     private static final long serialVersionUID = 7950670808405003425L;
     private ObjectNode event;
-
     private UUID opId;
+    private Map<String,String> userContext;
 
     public PublishedEventWrapper() {
     }

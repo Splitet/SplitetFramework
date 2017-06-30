@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.kloia.eventapis</groupId>
         <artifactId>eventapis-parent</artifactId>
-        <version>0.2.5</version>
+        <version>0.2.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>store</artifactId>
@@ -151,13 +151,13 @@
 <!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
+             serviceDiscoveryConfigurationtion>
                     <archive>
                         <manifest>
                             <mainClass>com.kloia.eventapis.Eventapis</mainClass>
                         </manifest>
                     </archive>
-                </configuration>
+              serviceDiscoveryConfigurationtion>
             </plugin>-->
             <plugin>
                 <groupId>org.springframework.boot</groupId>

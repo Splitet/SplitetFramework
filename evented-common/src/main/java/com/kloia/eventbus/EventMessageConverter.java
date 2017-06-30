@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.kloia.eventapis.api.impl.OperationContext;
 import com.kloia.eventapis.pojos.PublishedEventWrapper;
+import com.kloia.evented.IUserContext;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.errors.SerializationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +21,14 @@ import java.lang.reflect.Type;
 public class EventMessageConverter extends MessagingMessageConverter {
     private final ObjectMapper objectMapper;
     private OperationContext operationContext;
+    private IUserContext userContext;
 
 
     @Autowired
-    public EventMessageConverter(ObjectMapper objectMapper, OperationContext operationContext) {
+    public EventMessageConverter(ObjectMapper objectMapper, OperationContext operationContext, IUserContext userContext) {
         this.objectMapper = objectMapper;
         this.operationContext = operationContext;
+        this.userContext = userContext;
     }
 
     @Override
@@ -34,6 +37,7 @@ public class EventMessageConverter extends MessagingMessageConverter {
         if (value instanceof PublishedEventWrapper)
             try {
                 PublishedEventWrapper eventWrapper = (PublishedEventWrapper) value;
+                userContext.extractUserContext(eventWrapper.getUserContext());
                 operationContext.switchContext(eventWrapper.getOpId());
                 return objectMapper.treeToValue(eventWrapper.getEvent(), TypeFactory.rawClass(type));
             } catch (JsonProcessingException e) {

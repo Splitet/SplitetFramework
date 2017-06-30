@@ -20,25 +20,28 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
 
     private IEventRepository<E> eventRepository;
     private OperationContext operationContext;
-    private ObjectMapper  objectMapper;
+    private ObjectMapper objectMapper;
     private KafkaOperationRepository kafka;
+    private IUserContext userContext;
     private final static String ENTITY_EVENT_CREATED = "CREATED";
     private IdCreationStrategy idCreationStrategy = new UUIDCreationStrategy();
 
 
-
-    public EventRepositoryImpl(IEventRepository<E> eventRepository, OperationContext operationContext, ObjectMapper objectMapper, KafkaOperationRepository kafka) {
+    public EventRepositoryImpl(IEventRepository<E> eventRepository, OperationContext operationContext, ObjectMapper objectMapper, KafkaOperationRepository kafka, IUserContext userContext) {
         this.eventRepository = eventRepository;
         this.operationContext = operationContext;
         this.objectMapper = objectMapper;
         this.kafka = kafka;
+        this.userContext = userContext;
     }
 
-    public EventRepositoryImpl(IEventRepository<E> eventRepository, OperationContext operationContext, ObjectMapper objectMapper, KafkaOperationRepository kafka, IdCreationStrategy idCreationStrategy) {
+    public EventRepositoryImpl(IEventRepository<E> eventRepository, OperationContext operationContext, ObjectMapper objectMapper, KafkaOperationRepository kafka,
+                               IUserContext userContext, IdCreationStrategy idCreationStrategy) {
         this.eventRepository = eventRepository;
         this.operationContext = operationContext;
         this.objectMapper = objectMapper;
         this.kafka = kafka;
+        this.userContext = userContext;
         this.idCreationStrategy = idCreationStrategy;
     }
 
@@ -46,6 +49,7 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
     public <P extends PublishedEvent> void publishEvent(P publishedEvent) throws EventPulisherException {
         try {
             PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContext(), objectMapper.valueToTree(publishedEvent)); //todo add UserContext too
+            publishedEventWrapper.setUserContext(userContext.getUserContext());
             kafka.publishEvent(publishedEvent.getClass().getSimpleName(), publishedEventWrapper);
         } catch (IOException e) {
             throw new EventPulisherException(e);
@@ -64,16 +68,16 @@ public class EventRepositoryImpl<E extends Entity> implements EventRepository<E>
         try {
             eventData1 = objectMapper.valueToTree(eventData);
         } catch (IllegalArgumentException e) {
-            throw new EventStoreException(e.getMessage(),e);
+            throw new EventStoreException(e.getMessage(), e);
         }
-        EntityEvent entityEvent = new EntityEvent(eventKey, opId,new Date(), entitySpecClass.getSimpleName(),ENTITY_EVENT_CREATED, eventData1);
+        EntityEvent entityEvent = new EntityEvent(eventKey, opId, new Date(), entitySpecClass.getSimpleName(), ENTITY_EVENT_CREATED, eventData1);
         eventRepository.recordEntityEvent(entityEvent);
         return eventKey;
     }
 
     @Override
     public <D extends Serializable> EventKey recordEntityEvent(Class<? extends EntityFunctionSpec<E, D>> entitySpecClass, D eventData) throws EventStoreException {
-        EventKey eventKey = new EventKey(idCreationStrategy.nextId(),0); // todo sequence or random
+        EventKey eventKey = new EventKey(idCreationStrategy.nextId(), 0);
         return recordInternal(entitySpecClass, eventData, eventKey);
     }
 
