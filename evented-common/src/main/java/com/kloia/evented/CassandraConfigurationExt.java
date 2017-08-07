@@ -1,5 +1,6 @@
 package com.kloia.evented;
 
+import com.datastax.driver.core.PlainTextAuthProvider;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,12 @@ public class CassandraConfigurationExt extends AbstractCassandraConfiguration {
     private String keyspaceName;
     @Value("${cassandra.contact-points:'localhost:9042}")
     private String contactPoints;
+
+    @Value("${cassandra.username}")
+    private String username;
+
+    @Value("${cassandra.password}")
+    private String password;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -65,6 +72,9 @@ public class CassandraConfigurationExt extends AbstractCassandraConfiguration {
             throw e;
         }
         cluster.setClusterBuilderConfigurer(clusterBuilder -> {return clusterBuilder.addContactPointsWithPorts(addresses);});
+        if(username != null && !username.trim().equals(""))
+            cluster.setAuthProvider(new PlainTextAuthProvider(username,password));
+
 //        cluster.setContactPoints("cassandra1");
         return cluster;
     }
