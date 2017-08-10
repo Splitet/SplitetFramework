@@ -1,6 +1,6 @@
 package com.kloia.sample.controller;
 
-import com.kloia.eventapis.pojos.EventKey;
+import com.kloia.eventapis.common.EventKey;
 import com.kloia.sample.commands.ReserveStockCommand;
 import com.kloia.sample.dto.event.ReserveStockEvent;
 import lombok.extern.slf4j.Slf4j;

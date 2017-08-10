@@ -1,9 +1,9 @@
 package com.kloia.sample.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kloia.eventapis.pojos.EventKey;
-import com.kloia.evented.EventStoreException;
-import com.kloia.evented.IEventRepository;
+import com.kloia.eventapis.common.EventKey;
+import com.kloia.eventapis.exception.EventStoreException;
+import com.kloia.eventapis.cassandra.PersistentEventRepository;
 import com.kloia.sample.commands.CreateStockCommand;
 import com.kloia.sample.dto.command.CreateStockCommandDto;
 import com.kloia.sample.model.Stock;
@@ -31,7 +31,7 @@ import java.io.IOException;
 public class StockRestController {
 
     @Autowired
-    private IEventRepository<Stock> stockEventRepository;
+    private PersistentEventRepository<Stock> stockEventRepository;
 
 
     @Autowired

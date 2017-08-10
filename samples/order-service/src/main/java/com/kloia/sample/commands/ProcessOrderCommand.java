@@ -1,11 +1,11 @@
 package com.kloia.sample.commands;
 
-import com.kloia.eventapis.pojos.EventKey;
-import com.kloia.evented.Command;
-import com.kloia.evented.EntityFunctionSpec;
-import com.kloia.evented.EventRepository;
-import com.kloia.evented.EventStoreException;
-import com.kloia.evented.Query;
+import com.kloia.eventapis.common.EventKey;
+import com.kloia.eventapis.api.Command;
+import com.kloia.eventapis.view.EntityFunctionSpec;
+import com.kloia.eventapis.api.EventRepository;
+import com.kloia.eventapis.exception.EventStoreException;
+import com.kloia.eventapis.api.Query;
 import com.kloia.sample.dto.command.ProcessOrderCommandDto;
 import com.kloia.sample.dto.event.ReserveStockEvent;
 import com.kloia.sample.model.Order;

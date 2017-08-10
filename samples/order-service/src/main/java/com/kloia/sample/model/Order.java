@@ -1,6 +1,6 @@
 package com.kloia.sample.model;
 
-import com.kloia.evented.Entity;
+import com.kloia.eventapis.view.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

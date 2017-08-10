@@ -1,10 +1,9 @@
 package com.kloia.sample.controller;
 
-import com.kloia.evented.EventPulisherException;
-import com.kloia.evented.EventStoreException;
+import com.kloia.eventapis.exception.EventPulisherException;
+import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.sample.commands.OrderPaidCommand;
 import com.kloia.sample.commands.ProcessPaymentCommand;
-import com.kloia.sample.dto.command.ProcessOrderPaymentCommandDto;
 import com.kloia.sample.dto.event.OrderCreatedEvent;
 import com.kloia.sample.dto.event.PaymentSuccessEvent;
 import com.kloia.sample.dto.event.StockReservedEvent;

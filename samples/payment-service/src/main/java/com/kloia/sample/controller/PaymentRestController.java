@@ -1,7 +1,7 @@
 package com.kloia.sample.controller;
 
-import com.kloia.evented.EventStoreException;
-import com.kloia.evented.IEventRepository;
+import com.kloia.eventapis.exception.EventStoreException;
+import com.kloia.eventapis.cassandra.PersistentEventRepository;
 import com.kloia.sample.commands.DoPaymentCommand;
 import com.kloia.sample.model.Payment;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ import java.io.IOException;
 public class PaymentRestController {
 
     @Autowired
-    private IEventRepository<Payment> orderEventRepository;
+    private PersistentEventRepository<Payment> orderEventRepository;
 
     @Autowired
     private DoPaymentCommand doPaymentCommand;

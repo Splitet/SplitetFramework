@@ -1,8 +1,8 @@
 package com.kloia.sample.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kloia.evented.EventStoreException;
-import com.kloia.evented.IEventRepository;
+import com.kloia.eventapis.exception.EventStoreException;
+import com.kloia.eventapis.cassandra.PersistentEventRepository;
 import com.kloia.sample.client.PaymentEndpoint;
 import com.kloia.sample.client.StockEndpoint;
 import com.kloia.sample.commands.CreateOrderCommand;
@@ -35,7 +35,7 @@ import java.io.IOException;
 public class OrderRestController {
 
     @Autowired
-    private IEventRepository<Order> orderEventRepository;
+    private PersistentEventRepository<Order> orderEventRepository;
 
 
     @Autowired

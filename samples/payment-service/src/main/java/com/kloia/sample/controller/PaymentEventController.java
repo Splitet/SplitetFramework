@@ -1,9 +1,8 @@
 package com.kloia.sample.controller;
 
-import com.kloia.evented.EventPulisherException;
-import com.kloia.evented.EventStoreException;
+import com.kloia.eventapis.exception.EventPulisherException;
+import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.sample.commands.DoPaymentCommand;
-import com.kloia.sample.dto.command.PaymentProcessDto;
 import com.kloia.sample.dto.event.PaymentProcessEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.kloia.sample.client;
 
-import com.kloia.eventapis.configuration.FeignConfiguration;
+import com.kloia.eventapis.spring.configuration.FeignConfiguration;
 import com.kloia.sample.dto.command.CreateOrderCommandDto;
 import com.kloia.sample.model.PaymentInformation;
 import org.springframework.cloud.netflix.feign.FeignClient;

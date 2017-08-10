@@ -1,21 +1,22 @@
 package com.kloia.sample.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kloia.eventapis.api.impl.IOperationRepository;
-import com.kloia.eventapis.api.impl.KafkaOperationRepositoryFactory;
-import com.kloia.eventapis.api.impl.OperationContext;
-import com.kloia.eventapis.configuration.EventApisConfiguration;
+import com.kloia.eventapis.common.OperationContext;
+import com.kloia.eventapis.kafka.IOperationRepository;
+
+import com.kloia.eventapis.kafka.KafkaOperationRepositoryFactory;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
-import com.kloia.evented.CassandraEventRepository;
-import com.kloia.evented.CassandraSession;
-import com.kloia.evented.EntityFunctionSpec;
-import com.kloia.evented.EventRepository;
-import com.kloia.evented.EventRepositoryImpl;
-import com.kloia.evented.IEventRepository;
-import com.kloia.evented.IUserContext;
-import com.kloia.evented.Query;
-import com.kloia.evented.QueryImpl;
+import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
+import com.kloia.eventapis.cassandra.CassandraEventRepository;
+import com.kloia.eventapis.cassandra.CassandraSession;
+import com.kloia.eventapis.view.EntityFunctionSpec;
+import com.kloia.eventapis.api.EventRepository;
+import com.kloia.eventapis.core.CompositeRepositoryImpl;
+import com.kloia.eventapis.cassandra.PersistentEventRepository;
+import com.kloia.eventapis.api.IUserContext;
+import com.kloia.eventapis.api.Query;
+import com.kloia.eventapis.cassandra.QueryByPersistentEventRepositoryDelegate;
 import com.kloia.sample.model.Stock;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -42,16 +43,16 @@ public class Components {
 
 
     @Bean
-    IEventRepository<Stock> orderRepository(List<EntityFunctionSpec<Stock, ?>> orderFunctionSpecs){
+    PersistentEventRepository<Stock> orderRepository(List<EntityFunctionSpec<Stock, ?>> orderFunctionSpecs){
         CassandraSession cassandraSession = new CassandraSession(eventApisConfiguration.getStoreConfig());
         CassandraEventRepository<Stock> cassandraEventRepository = new CassandraEventRepository<>(eventApisConfiguration.getTableNames().getOrDefault("stockevents", "stockevents"), cassandraSession, objectMapper);
         cassandraEventRepository.addCommandSpecs(orderFunctionSpecs);
         return cassandraEventRepository;
     }
     @Bean
-    EventRepository<Stock> orderEventRepository(IEventRepository<Stock> orderIEventRepository,IOperationRepository operationRepository,IUserContext userContext){
+    EventRepository<Stock> orderEventRepository(PersistentEventRepository<Stock> orderPersistentEventRepository, IOperationRepository operationRepository, IUserContext userContext){
 
-        return new EventRepositoryImpl(orderIEventRepository, operationContext, new ObjectMapper(), operationRepository, userContext);
+        return new CompositeRepositoryImpl(orderPersistentEventRepository, operationContext, new ObjectMapper(), operationRepository, userContext);
     }
     @Bean
     IOperationRepository kafkaOperationRepository(){
@@ -61,8 +62,8 @@ public class Components {
 
 
     @Bean
-    Query<Stock> orderQuery(IEventRepository<Stock> orderIEventRepository){
-        return new QueryImpl<>(orderIEventRepository);
+    Query<Stock> orderQuery(PersistentEventRepository<Stock> orderPersistentEventRepository){
+        return new QueryByPersistentEventRepositoryDelegate<>(orderPersistentEventRepository);
     }
 
 /*    @Bean
@@ -77,7 +78,7 @@ public class Components {
 
     @KafkaListener(id = "op-listener", topics = "operation-events", containerFactory = "operationsKafkaListenerContainerFactory")
     private void listenOperations(ConsumerRecord<String, Operation> data) {
-        IEventRepository eventRepository = applicationContext.getBean(IEventRepository.class);
+        PersistentEventRepository eventRepository = applicationContext.getBean(PersistentEventRepository.class);
         log.warn("Incoming Message: " + data.value());
         if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
             eventRepository.markFail(data.key());
