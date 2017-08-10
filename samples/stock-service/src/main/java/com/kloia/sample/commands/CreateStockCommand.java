@@ -1,57 +1,56 @@
 package com.kloia.sample.commands;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kloia.eventapis.api.impl.OperationRepository;
-import com.kloia.eventapis.pojos.Operation;
-import com.kloia.evented.*;
-import com.kloia.sample.dto.Stock;
-import com.kloia.sample.dto.StockCreateAggDTO;
+import com.kloia.evented.Command;
+import com.kloia.evented.EntityFunctionSpec;
+import com.kloia.eventapis.pojos.EventKey;
+import com.kloia.evented.EventRepository;
+import com.kloia.evented.Query;
+import com.kloia.sample.dto.command.CreateStockCommandDto;
+import com.kloia.sample.dto.event.StockCreatedEvent;
+import com.kloia.sample.model.Stock;
+import com.kloia.sample.model.StockState;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by zeldalozdemir on 23/02/2017.
  */
 @Slf4j
 @Controller
-public class CreateStockCommand extends CommandSpec<Stock, StockCreateAggDTO> {
+public class CreateStockCommand implements Command<Stock, CreateStockCommandDto> {
     private final static String name = "CREATE_STOCK";
-    private OperationRepository operationRepository;
     private final static String CREATED = "CREATED";
+    private final EventRepository<Stock> eventRepository;
+    private final Query<Stock> orderQuery;
+
 
 
     @Autowired
-    public CreateStockCommand(ObjectMapper objectMapper, OperationRepository operationRepository, IEventRepository<Stock> eventRepository) {
-        super(name,objectMapper,eventRepository, (stock, event) -> {
-            try {
-                StockCreateAggDTO stockCreateAggDTO = objectMapper.readerFor(StockCreateAggDTO.class).readValue(event.getEventData());
-                stock = new Stock();
-                stock.setStockId(stockCreateAggDTO.getStockId());
-                stock.setRemainingStock(stockCreateAggDTO.getRemainingStock());
-                stock.setStockName(stockCreateAggDTO.getStockName());
-                stock.setState("CREATED");
-                return stock;
-            } catch (Exception e) {
-                log.error("Error while applying Aggregate:" + event + " Exception:" + e.getMessage(), e);
-                throw new EventStoreException("Error while applying Aggregate:" + event + " Exception:" + e.getMessage(), e);
-            }
-        });
-
-        this.operationRepository = operationRepository;
+    public CreateStockCommand(EventRepository<Stock> eventRepository, Query<Stock> orderQuery) {
+        this.eventRepository = eventRepository;
+        this.orderQuery = orderQuery;
     }
 
     @Override
-    public void processCommand(StockCreateAggDTO stockCreateAggDTO) throws EventStoreException {
-        try {
-            Map.Entry<UUID, Operation> context = operationRepository.getContext();
-            EntityEvent entityEvent = createEvent(new EventKey(stockCreateAggDTO.getStockId(),0),"CREATED", stockCreateAggDTO,context.getKey());
-            getEventRepository().recordAggregateEvent(entityEvent);
-        } catch (Exception e) {
-            throw new EventStoreException("Error while processing Command:" + stockCreateAggDTO + " Exception: "+e.getMessage(),e);
+    public EventKey execute(CreateStockCommandDto dto) throws Exception {
+        StockCreatedEvent stockCreatedEvent = new StockCreatedEvent();
+        BeanUtils.copyProperties(dto,stockCreatedEvent);
+        return eventRepository.recordAndPublish(stockCreatedEvent);
+    }
+
+    @Component
+    public static class CreateStockSpec extends EntityFunctionSpec<Stock, StockCreatedEvent> {
+        public CreateStockSpec() {
+            super((stock, event) -> {
+                StockCreatedEvent eventData = event.getEventData();
+                stock.setRemainingStock(eventData.getRemainingStock());
+                stock.setStockName(eventData.getStockName());
+                stock.setState(StockState.INUSE);
+                return stock;
+            });
         }
     }
 

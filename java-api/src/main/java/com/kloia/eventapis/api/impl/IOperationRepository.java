@@ -15,9 +15,9 @@ public interface IOperationRepository {
 
     void publishEvent(String name, PublishedEventWrapper event);
 
-    void appendEvent(UUID opId, Event event);
+    void appendEvent(String opId, Event event);
 
-    void updateEvent(UUID opId, UUID eventId, SerializableConsumer<Event> action);
+    void updateEvent(String opId, String eventId, SerializableConsumer<Event> action);
 
-    void failOperation(UUID opId, UUID eventId, SerializableConsumer<Event> action);
+    void failOperation(String opId, String eventId, SerializableConsumer<Event> action);
 }

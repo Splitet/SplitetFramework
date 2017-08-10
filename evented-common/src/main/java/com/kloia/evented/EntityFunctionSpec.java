@@ -1,8 +1,17 @@
 package com.kloia.evented;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.reflect.TypeToken;
+import com.kloia.evented.domain.EntityEvent;
 import lombok.Getter;
 import lombok.NonNull;
-import org.springframework.core.ResolvableType;
+import sun.reflect.generics.tree.ClassTypeSignature;
+import sun.reflect.generics.tree.SimpleClassTypeSignature;
+import sun.reflect.generics.tree.TypeArgument;
+
+import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.util.Date;
 
 /**
  * Created by zeldalozdemir on 21/02/2017.
@@ -15,11 +24,23 @@ public abstract class EntityFunctionSpec<Entity, EventData> {
     @Getter
     private final EntityFunction<Entity, EventData> entityFunction;
 
-    public  Class<EventData> getQueryType() {
-        return (Class<EventData>) ResolvableType.forInstance(this).getSuperType().resolveGenerics()[1];
+    public  Class<EventData> getQueryType()  {
+        ParameterizedType type = (ParameterizedType) TypeToken.of(this.getClass()).getSupertype(EntityFunctionSpec.class).getType();
+        try {
+            return (Class<EventData>) Class.forName(type.getActualTypeArguments()[1].getTypeName());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public  Class<Entity> getEntityType() {
-        return (Class<Entity>) ResolvableType.forInstance(this).getSuperType().resolveGenerics()[0];
+        ParameterizedType type = (ParameterizedType) TypeToken.of(this.getClass()).getSupertype(EntityFunctionSpec.class).getType();
+        try {
+            return (Class<Entity>) Class.forName(type.getActualTypeArguments()[0].getTypeName());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
     }
+
 }

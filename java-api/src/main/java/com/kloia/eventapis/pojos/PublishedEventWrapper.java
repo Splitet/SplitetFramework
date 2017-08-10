@@ -15,14 +15,14 @@ import java.util.UUID;
 public class PublishedEventWrapper implements Serializable {
 
     private static final long serialVersionUID = 7950670808405003425L;
-    private ObjectNode event;
-    private UUID opId;
+    private String event;
+    private String opId;
     private Map<String,String> userContext;
 
     public PublishedEventWrapper() {
     }
 
-    public PublishedEventWrapper(UUID opId, ObjectNode event) throws IOException {
+    public PublishedEventWrapper(String opId, String event) {
         this.opId = opId;
         this.event = event;
     }

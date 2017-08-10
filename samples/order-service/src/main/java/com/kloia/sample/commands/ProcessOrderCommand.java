@@ -1,62 +1,58 @@
 package com.kloia.sample.commands;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kloia.eventapis.api.impl.OperationRepository;
-import com.kloia.eventapis.pojos.Operation;
-import com.kloia.evented.*;
-import com.kloia.sample.dto.Order;
-import com.kloia.sample.dto.OrderProcessAggDTO;
+import com.kloia.eventapis.pojos.EventKey;
+import com.kloia.evented.Command;
+import com.kloia.evented.EntityFunctionSpec;
+import com.kloia.evented.EventRepository;
+import com.kloia.evented.EventStoreException;
+import com.kloia.evented.Query;
+import com.kloia.sample.dto.command.ProcessOrderCommandDto;
+import com.kloia.sample.dto.event.ReserveStockEvent;
+import com.kloia.sample.model.Order;
+import com.kloia.sample.model.OrderState;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by zeldalozdemir on 23/02/2017.
  */
 @Slf4j
 @Controller
-public class ProcessOrderCommand extends CommandSpec<Order, OrderProcessAggDTO> {
+public class ProcessOrderCommand implements Command<Order, ProcessOrderCommandDto> {
     private final static String name = "PROCESS_ORDER";
     private final static String CREATED = "CREATED";
-    private OperationRepository operationRepository;
+    private final EventRepository<Order> eventRepository;
+    private final Query<Order> orderQuery;
 
-    public ProcessOrderCommand(ObjectMapper objectMapper, OperationRepository operationRepository, IEventRepository<Order> eventRepository) {
-        super(name, objectMapper, eventRepository, (order, event) -> {
-            try {
-                if (order != null && event.getStatus().equals(CREATED)) {
-                    OrderProcessAggDTO orderProcessAggDTO = objectMapper.readerFor(OrderProcessAggDTO.class).readValue(event.getEventData());
-                    order.setAddress(orderProcessAggDTO.getAddress());
-                    order.setPrice(orderProcessAggDTO.getPrice());
-                    order.setState("PROCESSED");
-                }
-                return order;
-            } catch (Exception e) {
-                log.error("Error while applying Aggregate:" + event + " Exception:" + e.getMessage(), e);
-                throw new EventStoreException("Error while applying Aggregate:" + event + " Exception:" + e.getMessage(), e);
-            }
-        });
-        this.operationRepository = operationRepository;
+    @Autowired
+    public ProcessOrderCommand(EventRepository<Order> eventRepository, Query<Order> orderQuery) {
+        this.eventRepository = eventRepository;
+        this.orderQuery = orderQuery;
     }
 
     @Override
-    public void processCommand(OrderProcessAggDTO eventDto) throws EventStoreException {
+    public EventKey execute(ProcessOrderCommandDto dto) throws Exception {
+        Order order = orderQuery.queryEntity(dto.getOrderId());
 
-        Order order = eventRepository.queryEntity(eventDto.getOrderId());
-
-        if (order.getState().equals(CREATED)) {
-            try {
-                Map.Entry<UUID, Operation> context = operationRepository.getContext();
-                EntityEvent entityEvent = createEvent(new EventKey(eventDto.getOrderId(), order.getVersion() + 1), CREATED, eventDto, context.getKey());
-                getEventRepository().recordAggregateEvent(entityEvent);
-                log.info("Template account saved: " + eventDto);
-            } catch (JsonProcessingException e) {
-                throw new EventStoreException("Error while processing Command:" + eventDto + " Exception: " + e.getMessage(), e);
-            }
+        if (order.getState() == OrderState.INITIAL) {
+            ReserveStockEvent reserveStockEvent = new ReserveStockEvent(order.getStockId(), order.getOrderAmount(), dto.getPaymentInformation());
+            log.info("Template account saved: " + dto);
+            return eventRepository.recordAndPublish(order,reserveStockEvent);
         } else
-            throw new EventStoreException("Order state is not valid for this Operation: " + eventDto);
+            throw new EventStoreException("Order state is not valid for this Operation: " + dto);
+    }
 
+    @Component
+    public static class ProcessOrderSpec extends EntityFunctionSpec<Order, ReserveStockEvent> {
+        public ProcessOrderSpec() {
+            super((order, event) -> {
+                ReserveStockEvent eventData = event.getEventData();
+                order.setPaymentInformation(eventData.getPaymentInformation());
+                order.setState(OrderState.PROCESSING);
+                return order;
+            });
+        }
     }
 }

@@ -1,0 +1,17 @@
+eventapis:
+  storeConfig:
+    contactPoints: localhost:9042
+    keyspaceName: test
+
+  tableNames:
+    stockevents: stockevents
+  eventBus:
+    bootstrapServers: localhost:9092
+#    clientId: ${project.artifactId}
+    consumer:
+      groupId: ${info.build.artifact}
+
+server:
+  port: 8162
+
+

@@ -3,7 +3,6 @@ package com.kloia.eventapis.pojos;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.ignite.binary.*;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Event implements Externalizable, Binarylizable, Cloneable {
+public class Event implements Externalizable /*, Binarylizable*/, Cloneable {
     private UUID eventId;
     private IEventType eventType;
     private EventState eventState;
@@ -34,7 +33,7 @@ public class Event implements Externalizable, Binarylizable, Cloneable {
 
     }
 
-    public void writeBinary(BinaryWriter writer) throws BinaryObjectException {
+/*    public void writeBinary(BinaryWriter writer) throws BinaryObjectException {
         BinaryRawWriter binaryRawWriter = writer.rawWriter();
         binaryRawWriter.writeUuid(eventId);
         binaryRawWriter.writeObject(eventType);
@@ -48,7 +47,7 @@ public class Event implements Externalizable, Binarylizable, Cloneable {
         eventType = binaryRawReader.readObject();
         eventState = binaryRawReader.readEnum();
         params = binaryRawReader.readStringArray();
-    }
+    }*/
 
     @Override
     public Object clone() {

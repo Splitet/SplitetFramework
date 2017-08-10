@@ -9,7 +9,6 @@ import java.util.UUID;
  * Created by zeldalozdemir on 21/02/2017.
  */
 @Data
-
 public abstract class Entity implements Serializable {
     public Entity() {
     }

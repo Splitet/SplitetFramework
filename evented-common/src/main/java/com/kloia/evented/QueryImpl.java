@@ -1,7 +1,6 @@
 package com.kloia.evented;
 
 import com.datastax.driver.core.querybuilder.Clause;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,7 +11,6 @@ import java.util.UUID;
 public class QueryImpl<T extends Entity> implements Query<T> {
     private IEventRepository<T> eventRepository;
 
-    @Autowired
     public QueryImpl(IEventRepository<T> eventRepository) {
         this.eventRepository = eventRepository;
     }
@@ -23,7 +21,7 @@ public class QueryImpl<T extends Entity> implements Query<T> {
     }
 
     @Override
-    public List<T> queryByOpId(UUID opId) throws EventStoreException {
+    public List<T> queryByOpId(String opId) throws EventStoreException {
         return eventRepository.queryByOpId(opId);
     }
 
