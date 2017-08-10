@@ -1,62 +1,60 @@
 package com.kloia.sample.commands;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kloia.eventapis.api.impl.OperationRepository;
-import com.kloia.eventapis.pojos.Operation;
-import com.kloia.evented.*;
-import com.kloia.sample.dto.Order;
-import com.kloia.sample.dto.OrderCreateAggDTO;
+import com.kloia.evented.Command;
+import com.kloia.evented.EntityFunctionSpec;
+import com.kloia.eventapis.pojos.EventKey;
+import com.kloia.evented.EventRepository;
+import com.kloia.evented.Query;
+import com.kloia.sample.dto.command.CreateOrderCommandDto;
+import com.kloia.sample.dto.event.OrderCreatedEvent;
+import com.kloia.sample.model.Order;
+import com.kloia.sample.model.OrderState;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by zeldalozdemir on 23/02/2017.
  */
 @Slf4j
 @Controller
-public class CreateOrderCommand extends CommandSpec<Order, OrderCreateAggDTO> {
+public class CreateOrderCommand implements Command<Order, CreateOrderCommandDto> {
     private final static String name = "CREATE_ORDER";
-    private OperationRepository operationRepository;
     private final static String CREATED = "CREATED";
+    private final EventRepository<Order> eventRepository;
+    private final Query<Order> orderQuery;
 
 
     @Autowired
-    public CreateOrderCommand(ObjectMapper objectMapper, OperationRepository operationRepository, IEventRepository<Order> eventRepository) {
-        super(name,objectMapper,eventRepository, (order, event) -> {
-            try {
-                if(event.getStatus().equals(CREATED)){
-                    OrderCreateAggDTO orderCreateAggDTO = objectMapper.readerFor(OrderCreateAggDTO.class).readValue(event.getEventData());
-                    order = new Order();
-                    order.setOrderId(orderCreateAggDTO.getOrderId());
-                    order.setOrderAmount(orderCreateAggDTO.getOrderAmount());
-                    order.setDescription(orderCreateAggDTO.getDescription());
-                    order.setState("CREATED");
-                    return order;
-                }
-                return null;
-            } catch (Exception e) {
-                log.error("Error while applying Aggregate:" + event + " Exception:" + e.getMessage(), e);
-                throw new EventStoreException("Error while applying Aggregate:" + event + " Exception:" + e.getMessage(), e);
-            }
-        });
-
-        this.operationRepository = operationRepository;
+    public CreateOrderCommand(EventRepository<Order> eventRepository, Query<Order> orderQuery) {
+        this.eventRepository = eventRepository;
+        this.orderQuery = orderQuery;
     }
 
     @Override
-    public void processCommand(OrderCreateAggDTO orderCreateAggDTO) throws EventStoreException {
-        try {
-            Map.Entry<UUID, Operation> context = operationRepository.getContext();
-            EntityEvent entityEvent = createEvent(new EventKey(orderCreateAggDTO.getOrderId(),0),"CREATED", orderCreateAggDTO,context.getKey());
-            getEventRepository().recordAggregateEvent(entityEvent);
-        } catch (Exception e) {
-            throw new EventStoreException("Error while processing Command:" + orderCreateAggDTO + " Exception: "+e.getMessage(),e);
+    public EventKey execute(CreateOrderCommandDto dto) throws Exception {
+
+        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
+        BeanUtils.copyProperties(dto,orderCreatedEvent);
+
+        EventKey eventKey = eventRepository.recordAndPublish(orderCreatedEvent);
+
+
+        return eventKey;
+    }
+    @Component
+    public static class CreateOrderSpec extends EntityFunctionSpec<Order, OrderCreatedEvent> {
+        public CreateOrderSpec() {
+            super((order, event) -> {
+                OrderCreatedEvent createOrderCommandDto = event.getEventData();
+                order.setStockId(createOrderCommandDto.getStockId());
+                order.setOrderAmount(createOrderCommandDto.getOrderAmount());
+                order.setDescription(createOrderCommandDto.getDescription());
+                order.setState(OrderState.INITIAL);
+                return order;
+            });
         }
     }
-
-
 }

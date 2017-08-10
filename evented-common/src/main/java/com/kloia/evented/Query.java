@@ -12,7 +12,7 @@ import java.util.UUID;
 public interface Query<T extends Entity> {
     T queryEntity(String entityId) throws EventStoreException;
 
-    List<T> queryByOpId(UUID opId) throws EventStoreException;
+    List<T> queryByOpId(String opId) throws EventStoreException;
 
     List<T> queryByField(List<Clause> clauses) throws EventStoreException;
 

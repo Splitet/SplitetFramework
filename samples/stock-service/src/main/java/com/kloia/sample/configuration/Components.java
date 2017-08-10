@@ -1,51 +1,68 @@
 package com.kloia.sample.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kloia.eventapis.api.impl.IOperationRepository;
+import com.kloia.eventapis.api.impl.KafkaOperationRepositoryFactory;
+import com.kloia.eventapis.api.impl.OperationContext;
+import com.kloia.eventapis.configuration.EventApisConfiguration;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
 import com.kloia.evented.CassandraEventRepository;
+import com.kloia.evented.CassandraSession;
+import com.kloia.evented.EntityFunctionSpec;
+import com.kloia.evented.EventRepository;
+import com.kloia.evented.EventRepositoryImpl;
 import com.kloia.evented.IEventRepository;
-import com.kloia.sample.dto.Stock;
+import com.kloia.evented.IUserContext;
+import com.kloia.evented.Query;
+import com.kloia.evented.QueryImpl;
+import com.kloia.sample.model.Stock;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 
-import java.util.UUID;
+import java.util.List;
+import java.util.Map;
 
 @Configuration
 @Slf4j
 public class Components {
-/*    @Bean
-    public StoreApi getStoreApi(ApplicationContext context) throws IgniteCheckedException {
-        return StoreApi.createStoreApi("127.0.0.1:7500,127.0.0.1:7501,127.0.0.1:7502", context);
-    }
-
-    @Bean
-    public OperationRepository getOperationRepository(StoreApi storeApi) {
-        return storeApi.getOperationRepository();
-    }*/
-
-    @Bean("stockEventRepository")
-    public IEventRepository<Stock> createOrderEventRepository(@Autowired CassandraTemplate cassandraTemplate){
-        return new CassandraEventRepository<Stock>("StockEvents",cassandraTemplate);
-    }
-
 
     @Autowired
-    private ApplicationContext applicationContext;
+    private EventApisConfiguration eventApisConfiguration;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private OperationContext operationContext;
 
 
-    @KafkaListener(id = "op-listener", topics = "operation-events")
-    private void listenOperations(ConsumerRecord<UUID, Operation> data) {
-        IEventRepository paymentEventRepository = applicationContext.getBean(IEventRepository.class);
-        log.warn("Incoming Message: " + data.value());
-        if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
-            paymentEventRepository.markFail(data.key());
-        }
+    @Bean
+    IEventRepository<Stock> orderRepository(List<EntityFunctionSpec<Stock, ?>> orderFunctionSpecs){
+        CassandraSession cassandraSession = new CassandraSession(eventApisConfiguration.getStoreConfig());
+        CassandraEventRepository<Stock> cassandraEventRepository = new CassandraEventRepository<>(eventApisConfiguration.getTableNames().getOrDefault("stockevents", "stockevents"), cassandraSession, objectMapper);
+        cassandraEventRepository.addCommandSpecs(orderFunctionSpecs);
+        return cassandraEventRepository;
+    }
+    @Bean
+    EventRepository<Stock> orderEventRepository(IEventRepository<Stock> orderIEventRepository,IOperationRepository operationRepository,IUserContext userContext){
+
+        return new EventRepositoryImpl(orderIEventRepository, operationContext, new ObjectMapper(), operationRepository, userContext);
+    }
+    @Bean
+    IOperationRepository kafkaOperationRepository(){
+        KafkaOperationRepositoryFactory kafka = new KafkaOperationRepositoryFactory(eventApisConfiguration.getEventBus());
+       return kafka.createKafkaOperationRepository(objectMapper);
+    }
+
+
+    @Bean
+    Query<Stock> orderQuery(IEventRepository<Stock> orderIEventRepository){
+        return new QueryImpl<>(orderIEventRepository);
     }
 
 /*    @Bean
@@ -54,6 +71,34 @@ public class Components {
         return Feign.builder();
     }*/
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
+
+    @KafkaListener(id = "op-listener", topics = "operation-events", containerFactory = "operationsKafkaListenerContainerFactory")
+    private void listenOperations(ConsumerRecord<String, Operation> data) {
+        IEventRepository eventRepository = applicationContext.getBean(IEventRepository.class);
+        log.warn("Incoming Message: " + data.value());
+        if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
+            eventRepository.markFail(data.key());
+        }
+    }
+    @Bean
+    public IUserContext getUserContext() {
+        return new EmptyUserContext();
+    }
+
+    private static class EmptyUserContext implements IUserContext {
+        @Override
+        public Map<String, String> getUserContext() {
+            return null;
+        }
+
+        @Override
+        public void extractUserContext(Map<String, String> userContext) {
+
+        }
+    }
 
 
 /*    @Bean

@@ -1,0 +1,25 @@
+eventapis:
+  storeConfig:
+    contactPoints: localhost:9042
+    keyspaceName: test
+
+  tableNames:
+    orderevents: orderevents
+  eventBus:
+    bootstrapServers: localhost:9092
+#    clientId: ${project.artifactId}
+    consumer:
+      groupId: ${info.build.artifact}
+
+payment:
+  url: http://localhost:8062
+  process-path: /payments/v1/create
+
+stock:
+  url: http://localhost:8064
+  process-path: /stocks/v1/item-sold
+
+server:
+  port: 8160
+
+

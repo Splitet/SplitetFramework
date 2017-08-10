@@ -12,7 +12,7 @@ import java.util.UUID;
 public interface IEventRepository<T extends Entity> {
     T queryEntity(String entityId) throws EventStoreException;
 
-    List<T> queryByOpId(UUID opId) throws EventStoreException;
+    List<T> queryByOpId(String opId) throws EventStoreException;
 
     List<T> queryByField(List<Clause> clauses) throws EventStoreException;
 
@@ -20,7 +20,7 @@ public interface IEventRepository<T extends Entity> {
 
     void recordEntityEvent(EntityEvent entityEvent) throws EventStoreException;
 
-    void markFail(UUID key);
+    void markFail(String key);
 
     List<T> multipleQueryByField(List<List<Clause>> clauses) throws EventStoreException;
 }
