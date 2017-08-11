@@ -7,6 +7,7 @@ import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.api.IdCreationStrategy;
 import com.kloia.eventapis.api.impl.UUIDCreationStrategy;
+import com.kloia.eventapis.common.EventType;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.kafka.IOperationRepository;
 import com.kloia.eventapis.common.OperationContext;
@@ -15,6 +16,7 @@ import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.PublishedEvent;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.cassandra.EntityEvent;
+import com.kloia.eventapis.pojos.EventState;
 import com.kloia.eventapis.view.Entity;
 
 import java.util.Date;
@@ -124,6 +126,15 @@ public class CompositeRepositoryImpl<E extends Entity> implements EventRepositor
         PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContext(), event);
         publishedEventWrapper.setUserContext(userContext.getUserContext());
         operationRepository.publishEvent(publishedEvent.getClass().getSimpleName(), publishedEventWrapper);
+        checkOperationFinalStates(publishedEvent);
+    }
+
+    private <P extends PublishedEvent> void checkOperationFinalStates(P publishedEvent) {
+        if(publishedEvent.getEventType() == EventType.OP_SUCCESS || publishedEvent.getEventType() == EventType.OP_SINGLE ){
+            operationRepository.successOperation(operationContext.getContext(),operationContext.getCommandContext(),successEvent -> successEvent.setEventState(EventState.TXN_SUCCEDEED));
+        }else if(publishedEvent.getEventType() == EventType.OP_FAIL){
+            operationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),failEvent -> failEvent.setEventState(EventState.TXN_FAILED));
+        }
     }
 
     @Override

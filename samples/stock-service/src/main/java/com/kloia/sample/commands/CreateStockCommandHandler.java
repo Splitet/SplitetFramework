@@ -1,6 +1,6 @@
 package com.kloia.sample.commands;
 
-import com.kloia.eventapis.api.Command;
+import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.api.EventRepository;
@@ -14,13 +14,17 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Created by zeldalozdemir on 23/02/2017.
  */
 @Slf4j
-@Controller
-public class CreateStockCommand implements Command<Stock, CreateStockCommandDto> {
+@RestController
+public class CreateStockCommandHandler implements CommandHandler<Stock, CreateStockCommandDto> {
     private final static String name = "CREATE_STOCK";
     private final static String CREATED = "CREATED";
     private final EventRepository<Stock> eventRepository;
@@ -29,13 +33,14 @@ public class CreateStockCommand implements Command<Stock, CreateStockCommandDto>
 
 
     @Autowired
-    public CreateStockCommand(EventRepository<Stock> eventRepository, Query<Stock> orderQuery) {
+    public CreateStockCommandHandler(EventRepository<Stock> eventRepository, Query<Stock> orderQuery) {
         this.eventRepository = eventRepository;
         this.orderQuery = orderQuery;
     }
 
     @Override
-    public EventKey execute(CreateStockCommandDto dto) throws Exception {
+    @RequestMapping(value = "/stock/v1/create", method = RequestMethod.POST)
+    public EventKey execute(@RequestBody CreateStockCommandDto dto) throws Exception {
         StockCreatedEvent stockCreatedEvent = new StockCreatedEvent();
         BeanUtils.copyProperties(dto,stockCreatedEvent);
         return eventRepository.recordAndPublish(stockCreatedEvent);

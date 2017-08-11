@@ -2,6 +2,7 @@ package com.kloia.sample.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.common.OperationContext;
+import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.kafka.IOperationRepository;
 
 import com.kloia.eventapis.kafka.KafkaOperationRepositoryFactory;
@@ -18,6 +19,7 @@ import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.api.Query;
 import com.kloia.eventapis.cassandra.QueryByPersistentEventRepositoryDelegate;
 import com.kloia.sample.model.Stock;
+import com.kloia.sample.repository.StockRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,14 +78,26 @@ public class Components {
     private ApplicationContext applicationContext;
 
 
+
+    @Autowired
+    private StockRepository stockRepository;
+
+
     @KafkaListener(id = "op-listener", topics = "operation-events", containerFactory = "operationsKafkaListenerContainerFactory")
-    private void listenOperations(ConsumerRecord<String, Operation> data) {
-        PersistentEventRepository eventRepository = applicationContext.getBean(PersistentEventRepository.class);
+    private void listenOperations(ConsumerRecord<String, Operation> data) throws EventStoreException {
+        PersistentEventRepository<Stock> eventRepository = applicationContext.getBean(PersistentEventRepository.class);
         log.warn("Incoming Message: " + data.value());
         if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
             eventRepository.markFail(data.key());
+            Stock order = eventRepository.queryEntity(data.key());
+            if(order != null && order.getId() != null)
+                stockRepository.save(order);
+        }else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEDEED) {
+            eventRepository.queryByOpId(data.key()).stream().forEach(stockRepository::save);
         }
+
     }
+
     @Bean
     public IUserContext getUserContext() {
         return new EmptyUserContext();

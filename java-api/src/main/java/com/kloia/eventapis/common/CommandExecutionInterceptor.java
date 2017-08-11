@@ -1,7 +1,6 @@
 package com.kloia.eventapis.common;
 
 
-import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
@@ -27,20 +26,20 @@ public class CommandExecutionInterceptor {
         this.kafkaOperationRepository = kafkaOperationRepository;
     }
 
-    @Before("within(com.kloia.eventapis.api.Command+) && execution(* execute(..)) && args(object)")
+    @Before("within(com.kloia.eventapis.api.CommandHandler+ || com.kloia.eventapis.api.EventHandler+) && execution(* execute(..)) && args(object)")
     public void before( Object object) throws Throwable {
         UUID eventId = UUID.randomUUID();
         operationContext.setCommandContext(eventId.toString());
         log.info("before method:"+(object == null ? "" : object.toString()));
     }
 
-    @AfterReturning(value = "within(com.kloia.eventapis.api.Command+) && execution(* execute(..))",returning="retVal")
+    @AfterReturning(value = "within(com.kloia.eventapis.api.CommandHandler+ || com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))",returning="retVal")
     public void afterReturning( Object retVal) throws Throwable {
 //        kafkaOperationRepository.updateEvent(operationContext.getContext(),operationContext.clearCommandContext(),event -> event.setEventState(EventState.SUCCEDEED));
         log.info("AfterReturning:"+ (retVal == null ? "" : retVal.toString()));
     }
 
-    @AfterThrowing(value = "within(com.kloia.eventapis.api.Command+) && execution(* execute(..))", throwing = "e")
+    @AfterThrowing(value = "within(com.kloia.eventapis.api.CommandHandler+ || com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "e")
     public void afterThrowing( Exception e) throws Throwable {
         log.info("afterThrowing method:"+e);
         kafkaOperationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),event -> event.setEventState(EventState.FAILED));

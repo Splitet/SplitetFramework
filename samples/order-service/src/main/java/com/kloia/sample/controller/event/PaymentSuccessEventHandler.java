@@ -1,7 +1,8 @@
-package com.kloia.sample.commands;
+package com.kloia.sample.controller.event;
 
+import com.kloia.eventapis.api.CommandHandler;
+import com.kloia.eventapis.api.EventHandler;
 import com.kloia.eventapis.common.EventKey;
-import com.kloia.eventapis.api.Command;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.exception.EventPulisherException;
 import com.kloia.eventapis.api.EventRepository;
@@ -13,6 +14,7 @@ import com.kloia.sample.model.Order;
 import com.kloia.sample.model.OrderState;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 
@@ -21,19 +23,20 @@ import org.springframework.stereotype.Controller;
  */
 @Slf4j
 @Controller
-public class OrderPaidCommand implements Command<Order, PaymentSuccessEvent> {
+public class PaymentSuccessEventHandler implements EventHandler<Order, PaymentSuccessEvent> {
     private final static String name = "PROCESS_ORDER";
     private final static String CREATED = "CREATED";
     private final EventRepository<Order> eventRepository;
     private final Query<Order> orderQuery;
 
     @Autowired
-    public OrderPaidCommand(EventRepository<Order> eventRepository, Query<Order> orderQuery) {
+    public PaymentSuccessEventHandler(EventRepository<Order> eventRepository, Query<Order> orderQuery) {
         this.eventRepository = eventRepository;
         this.orderQuery = orderQuery;
     }
 
     @Override
+    @KafkaListener(topics = "PaymentSuccessEvent", containerFactory = "eventsKafkaListenerContainerFactory")
     public EventKey execute(PaymentSuccessEvent dto) throws EventStoreException, EventPulisherException {
         Order order = orderQuery.queryEntity(dto.getOrderId());
 

@@ -7,7 +7,6 @@ CREATE TABLE test.OrderEvents (
 	opDate timestamp,
 	status ascii,
 	eventData varchar,
-	state varchar,
 	PRIMARY KEY (entityId, version)
 );
 

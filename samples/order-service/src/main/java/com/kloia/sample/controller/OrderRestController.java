@@ -38,50 +38,10 @@ public class OrderRestController {
     private PersistentEventRepository<Order> orderEventRepository;
 
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-
-    @Autowired
-    PaymentEndpoint paymentEndpoint;
-
-    @Autowired
-    StockEndpoint stockEndpoint;
-
-    @Autowired
-    CreateOrderCommand createOrderCommand;
-
-    @Autowired
-    ProcessOrderCommand processOrderCommand;
-
-
     @RequestMapping(value = "/{orderId}", method = RequestMethod.GET)
     public ResponseEntity<?> getOrder(@PathVariable("orderId") String orderId) throws IOException, EventStoreException {
-
         return new ResponseEntity<Object>(orderEventRepository.queryEntity(orderId), HttpStatus.CREATED);
     }
-
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ResponseEntity<?> createOrder(@RequestBody @Valid CreateOrderCommandDto orderCreateAggDTO) throws Exception {
-//        TemplateAccount saved = createTemplateAccountService.create(orderCreateDTO);
-        log.info("Template account saved: " + orderCreateAggDTO);
-
-        String id = createOrderCommand.execute(orderCreateAggDTO).getEntityId();
-
-        return new ResponseEntity<Object>(orderEventRepository.queryEntity(id), HttpStatus.CREATED);
-    }
-
-
-    @RequestMapping(value = "/{orderId}/process", method = RequestMethod.POST)
-    public ResponseEntity<?> processOrder(@PathVariable("orderId") String orderId, @RequestBody @Valid ProcessOrderCommandDto processOrderCommandDto) throws Exception {
-        processOrderCommandDto.setOrderId(orderId);
-        processOrderCommand.execute(processOrderCommandDto);
-
-        return new ResponseEntity<Object>(orderEventRepository.queryEntity(processOrderCommandDto.getOrderId()), HttpStatus.CREATED);
-
-
-    }
-
 
 }
 

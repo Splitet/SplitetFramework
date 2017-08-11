@@ -1,6 +1,6 @@
 package com.kloia.sample.commands;
 
-import com.kloia.eventapis.api.Command;
+import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.api.EventRepository;
@@ -14,15 +14,20 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 /**
  * Created by zeldalozdemir on 23/02/2017.
  */
 @Slf4j
-@Controller
-public class CreateOrderCommand implements Command<Order, CreateOrderCommandDto> {
-    private final static String name = "CREATE_ORDER";
-    private final static String CREATED = "CREATED";
+@RestController
+public class CreateOrderCommand implements CommandHandler<Order, CreateOrderCommandDto> {
     private final EventRepository<Order> eventRepository;
     private final Query<Order> orderQuery;
 
@@ -33,17 +38,16 @@ public class CreateOrderCommand implements Command<Order, CreateOrderCommandDto>
         this.orderQuery = orderQuery;
     }
 
-    @Override
-    public EventKey execute(CreateOrderCommandDto dto) throws Exception {
+    @RequestMapping(value = "/order/v1/create", method = RequestMethod.POST)
+    public EventKey execute(@RequestBody @Valid CreateOrderCommandDto dto) throws Exception {
 
         OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
         BeanUtils.copyProperties(dto,orderCreatedEvent);
 
         EventKey eventKey = eventRepository.recordAndPublish(orderCreatedEvent);
-
-
         return eventKey;
     }
+
     @Component
     public static class CreateOrderSpec extends EntityFunctionSpec<Order, OrderCreatedEvent> {
         public CreateOrderSpec() {

@@ -2,7 +2,7 @@ package com.kloia.sample.controller;
 
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.cassandra.PersistentEventRepository;
-import com.kloia.sample.commands.DoPaymentCommand;
+import com.kloia.sample.controller.event.DoPaymentEventHandler;
 import com.kloia.sample.model.Payment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ public class PaymentRestController {
     private PersistentEventRepository<Payment> orderEventRepository;
 
     @Autowired
-    private DoPaymentCommand doPaymentCommand;
+    private DoPaymentEventHandler doPaymentEventHandler;
 
     @RequestMapping(value = "/{paymentId}", method = RequestMethod.GET)
     public ResponseEntity<?> getPayment(@PathVariable("paymentId") String paymentId) throws IOException, EventStoreException {

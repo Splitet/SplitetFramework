@@ -2,6 +2,7 @@ package com.kloia.sample.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.common.OperationContext;
+import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.kafka.IOperationRepository;
 import com.kloia.eventapis.kafka.KafkaOperationRepositoryFactory;
 import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
@@ -9,6 +10,7 @@ import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
 import com.kloia.eventapis.cassandra.CassandraEventRepository;
 import com.kloia.eventapis.cassandra.CassandraSession;
+import com.kloia.eventapis.view.Entity;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.core.CompositeRepositoryImpl;
@@ -17,9 +19,12 @@ import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.api.Query;
 import com.kloia.eventapis.cassandra.QueryByPersistentEventRepositoryDelegate;
 import com.kloia.sample.model.Order;
+import com.kloia.sample.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,9 +47,9 @@ public class Components {
 
 
     @Bean
-    PersistentEventRepository<Order> orderRepository(List<EntityFunctionSpec<Order, ?>> orderFunctionSpecs){
+    PersistentEventRepository<Order> orderPersistentEventRepository(List<EntityFunctionSpec<Order, ?>> orderFunctionSpecs){
         CassandraSession cassandraSession = new CassandraSession(eventApisConfiguration.getStoreConfig());
-        CassandraEventRepository<Order> cassandraEventRepository = new CassandraEventRepository<>(eventApisConfiguration.getTableNames().getOrDefault("orderevents", "orderevents"), cassandraSession, objectMapper);
+        PersistentEventRepository<Order> cassandraEventRepository = new CassandraEventRepository<>(eventApisConfiguration.getTableNames().getOrDefault("orderevents", "orderevents"), cassandraSession, objectMapper);
         cassandraEventRepository.addCommandSpecs(orderFunctionSpecs);
         return cassandraEventRepository;
     }
@@ -74,15 +79,25 @@ public class Components {
     @Autowired
     private ApplicationContext applicationContext;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
 
     @KafkaListener(id = "op-listener", topics = "operation-events", containerFactory = "operationsKafkaListenerContainerFactory")
-    private void listenOperations(ConsumerRecord<String, Operation> data) {
-        PersistentEventRepository eventRepository = applicationContext.getBean(PersistentEventRepository.class);
+    private void listenOperations(ConsumerRecord<String, Operation> data) throws EventStoreException {
+        PersistentEventRepository<Order> eventRepository = applicationContext.getBean(PersistentEventRepository.class);
         log.warn("Incoming Message: " + data.value());
         if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
             eventRepository.markFail(data.key());
+            Order order = eventRepository.queryEntity(data.key());
+            if(order != null && order.getId() != null)
+                orderRepository.save(order);
+        }else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEDEED) {
+            eventRepository.queryByOpId(data.key()).stream().forEach(orderRepository::save);
         }
+
     }
+
     @Bean
     public IUserContext getUserContext() {
         return new EmptyUserContext();

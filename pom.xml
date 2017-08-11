@@ -25,8 +25,9 @@
 
     <modules>
         <module>java-api</module>
-        <module>evented-common</module>
+        <!--<module>evented-common</module>-->
         <module>spring-integration</module>
+        <module>spring-jpa-view</module>
         <!--<module>java-api</module>-->
         <module>samples</module>
         <module>kafka-tester</module>

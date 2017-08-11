@@ -59,6 +59,12 @@ public class KafkaOperationRepository implements IOperationRepository {
         operation.setTransactionState(TransactionState.TXN_FAILED);
         operationsKafka.send(new ProducerRecord<>("operation-events", opId, operation));
     }
+    @Override
+    public void successOperation(String opId, String eventId, SerializableConsumer<Event> action) {
+        Operation operation = new Operation();
+        operation.setTransactionState(TransactionState.TXN_SUCCEDEED);
+        operationsKafka.send(new ProducerRecord<>("operation-events", opId, operation));
+    }
 
     public void publishEvent(String name, PublishedEventWrapper event) {
         eventsKafka.send(new ProducerRecord<>(name,event.getOpId(),event));

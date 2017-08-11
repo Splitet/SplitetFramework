@@ -1,7 +1,7 @@
 package com.kloia.sample.commands;
 
 import com.kloia.eventapis.common.EventKey;
-import com.kloia.eventapis.api.Command;
+import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.exception.EventStoreException;
@@ -10,19 +10,25 @@ import com.kloia.sample.dto.command.ProcessOrderCommandDto;
 import com.kloia.sample.dto.event.ReserveStockEvent;
 import com.kloia.sample.model.Order;
 import com.kloia.sample.model.OrderState;
+import com.kloia.sample.model.PaymentInformation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 /**
  * Created by zeldalozdemir on 23/02/2017.
  */
 @Slf4j
-@Controller
-public class ProcessOrderCommand implements Command<Order, ProcessOrderCommandDto> {
-    private final static String name = "PROCESS_ORDER";
-    private final static String CREATED = "CREATED";
+@RestController
+public class ProcessOrderCommand implements CommandHandler<Order, ProcessOrderCommandDto> {
     private final EventRepository<Order> eventRepository;
     private final Query<Order> orderQuery;
 
@@ -32,8 +38,14 @@ public class ProcessOrderCommand implements Command<Order, ProcessOrderCommandDt
         this.orderQuery = orderQuery;
     }
 
+    @RequestMapping(value = "/order/v1/{orderId}/process", method = RequestMethod.POST)
+    public EventKey execute(@PathVariable("orderId") String orderId, @RequestBody @Valid ProcessOrderCommandDto dto) throws Exception {
+        dto.setOrderId(orderId);
+        return this.execute(dto);
+    }
+
     @Override
-    public EventKey execute(ProcessOrderCommandDto dto) throws Exception {
+    public EventKey execute(@RequestBody ProcessOrderCommandDto dto) throws Exception {
         Order order = orderQuery.queryEntity(dto.getOrderId());
 
         if (order.getState() == OrderState.INITIAL) {
@@ -49,7 +61,10 @@ public class ProcessOrderCommand implements Command<Order, ProcessOrderCommandDt
         public ProcessOrderSpec() {
             super((order, event) -> {
                 ReserveStockEvent eventData = event.getEventData();
-                order.setPaymentInformation(eventData.getPaymentInformation());
+                PaymentInformation paymentInformation = eventData.getPaymentInformation();
+                order.setPaymentAddress(paymentInformation.getPaymentAddress());
+                order.setAmount(paymentInformation.getAmount());
+                order.setCardInformation(paymentInformation.getCardInformation());
                 order.setState(OrderState.PROCESSING);
                 return order;
             });

@@ -19,4 +19,6 @@ public interface IOperationRepository {
     void updateEvent(String opId, String eventId, SerializableConsumer<Event> action);
 
     void failOperation(String opId, String eventId, SerializableConsumer<Event> action);
+
+    void successOperation(String opId, String eventId, SerializableConsumer<Event> action);
 }

@@ -1,6 +1,7 @@
-package com.kloia.sample.commands;
+package com.kloia.sample.controller.event;
 
-import com.kloia.eventapis.api.Command;
+import com.kloia.eventapis.api.CommandHandler;
+import com.kloia.eventapis.api.EventHandler;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.exception.EventPulisherException;
@@ -14,15 +15,19 @@ import com.kloia.sample.model.PaymentState;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Created by zeldalozdemir on 23/02/2017.
  */
 @Slf4j
-@Controller
-public class DoPaymentCommand implements Command<Payment, PaymentProcessEvent> {
+@RestController
+public class DoPaymentEventHandler implements EventHandler<Payment, PaymentProcessEvent> {
     private final static String name = "CREATE_ORDER";
     private final static String CREATED = "CREATED";
     private final EventRepository<Payment> eventRepository;
@@ -30,15 +35,13 @@ public class DoPaymentCommand implements Command<Payment, PaymentProcessEvent> {
 
 
     @Autowired
-    public DoPaymentCommand(EventRepository<Payment> eventRepository, Query<Payment> paymentQuery) {
+    public DoPaymentEventHandler(EventRepository<Payment> eventRepository, Query<Payment> paymentQuery) {
         this.eventRepository = eventRepository;
         this.paymentQuery = paymentQuery;
     }
 
-    @Override
+    @KafkaListener(topics = "PaymentProcessEvent", containerFactory = "eventsKafkaListenerContainerFactory")
     public EventKey execute(PaymentProcessEvent dto) throws EventStoreException, EventPulisherException {
-
-
 
         PaymentSuccessEvent paymentSuccessEvent = new PaymentSuccessEvent();
         BeanUtils.copyProperties(dto.getPaymentInformation(),paymentSuccessEvent);

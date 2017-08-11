@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.cassandra.PersistentEventRepository;
-import com.kloia.sample.commands.CreateStockCommand;
+import com.kloia.sample.commands.CreateStockCommandHandler;
 import com.kloia.sample.dto.command.CreateStockCommandDto;
 import com.kloia.sample.model.Stock;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,7 @@ public class StockRestController {
 
 
     @Autowired
-    CreateStockCommand createStockCommand;
+    CreateStockCommandHandler createStockCommandHandler;
 
 
 
@@ -51,15 +51,15 @@ public class StockRestController {
         return new ResponseEntity<Object>(stockEventRepository.queryEntity(stockId), HttpStatus.CREATED);
     }
 
-   @RequestMapping(value = "/create", method = RequestMethod.POST)
+/*   @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseEntity<?> createStock(@RequestBody CreateStockCommandDto createStockCommandDto) throws Exception {
 //        TemplateAccount saved = createTemplateAccountService.create(orderCreateDTO);
-        log.info("Create Stock Command: " + createStockCommandDto);
+        log.info("Create Stock CommandHandler: " + createStockCommandDto);
 
-       EventKey execute = createStockCommand.execute(createStockCommandDto);
+       EventKey execute = createStockCommandHandler.execute(createStockCommandDto);
 
        return new ResponseEntity<Object>(stockEventRepository.queryEntity(execute.getEntityId()), HttpStatus.CREATED);
-    }
+    }*/
 
 /*
     @RequestMapping(value = "/process", method = RequestMethod.POST)
