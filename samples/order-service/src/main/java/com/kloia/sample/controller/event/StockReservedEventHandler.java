@@ -1,13 +1,12 @@
 package com.kloia.sample.controller.event;
 
-import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventHandler;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.exception.EventPulisherException;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.exception.EventStoreException;
-import com.kloia.eventapis.api.Query;
+import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.sample.dto.event.PaymentProcessEvent;
 import com.kloia.sample.dto.event.StockReservedEvent;
 import com.kloia.sample.model.Order;
@@ -24,14 +23,14 @@ import org.springframework.stereotype.Controller;
  */
 @Slf4j
 @Controller
-public class StockReservedEventHandler implements EventHandler<Order, StockReservedEvent> {
+public class StockReservedEventHandler implements EventHandler< StockReservedEvent> {
     private final static String name = "PROCESS_ORDER";
     private final static String CREATED = "CREATED";
-    private final EventRepository<Order> eventRepository;
-    private final Query<Order> orderQuery;
+    private final EventRepository eventRepository;
+    private final ViewQuery<Order> orderQuery;
 
     @Autowired
-    public StockReservedEventHandler(EventRepository<Order> eventRepository, Query<Order> orderQuery) {
+    public StockReservedEventHandler(EventRepository eventRepository, ViewQuery<Order> orderQuery) {
         this.eventRepository = eventRepository;
         this.orderQuery = orderQuery;
     }

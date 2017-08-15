@@ -5,7 +5,7 @@ import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.exception.EventStoreException;
-import com.kloia.eventapis.api.Query;
+import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.sample.dto.command.ProcessOrderCommandDto;
 import com.kloia.sample.dto.event.ReserveStockEvent;
 import com.kloia.sample.model.Order;
@@ -14,7 +14,6 @@ import com.kloia.sample.model.PaymentInformation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,11 +28,11 @@ import javax.validation.Valid;
 @Slf4j
 @RestController
 public class ProcessOrderCommand implements CommandHandler<Order, ProcessOrderCommandDto> {
-    private final EventRepository<Order> eventRepository;
-    private final Query<Order> orderQuery;
+    private final EventRepository eventRepository;
+    private final ViewQuery<Order> orderQuery;
 
     @Autowired
-    public ProcessOrderCommand(EventRepository<Order> eventRepository, Query<Order> orderQuery) {
+    public ProcessOrderCommand(EventRepository eventRepository, ViewQuery<Order> orderQuery) {
         this.eventRepository = eventRepository;
         this.orderQuery = orderQuery;
     }

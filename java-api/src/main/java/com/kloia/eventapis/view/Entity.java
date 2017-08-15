@@ -1,5 +1,6 @@
 package com.kloia.eventapis.view;
 
+import com.kloia.eventapis.common.EventKey;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -23,4 +24,7 @@ public abstract class Entity implements Serializable {
     }
     protected String id;
     protected int version;
+    public EventKey getEventKey(){
+        return new EventKey(id,version);
+    }
 }

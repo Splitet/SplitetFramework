@@ -1,13 +1,12 @@
 package com.kloia.sample.controller.event;
 
-import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventHandler;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.exception.EventPulisherException;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.exception.EventStoreException;
-import com.kloia.eventapis.api.Query;
+import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.sample.dto.event.PaymentProcessEvent;
 import com.kloia.sample.dto.event.PaymentSuccessEvent;
 import com.kloia.sample.model.Payment;
@@ -17,9 +16,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -31,11 +27,11 @@ public class DoPaymentEventHandler implements EventHandler<Payment, PaymentProce
     private final static String name = "CREATE_ORDER";
     private final static String CREATED = "CREATED";
     private final EventRepository<Payment> eventRepository;
-    private final Query<Payment> paymentQuery;
+    private final ViewQuery<Payment> paymentQuery;
 
 
     @Autowired
-    public DoPaymentEventHandler(EventRepository<Payment> eventRepository, Query<Payment> paymentQuery) {
+    public DoPaymentEventHandler(EventRepository<Payment> eventRepository, ViewQuery<Payment> paymentQuery) {
         this.eventRepository = eventRepository;
         this.paymentQuery = paymentQuery;
     }

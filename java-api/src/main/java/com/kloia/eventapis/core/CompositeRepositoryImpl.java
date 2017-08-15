@@ -2,7 +2,7 @@ package com.kloia.eventapis.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kloia.eventapis.cassandra.PersistentEventRepository;
+import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.api.IdCreationStrategy;
@@ -24,18 +24,17 @@ import java.util.Date;
 /**
  * Created by zeldalozdemir on 24/04/2017.
  */
-public class CompositeRepositoryImpl<E extends Entity> implements EventRepository<E> {
+public class CompositeRepositoryImpl implements EventRepository {
 
-    private PersistentEventRepository<E> eventRepository;
+    private EventRecorder eventRepository;
     private OperationContext operationContext;
     private ObjectMapper objectMapper;
     private IOperationRepository operationRepository;
     private IUserContext userContext;
-    private final static String ENTITY_EVENT_CREATED = "CREATED";
     private IdCreationStrategy idCreationStrategy = new UUIDCreationStrategy();
 
 
-    public CompositeRepositoryImpl(PersistentEventRepository<E> eventRepository, OperationContext operationContext, ObjectMapper objectMapper, IOperationRepository operationRepository, IUserContext userContext) {
+    public CompositeRepositoryImpl(EventRecorder eventRepository, OperationContext operationContext, ObjectMapper objectMapper, IOperationRepository operationRepository, IUserContext userContext) {
         this.eventRepository = eventRepository;
         this.operationContext = operationContext;
         this.objectMapper = objectMapper;
@@ -43,7 +42,7 @@ public class CompositeRepositoryImpl<E extends Entity> implements EventRepositor
         this.userContext = userContext;
     }
 
-    public CompositeRepositoryImpl(PersistentEventRepository<E> eventRepository, OperationContext operationContext, ObjectMapper objectMapper, IOperationRepository operationRepository,
+    public CompositeRepositoryImpl(EventRecorder eventRepository, OperationContext operationContext, ObjectMapper objectMapper, IOperationRepository operationRepository,
                                    IUserContext userContext, IdCreationStrategy idCreationStrategy) {
         this.eventRepository = eventRepository;
         this.operationContext = operationContext;
@@ -91,7 +90,7 @@ public class CompositeRepositoryImpl<E extends Entity> implements EventRepositor
         } catch (IllegalArgumentException|JsonProcessingException e) {
             throw new EventStoreException(e.getMessage(), e);
         }
-        EntityEvent entityEvent = new EntityEvent(event.getSender(), opId, new Date(), event.getClass().getSimpleName(), ENTITY_EVENT_CREATED, eventData);
+        EntityEvent entityEvent = new EntityEvent(event.getSender(), opId, new Date(), event.getClass().getSimpleName(), EventState.CREATED, eventData);
         eventRepository.recordEntityEvent(entityEvent);
         return entityEvent.getEventKey();
     }
@@ -138,7 +137,7 @@ public class CompositeRepositoryImpl<E extends Entity> implements EventRepositor
     }
 
     @Override
-    public <P extends PublishedEvent> EventKey recordAndPublish(E entity, P publishedEvent) throws EventStoreException {
+    public <P extends PublishedEvent> EventKey recordAndPublish(Entity entity, P publishedEvent) throws EventStoreException {
         EventKey eventKey = new EventKey(entity.getId(), entity.getVersion() + 1);
         recordAndPublishInternal(publishedEvent, eventKey);
         return eventKey;

@@ -4,7 +4,7 @@ import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.api.EventRepository;
-import com.kloia.eventapis.api.Query;
+import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.sample.dto.command.CreateStockCommandDto;
 import com.kloia.sample.dto.event.StockCreatedEvent;
 import com.kloia.sample.model.Stock;
@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,12 +27,12 @@ public class CreateStockCommandHandler implements CommandHandler<Stock, CreateSt
     private final static String name = "CREATE_STOCK";
     private final static String CREATED = "CREATED";
     private final EventRepository<Stock> eventRepository;
-    private final Query<Stock> orderQuery;
+    private final ViewQuery<Stock> orderQuery;
 
 
 
     @Autowired
-    public CreateStockCommandHandler(EventRepository<Stock> eventRepository, Query<Stock> orderQuery) {
+    public CreateStockCommandHandler(EventRepository<Stock> eventRepository, ViewQuery<Stock> orderQuery) {
         this.eventRepository = eventRepository;
         this.orderQuery = orderQuery;
     }

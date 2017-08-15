@@ -1,6 +1,7 @@
 package com.kloia.eventapis.cassandra;
 
 import com.kloia.eventapis.common.EventKey;
+import com.kloia.eventapis.pojos.EventState;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,7 +24,7 @@ public class EntityEvent {
 
     private String eventType;
 
-    private String status;
+    private EventState status;
 
     private String eventData;
 

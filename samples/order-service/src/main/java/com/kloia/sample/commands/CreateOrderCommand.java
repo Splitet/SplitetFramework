@@ -4,7 +4,6 @@ import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.api.EventRepository;
-import com.kloia.eventapis.api.Query;
 import com.kloia.sample.dto.command.CreateOrderCommandDto;
 import com.kloia.sample.dto.event.OrderCreatedEvent;
 import com.kloia.sample.model.Order;
@@ -13,8 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,14 +25,11 @@ import javax.validation.Valid;
 @Slf4j
 @RestController
 public class CreateOrderCommand implements CommandHandler<Order, CreateOrderCommandDto> {
-    private final EventRepository<Order> eventRepository;
-    private final Query<Order> orderQuery;
-
+    private final EventRepository eventRepository;
 
     @Autowired
-    public CreateOrderCommand(EventRepository<Order> eventRepository, Query<Order> orderQuery) {
+    public CreateOrderCommand(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
-        this.orderQuery = orderQuery;
     }
 
     @RequestMapping(value = "/order/v1/create", method = RequestMethod.POST)

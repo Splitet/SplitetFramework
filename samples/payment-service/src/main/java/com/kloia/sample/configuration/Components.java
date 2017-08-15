@@ -8,14 +8,14 @@ import com.kloia.eventapis.kafka.KafkaOperationRepositoryFactory;
 import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
-import com.kloia.eventapis.cassandra.CassandraEventRepository;
+import com.kloia.eventapis.cassandra.CassandraEventRecorder;
 import com.kloia.eventapis.cassandra.CassandraSession;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.core.CompositeRepositoryImpl;
-import com.kloia.eventapis.cassandra.PersistentEventRepository;
+import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.api.IUserContext;
-import com.kloia.eventapis.api.Query;
+import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.cassandra.QueryByPersistentEventRepositoryDelegate;
 import com.kloia.sample.model.Payment;
 import com.kloia.sample.repository.PaymentRepository;
@@ -44,16 +44,16 @@ public class Components {
 
 
     @Bean
-    PersistentEventRepository<Payment> paymentPersistentEventRepository(List<EntityFunctionSpec<Payment, ?>> orderFunctionSpecs){
+    EventRecorder<Payment> paymentPersistentEventRepository(List<EntityFunctionSpec<Payment, ?>> orderFunctionSpecs){
         CassandraSession cassandraSession = new CassandraSession(eventApisConfiguration.getStoreConfig());
-        CassandraEventRepository<Payment> cassandraEventRepository = new CassandraEventRepository<>(eventApisConfiguration.getTableNames().getOrDefault("paymentevents", "orderevents"), cassandraSession, objectMapper);
+        CassandraEventRecorder<Payment> cassandraEventRepository = new CassandraEventRecorder<>(eventApisConfiguration.getTableNames().getOrDefault("paymentevents", "orderevents"), cassandraSession, objectMapper);
         cassandraEventRepository.addCommandSpecs(orderFunctionSpecs);
         return cassandraEventRepository;
     }
     @Bean
-    EventRepository<Payment> orderEventRepository(PersistentEventRepository<Payment> paymentPersistentEventRepository, IOperationRepository operationRepository, IUserContext userContext){
+    EventRepository<Payment> orderEventRepository(EventRecorder<Payment> paymentEventRecorder, IOperationRepository operationRepository, IUserContext userContext){
 
-        return new CompositeRepositoryImpl(paymentPersistentEventRepository, operationContext, new ObjectMapper(), operationRepository, userContext);
+        return new CompositeRepositoryImpl(paymentEventRecorder, operationContext, new ObjectMapper(), operationRepository, userContext);
     }
     @Bean
     IOperationRepository kafkaOperationRepository(){
@@ -63,8 +63,8 @@ public class Components {
 
 
     @Bean
-    Query<Payment> orderQuery(PersistentEventRepository<Payment> orderPersistentEventRepository){
-        return new QueryByPersistentEventRepositoryDelegate<>(orderPersistentEventRepository);
+    ViewQuery<Payment> orderQuery(EventRecorder<Payment> orderEventRecorder){
+        return new QueryByPersistentEventRepositoryDelegate<>(orderEventRecorder);
     }
 
 /*    @Bean
@@ -82,7 +82,7 @@ public class Components {
 
     @KafkaListener(id = "op-listener", topics = "operation-events", containerFactory = "operationsKafkaListenerContainerFactory")
     private void listenOperations(ConsumerRecord<String, Operation> data) throws EventStoreException {
-        PersistentEventRepository<Payment> eventRepository = applicationContext.getBean(PersistentEventRepository.class);
+        EventRecorder<Payment> eventRepository = applicationContext.getBean(EventRecorder.class);
         log.warn("Incoming Message: " + data.value());
         if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
             eventRepository.markFail(data.key());

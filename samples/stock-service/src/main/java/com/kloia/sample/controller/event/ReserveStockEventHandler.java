@@ -2,10 +2,9 @@ package com.kloia.sample.controller.event;
 
 import com.kloia.eventapis.api.EventHandler;
 import com.kloia.eventapis.common.EventKey;
-import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.api.EventRepository;
-import com.kloia.eventapis.api.Query;
+import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.sample.dto.event.ReserveStockEvent;
 import com.kloia.sample.dto.event.StockNotEnoughEvent;
 import com.kloia.sample.dto.event.StockReservedEvent;
@@ -25,10 +24,10 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class ReserveStockEventHandler implements EventHandler<Stock, ReserveStockEvent> {
     private final EventRepository<Stock> eventRepository;
-    private final Query<Stock> stockQuery;
+    private final ViewQuery<Stock> stockQuery;
 
     @Autowired
-    public ReserveStockEventHandler(EventRepository<Stock> eventRepository, Query<Stock> stockQuery) {
+    public ReserveStockEventHandler(EventRepository<Stock> eventRepository, ViewQuery<Stock> stockQuery) {
         this.eventRepository = eventRepository;
         this.stockQuery = stockQuery;
     }

@@ -1,11 +1,9 @@
 package com.kloia.sample.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.exception.EventStoreException;
-import com.kloia.eventapis.cassandra.PersistentEventRepository;
+import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.sample.commands.CreateStockCommandHandler;
-import com.kloia.sample.dto.command.CreateStockCommandDto;
 import com.kloia.sample.model.Stock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +11,6 @@ import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +28,7 @@ import java.io.IOException;
 public class StockRestController {
 
     @Autowired
-    private PersistentEventRepository<Stock> stockEventRepository;
+    private EventRecorder<Stock> stockEventRepository;
 
 
     @Autowired

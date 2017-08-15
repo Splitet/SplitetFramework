@@ -9,14 +9,14 @@ import com.kloia.eventapis.kafka.KafkaOperationRepositoryFactory;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
 import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
-import com.kloia.eventapis.cassandra.CassandraEventRepository;
+import com.kloia.eventapis.cassandra.CassandraEventRecorder;
 import com.kloia.eventapis.cassandra.CassandraSession;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.core.CompositeRepositoryImpl;
-import com.kloia.eventapis.cassandra.PersistentEventRepository;
+import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.api.IUserContext;
-import com.kloia.eventapis.api.Query;
+import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.cassandra.QueryByPersistentEventRepositoryDelegate;
 import com.kloia.sample.model.Stock;
 import com.kloia.sample.repository.StockRepository;
@@ -45,16 +45,16 @@ public class Components {
 
 
     @Bean
-    PersistentEventRepository<Stock> orderRepository(List<EntityFunctionSpec<Stock, ?>> orderFunctionSpecs){
+    EventRecorder<Stock> orderRepository(List<EntityFunctionSpec<Stock, ?>> orderFunctionSpecs){
         CassandraSession cassandraSession = new CassandraSession(eventApisConfiguration.getStoreConfig());
-        CassandraEventRepository<Stock> cassandraEventRepository = new CassandraEventRepository<>(eventApisConfiguration.getTableNames().getOrDefault("stockevents", "stockevents"), cassandraSession, objectMapper);
+        CassandraEventRecorder<Stock> cassandraEventRepository = new CassandraEventRecorder<>(eventApisConfiguration.getTableNames().getOrDefault("stockevents", "stockevents"), cassandraSession, objectMapper);
         cassandraEventRepository.addCommandSpecs(orderFunctionSpecs);
         return cassandraEventRepository;
     }
     @Bean
-    EventRepository<Stock> orderEventRepository(PersistentEventRepository<Stock> orderPersistentEventRepository, IOperationRepository operationRepository, IUserContext userContext){
+    EventRepository<Stock> orderEventRepository(EventRecorder<Stock> orderEventRecorder, IOperationRepository operationRepository, IUserContext userContext){
 
-        return new CompositeRepositoryImpl(orderPersistentEventRepository, operationContext, new ObjectMapper(), operationRepository, userContext);
+        return new CompositeRepositoryImpl(orderEventRecorder, operationContext, new ObjectMapper(), operationRepository, userContext);
     }
     @Bean
     IOperationRepository kafkaOperationRepository(){
@@ -64,8 +64,8 @@ public class Components {
 
 
     @Bean
-    Query<Stock> orderQuery(PersistentEventRepository<Stock> orderPersistentEventRepository){
-        return new QueryByPersistentEventRepositoryDelegate<>(orderPersistentEventRepository);
+    ViewQuery<Stock> orderQuery(EventRecorder<Stock> orderEventRecorder){
+        return new QueryByPersistentEventRepositoryDelegate<>(orderEventRecorder);
     }
 
 /*    @Bean
@@ -85,7 +85,7 @@ public class Components {
 
     @KafkaListener(id = "op-listener", topics = "operation-events", containerFactory = "operationsKafkaListenerContainerFactory")
     private void listenOperations(ConsumerRecord<String, Operation> data) throws EventStoreException {
-        PersistentEventRepository<Stock> eventRepository = applicationContext.getBean(PersistentEventRepository.class);
+        EventRecorder<Stock> eventRepository = applicationContext.getBean(EventRecorder.class);
         log.warn("Incoming Message: " + data.value());
         if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
             eventRepository.markFail(data.key());
