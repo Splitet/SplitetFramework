@@ -23,15 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-public class DoPaymentEventHandler implements EventHandler<Payment, PaymentProcessEvent> {
-    private final static String name = "CREATE_ORDER";
-    private final static String CREATED = "CREATED";
-    private final EventRepository<Payment> eventRepository;
+public class DoPaymentEventHandler implements EventHandler<PaymentProcessEvent> {
+    private final EventRepository eventRepository;
     private final ViewQuery<Payment> paymentQuery;
 
 
     @Autowired
-    public DoPaymentEventHandler(EventRepository<Payment> eventRepository, ViewQuery<Payment> paymentQuery) {
+    public DoPaymentEventHandler(EventRepository eventRepository, ViewQuery<Payment> paymentQuery) {
         this.eventRepository = eventRepository;
         this.paymentQuery = paymentQuery;
     }

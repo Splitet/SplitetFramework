@@ -26,13 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class CreateStockCommandHandler implements CommandHandler<Stock, CreateStockCommandDto> {
     private final static String name = "CREATE_STOCK";
     private final static String CREATED = "CREATED";
-    private final EventRepository<Stock> eventRepository;
+    private final EventRepository eventRepository;
     private final ViewQuery<Stock> orderQuery;
 
 
 
     @Autowired
-    public CreateStockCommandHandler(EventRepository<Stock> eventRepository, ViewQuery<Stock> orderQuery) {
+    public CreateStockCommandHandler(EventRepository eventRepository, ViewQuery<Stock> orderQuery) {
         this.eventRepository = eventRepository;
         this.orderQuery = orderQuery;
     }

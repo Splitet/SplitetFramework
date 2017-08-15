@@ -1,119 +1,61 @@
 package com.kloia.sample.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kloia.eventapis.common.OperationContext;
-import com.kloia.eventapis.exception.EventStoreException;
-import com.kloia.eventapis.kafka.IOperationRepository;
-import com.kloia.eventapis.kafka.KafkaOperationRepositoryFactory;
-import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
-import com.kloia.eventapis.pojos.Operation;
-import com.kloia.eventapis.pojos.TransactionState;
-import com.kloia.eventapis.cassandra.CassandraEventRecorder;
-import com.kloia.eventapis.cassandra.CassandraSession;
-import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.api.EventRepository;
-import com.kloia.eventapis.core.CompositeRepositoryImpl;
-import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.api.ViewQuery;
-import com.kloia.eventapis.cassandra.QueryByPersistentEventRepositoryDelegate;
+import com.kloia.eventapis.cassandra.CassandraEventRecorder;
+import com.kloia.eventapis.cassandra.CassandraSession;
+import com.kloia.eventapis.cassandra.CassandraViewQuery;
+import com.kloia.eventapis.common.EventRecorder;
+import com.kloia.eventapis.common.OperationContext;
+import com.kloia.eventapis.core.CompositeRepositoryImpl;
+import com.kloia.eventapis.kafka.IOperationRepository;
+import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
+import com.kloia.eventapis.view.EntityFunctionSpec;
+import com.kloia.eventapis.view.SnapshotRecorder;
 import com.kloia.sample.model.Payment;
 import com.kloia.sample.repository.PaymentRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.annotation.KafkaListener;
 
 import java.util.List;
-import java.util.Map;
 
 @Configuration
 @Slf4j
 public class Components {
 
     @Autowired
-    private EventApisConfiguration eventApisConfiguration;
+    CassandraSession cassandraSession;
 
     @Autowired
     private ObjectMapper objectMapper;
+
     @Autowired
     private OperationContext operationContext;
 
-
     @Bean
-    EventRecorder<Payment> paymentPersistentEventRepository(List<EntityFunctionSpec<Payment, ?>> orderFunctionSpecs){
-        CassandraSession cassandraSession = new CassandraSession(eventApisConfiguration.getStoreConfig());
-        CassandraEventRecorder<Payment> cassandraEventRepository = new CassandraEventRecorder<>(eventApisConfiguration.getTableNames().getOrDefault("paymentevents", "orderevents"), cassandraSession, objectMapper);
-        cassandraEventRepository.addCommandSpecs(orderFunctionSpecs);
-        return cassandraEventRepository;
+    SnapshotRecorder snapshotRecorder(ViewQuery<Payment> paymentViewRepository, EventRepository paymentEventRepository, PaymentRepository paymentRepository){
+        return new SnapshotRecorder(paymentViewRepository,paymentEventRepository, paymentRepository );
     }
-    @Bean
-    EventRepository<Payment> orderEventRepository(EventRecorder<Payment> paymentEventRecorder, IOperationRepository operationRepository, IUserContext userContext){
 
+    @Bean
+    ViewQuery<Payment> paymentViewRepository(List<EntityFunctionSpec<Payment, ?>> functionSpecs,EventApisConfiguration eventApisConfiguration) {
+        return new CassandraViewQuery<>(
+                eventApisConfiguration.getTableNameForEvents("payment"),
+                cassandraSession, objectMapper, functionSpecs);
+    }
+
+    @Bean
+    EventRecorder<Payment> paymentPersistentEventRepository(EventApisConfiguration eventApisConfiguration) {
+        return new CassandraEventRecorder<>(eventApisConfiguration.getTableNameForEvents("payment"), cassandraSession, objectMapper);
+    }
+
+    @Bean
+    EventRepository paymentEventRepository(EventRecorder<Payment> paymentEventRecorder, IOperationRepository operationRepository, IUserContext userContext) {
         return new CompositeRepositoryImpl(paymentEventRecorder, operationContext, new ObjectMapper(), operationRepository, userContext);
     }
-    @Bean
-    IOperationRepository kafkaOperationRepository(){
-        KafkaOperationRepositoryFactory kafka = new KafkaOperationRepositoryFactory(eventApisConfiguration.getEventBus());
-       return kafka.createKafkaOperationRepository(objectMapper);
-    }
 
-
-    @Bean
-    ViewQuery<Payment> orderQuery(EventRecorder<Payment> orderEventRecorder){
-        return new QueryByPersistentEventRepositoryDelegate<>(orderEventRecorder);
-    }
-
-/*    @Bean
-    @Scope("prototype")
-    public Feign.Builder feignBuilder() {
-        return Feign.builder();
-    }*/
-
-    @Autowired
-    private ApplicationContext applicationContext;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
-
-
-    @KafkaListener(id = "op-listener", topics = "operation-events", containerFactory = "operationsKafkaListenerContainerFactory")
-    private void listenOperations(ConsumerRecord<String, Operation> data) throws EventStoreException {
-        EventRecorder<Payment> eventRepository = applicationContext.getBean(EventRecorder.class);
-        log.warn("Incoming Message: " + data.value());
-        if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
-            eventRepository.markFail(data.key());
-            Payment order = eventRepository.queryEntity(data.key());
-            if(order != null && order.getId() != null)
-                paymentRepository.save(order);
-        }else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEDEED) {
-            eventRepository.queryByOpId(data.key()).stream().forEach(paymentRepository::save);
-        }
-
-    }
-    @Bean
-    public IUserContext getUserContext() {
-        return new EmptyUserContext();
-    }
-
-    private static class EmptyUserContext implements IUserContext {
-        @Override
-        public Map<String, String> getUserContext() {
-            return null;
-        }
-
-        @Override
-        public void extractUserContext(Map<String, String> userContext) {
-
-        }
-    }
-
-
-/*    @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }*/
 }

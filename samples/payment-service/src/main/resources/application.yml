@@ -2,9 +2,8 @@ eventapis:
   storeConfig:
     contactPoints: localhost:9042
     keyspaceName: test
-
-  tableNames:
-    paymentevents: paymentevents
+  eventRecords:
+    payment: paymentevents
   eventBus:
     bootstrapServers: localhost:9092
 #    clientId: ${project.artifactId}
@@ -32,7 +31,7 @@ spring:
       log-validation-errors: true
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
 
 server:

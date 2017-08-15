@@ -20,13 +20,17 @@ public class SnapshotRecorder {
         this.snapshotRepository = snapshotRepository;
     }
 
-    public void listenOperations(ConsumerRecord<String, Operation> data) throws EventStoreException {
-        log.info("Incoming Message: " + data.value());
-        if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
-            eventRepository.markFail(data.key());
-            snapshotRepository.save(viewQuery.queryByOpId(data.key()));
-        }else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEDEED) {
-            snapshotRepository.save(viewQuery.queryByOpId(data.key()));
+    public void listenOperations(ConsumerRecord<String, Operation> data) {
+        try {
+            log.info("Incoming Message: " + data.key()+ " "+ data.value());
+            if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
+                eventRepository.markFail(data.key());
+                snapshotRepository.save(viewQuery.queryByOpId(data.key()));
+            }else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEDEED) {
+                snapshotRepository.save(viewQuery.queryByOpId(data.key()));
+            }
+        } catch (EventStoreException e) {
+            log.error("Error while applying operation:"+data.toString()+" Exception:"+e.getMessage(),e);
         }
     }
 }

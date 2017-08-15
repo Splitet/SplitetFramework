@@ -1,27 +1,19 @@
 package com.kloia.eventapis.spring.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kloia.eventapis.api.EventRepository;
-import com.kloia.eventapis.api.ViewQuery;
+import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.api.impl.EmptyUserContext;
 import com.kloia.eventapis.cassandra.CassandraSession;
-import com.kloia.eventapis.exception.EventStoreException;
-import com.kloia.eventapis.kafka.IOperationRepository;
-import com.kloia.eventapis.pojos.TransactionState;
-import com.kloia.eventapis.spring.filter.OpContextFilter;
-
+import com.kloia.eventapis.common.CommandExecutionInterceptor;
 import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
 import com.kloia.eventapis.kafka.KafkaOperationRepositoryFactory;
-import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
-import com.kloia.eventapis.common.CommandExecutionInterceptor;
-import com.kloia.eventapis.api.IUserContext;
-import com.kloia.eventapis.view.SnapshotRecorder;
+import com.kloia.eventapis.pojos.Operation;
+import com.kloia.eventapis.spring.filter.OpContextFilter;
 import feign.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -29,7 +21,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 
@@ -38,11 +29,9 @@ import java.util.EnumSet;
 
 @Slf4j
 @Configuration
-@Import(EventApisUtil.class)
+@Import(SpringKafkaOpListener.class)
 public class EventApisFactory {
 
-    @Autowired
-    EventApisConfiguration eventApisConfiguration;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -53,18 +42,9 @@ public class EventApisFactory {
     }
 
     @Bean
-    CassandraSession cassandraSession(){
+    CassandraSession cassandraSession(EventApisConfiguration eventApisConfiguration){
         return new CassandraSession(eventApisConfiguration.getStoreConfig());
     }
-
-
-
-
-    @KafkaListener(id = "op-listener", topics = "operation-events", containerFactory = "operationsKafkaListenerContainerFactory")
-    private void listenOperations(ConsumerRecord<String, Operation> data) throws EventStoreException {
-
-    }
-
 
     @Bean
     public FilterRegistrationBean createOpContextFilter(@Autowired OperationContext operationContext) {
@@ -91,7 +71,7 @@ public class EventApisFactory {
     }
 
     @Bean
-    public KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory() {
+    public KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory(EventApisConfiguration eventApisConfiguration) {
         return new KafkaOperationRepositoryFactory(eventApisConfiguration.getEventBus());
     }
 

@@ -20,13 +20,14 @@ import com.kloia.eventapis.pojos.EventState;
 import com.kloia.eventapis.view.Entity;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by zeldalozdemir on 24/04/2017.
  */
 public class CompositeRepositoryImpl implements EventRepository {
 
-    private EventRecorder eventRepository;
+    private EventRecorder eventRecorder;
     private OperationContext operationContext;
     private ObjectMapper objectMapper;
     private IOperationRepository operationRepository;
@@ -34,17 +35,17 @@ public class CompositeRepositoryImpl implements EventRepository {
     private IdCreationStrategy idCreationStrategy = new UUIDCreationStrategy();
 
 
-    public CompositeRepositoryImpl(EventRecorder eventRepository, OperationContext operationContext, ObjectMapper objectMapper, IOperationRepository operationRepository, IUserContext userContext) {
-        this.eventRepository = eventRepository;
+    public CompositeRepositoryImpl(EventRecorder eventRecorder, OperationContext operationContext, ObjectMapper objectMapper, IOperationRepository operationRepository, IUserContext userContext) {
+        this.eventRecorder = eventRecorder;
         this.operationContext = operationContext;
         this.objectMapper = objectMapper;
         this.operationRepository = operationRepository;
         this.userContext = userContext;
     }
 
-    public CompositeRepositoryImpl(EventRecorder eventRepository, OperationContext operationContext, ObjectMapper objectMapper, IOperationRepository operationRepository,
+    public CompositeRepositoryImpl(EventRecorder eventRecorder, OperationContext operationContext, ObjectMapper objectMapper, IOperationRepository operationRepository,
                                    IUserContext userContext, IdCreationStrategy idCreationStrategy) {
-        this.eventRepository = eventRepository;
+        this.eventRecorder = eventRecorder;
         this.operationContext = operationContext;
         this.objectMapper = objectMapper;
         this.operationRepository = operationRepository;
@@ -78,7 +79,7 @@ public class CompositeRepositoryImpl implements EventRepository {
             throw new EventStoreException(e.getMessage(), e);
         }
         EntityEvent entityEvent = new EntityEvent(eventKey, opId, new Date(), eventData.getClass().getSimpleName(), ENTITY_EVENT_CREATED, eventData1);
-        eventRepository.recordEntityEvent(entityEvent);
+        eventRecorder.recordEntityEvent(entityEvent);
         return eventKey;
     }*/
 
@@ -91,7 +92,7 @@ public class CompositeRepositoryImpl implements EventRepository {
             throw new EventStoreException(e.getMessage(), e);
         }
         EntityEvent entityEvent = new EntityEvent(event.getSender(), opId, new Date(), event.getClass().getSimpleName(), EventState.CREATED, eventData);
-        eventRepository.recordEntityEvent(entityEvent);
+        eventRecorder.recordEntityEvent(entityEvent);
         return entityEvent.getEventKey();
     }
 
@@ -102,8 +103,8 @@ public class CompositeRepositoryImpl implements EventRepository {
     }*/
 
     @Override
-    public void markFail(String opId) {
-        eventRepository.markFail(opId);
+    public List<EventKey> markFail(String opId) {
+        return eventRecorder.markFail(opId);
     }
 
     @Override

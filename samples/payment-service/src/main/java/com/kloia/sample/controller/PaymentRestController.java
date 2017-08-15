@@ -1,9 +1,11 @@
 package com.kloia.sample.controller;
 
+import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.sample.controller.event.DoPaymentEventHandler;
 import com.kloia.sample.model.Payment;
+import com.kloia.sample.repository.PaymentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
@@ -27,18 +29,20 @@ import java.io.IOException;
 public class PaymentRestController {
 
     @Autowired
-    private EventRecorder<Payment> orderEventRepository;
+    private ViewQuery<Payment> orderEventRepository;
 
     @Autowired
-    private DoPaymentEventHandler doPaymentEventHandler;
+    private PaymentRepository paymentRepository;
 
     @RequestMapping(value = "/{paymentId}", method = RequestMethod.GET)
     public ResponseEntity<?> getPayment(@PathVariable("paymentId") String paymentId) throws IOException, EventStoreException {
-        return new ResponseEntity<Object>(orderEventRepository.queryEntity(paymentId), HttpStatus.CREATED);
+        return new ResponseEntity<Object>(paymentRepository.findOne(paymentId), HttpStatus.CREATED);
     }
 
-
-
+    @RequestMapping(value = "/{paymentId}/{version}", method = RequestMethod.GET)
+    public ResponseEntity<?> getPaymentWithVersion(@PathVariable("paymentId") String paymentId, @PathVariable("version") Integer version) throws IOException, EventStoreException {
+        return new ResponseEntity<Object>(orderEventRepository.queryEntity(paymentId,version), HttpStatus.CREATED);
+    }
 
 }
 

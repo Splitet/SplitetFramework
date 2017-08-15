@@ -2,12 +2,10 @@ eventapis:
   storeConfig:
     contactPoints: localhost:9042
     keyspaceName: test
-
-  tableNames:
-    orderevents: orderevents
+  eventRecords:
+    order: orderevents
   eventBus:
     bootstrapServers: localhost:9092
-#    clientId: ${project.artifactId}
     consumer:
       groupId: ${info.build.artifact}
 
@@ -43,6 +41,9 @@ spring:
       log-validation-errors: true
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
-
+logging:
+  level:
+    com.datastax.driver.core.QueryLogger.NORMAL: DEBUG
+    com.datastax.driver.core.QueryLogger.ERROR: DEBUG

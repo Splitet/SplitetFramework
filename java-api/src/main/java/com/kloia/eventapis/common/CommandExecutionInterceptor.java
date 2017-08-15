@@ -42,7 +42,7 @@ public class CommandExecutionInterceptor {
     @AfterThrowing(value = "within(com.kloia.eventapis.api.CommandHandler+ || com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "e")
     public void afterThrowing( Exception e) throws Throwable {
         log.info("afterThrowing method:"+e);
-        kafkaOperationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),event -> event.setEventState(EventState.FAILED));
+        kafkaOperationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),event -> event.setEventState(EventState.TXN_FAILED));
     }
 
 /*    @Around(value = " @annotation(org.springframework.kafka.annotation.KafkaListener))")

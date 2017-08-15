@@ -22,12 +22,12 @@ import org.springframework.stereotype.Controller;
  */
 @Slf4j
 @Controller
-public class ReserveStockEventHandler implements EventHandler<Stock, ReserveStockEvent> {
-    private final EventRepository<Stock> eventRepository;
+public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent> {
+    private final EventRepository eventRepository;
     private final ViewQuery<Stock> stockQuery;
 
     @Autowired
-    public ReserveStockEventHandler(EventRepository<Stock> eventRepository, ViewQuery<Stock> stockQuery) {
+    public ReserveStockEventHandler(EventRepository eventRepository, ViewQuery<Stock> stockQuery) {
         this.eventRepository = eventRepository;
         this.stockQuery = stockQuery;
     }
@@ -44,7 +44,7 @@ public class ReserveStockEventHandler implements EventHandler<Stock, ReserveStoc
             StockReservedEvent stockReservedEvent = new StockReservedEvent();
             BeanUtils.copyProperties(dto, stockReservedEvent);
             stockReservedEvent.setOrderId(dto.getSender().getEntityId());
-            return eventRepository.recordAndPublish(stock,stockReservedEvent);
+            return eventRepository.recordAndPublish(new EventKey(stock.getId(),stock.getVersion()-1),stockReservedEvent);
         }
     }
 

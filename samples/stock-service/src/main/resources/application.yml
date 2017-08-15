@@ -2,12 +2,10 @@ eventapis:
   storeConfig:
     contactPoints: localhost:9042
     keyspaceName: test
-
-  tableNames:
-    stockevents: stockevents
+  eventRecords:
+    stock: stockevents
   eventBus:
     bootstrapServers: localhost:9092
-#    clientId: ${project.artifactId}
     consumer:
       groupId: ${info.build.artifact}
 spring:
@@ -31,7 +29,7 @@ spring:
       log-validation-errors: true
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
 
 server:

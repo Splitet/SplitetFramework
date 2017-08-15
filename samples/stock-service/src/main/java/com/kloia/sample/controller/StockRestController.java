@@ -1,11 +1,14 @@
 package com.kloia.sample.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.sample.commands.CreateStockCommandHandler;
 import com.kloia.sample.model.Stock;
+import com.kloia.sample.repository.StockRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.http.HttpStatus;
@@ -28,7 +31,12 @@ import java.io.IOException;
 public class StockRestController {
 
     @Autowired
-    private EventRecorder<Stock> stockEventRepository;
+    private ViewQuery<Stock> stockViewQuery;
+
+    @Autowired
+    private StockRepository stockRepository;
+
+
 
 
     @Autowired
@@ -43,9 +51,18 @@ public class StockRestController {
 
 
     @RequestMapping(value = "/{stockId}", method = RequestMethod.GET)
-    public ResponseEntity<?> getOrder(@PathVariable("stockId") String stockId) throws IOException, EventStoreException {
+    public ResponseEntity<?> getStock(@PathVariable("stockId") String stockId) throws IOException, EventStoreException {
 
-        return new ResponseEntity<Object>(stockEventRepository.queryEntity(stockId), HttpStatus.CREATED);
+        Stock one = stockRepository.findOne(stockId);
+        Stock responseDto = new Stock();
+        BeanUtils.copyProperties(one, responseDto);
+        return new ResponseEntity<Object>(responseDto, HttpStatus.CREATED);
+    }
+
+    @RequestMapping(value = "/{stockId}/{version}", method = RequestMethod.GET)
+    public ResponseEntity<?> getStockWithVersion(@PathVariable("stockId") String stockId,@PathVariable("version") Integer version) throws IOException, EventStoreException {
+
+        return new ResponseEntity<Object>(stockViewQuery.queryEntity(stockId,version), HttpStatus.CREATED);
     }
 
 /*   @RequestMapping(value = "/create", method = RequestMethod.POST)

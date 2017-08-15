@@ -5,6 +5,8 @@ import com.kloia.eventapis.common.PublishedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.Entity;
 
+import java.util.List;
+
 /**
  * Created by zeldalozdemir on 21/04/2017.
  */
@@ -14,7 +16,7 @@ public interface EventRepository{
 //    <D> EventKey recordEntityEvent(E previousEntityState, D eventData) throws EventStoreException;
 //    <D> EventKey recordEntityEvent(D eventData) throws EventStoreException;
 
-    void markFail(String opId);
+    List<EventKey> markFail(String opId);
 
     <P extends PublishedEvent> EventKey recordAndPublish(P publishedEvent) throws EventStoreException;
     <P extends PublishedEvent> EventKey recordAndPublish(Entity entity, P publishedEvent) throws EventStoreException;

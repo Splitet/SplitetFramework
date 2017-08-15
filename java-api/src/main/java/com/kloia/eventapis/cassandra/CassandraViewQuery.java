@@ -47,8 +47,11 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
     public E queryEntity(String entityId) throws EventStoreException {
         Select select = QueryBuilder.select().from(tableName);
         select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
-        List<Row> entityEventDatas;
-        entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
+        return queryEntityInternal(entityId, select);
+    }
+
+    private E queryEntityInternal(String entityId, Select select) throws EventStoreException {
+        List<Row> entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
 
 
         E result;
@@ -70,9 +73,21 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
                 result.setId(entityId);
                 result.setVersion(entityEvent.getEventKey().getVersion());
             }
-
         }
         return result;
+    }
+
+    @Override
+    public E queryEntity(EventKey eventKey) throws EventStoreException {
+        return queryEntity(eventKey.getEntityId(),eventKey.getVersion());
+    }
+
+    @Override
+    public E queryEntity(String entityId, int version) throws EventStoreException {
+        Select select = QueryBuilder.select().from(tableName);
+        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
+        select.where(QueryBuilder.lte(CassandraEventRecorder.VERSION, version));
+        return queryEntityInternal(entityId, select);
     }
 
     private EntityEvent convertToEntityEvent(Row entityEventData) throws EventStoreException {
@@ -106,6 +121,8 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
         }
         return new ArrayList<>(resultList.values());
     }
+
+
 
 /*    private List<E> queryEntities(List<String> entityEvents) throws EventStoreException {
         Map<String, E> resultList = new HashMap<>();
