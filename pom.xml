@@ -28,7 +28,7 @@
         <!--<module>evented-common</module>-->
         <module>spring-integration</module>
         <module>spring-jpa-view</module>
-        <module>samples</module>
+        <!--<module>samples</module>-->
         <!--<module>kafka-tester</module>-->
         <!--<module>store</module>-->
     </modules>
