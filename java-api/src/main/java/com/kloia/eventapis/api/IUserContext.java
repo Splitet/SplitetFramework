@@ -6,4 +6,6 @@ public interface IUserContext {
     Map<String,String> getUserContext();
 
     void extractUserContext(Map<String, String> userContext);
+
+    String getAuditInfo();
 }

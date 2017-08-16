@@ -30,6 +30,7 @@ public class CassandraEventRecorder<E extends Entity> implements EventRecorder<E
     public static final String OP_DATE = "opDate";
     public static final String EVENT_TYPE = "eventType";
     public static final String STATUS = "status";
+    public static final String AUDIT_INFO = "auditinfo";
     public static final String EVENT_DATA = "eventData";
     private String tableName;
     private CassandraSession cassandraSession;

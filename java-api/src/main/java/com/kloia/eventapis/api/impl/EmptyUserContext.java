@@ -14,4 +14,9 @@ public class EmptyUserContext implements IUserContext {
     public void extractUserContext(Map<String, String> userContext) {
 
     }
+
+    @Override
+    public String getAuditInfo() {
+        return null;
+    }
 }

@@ -6,6 +6,7 @@ CREATE TABLE test.StockEvents (
 	opId ascii,
 	opDate timestamp,
 	status ascii,
+	auditinfo ascii,
 	eventData varchar,
 	PRIMARY KEY (entityId, version)
 );

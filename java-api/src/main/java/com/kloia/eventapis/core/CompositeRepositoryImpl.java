@@ -65,7 +65,7 @@ public class CompositeRepositoryImpl implements EventRepository {
         } catch (IllegalArgumentException|JsonProcessingException e) {
             throw new EventStoreException(e.getMessage(), e);
         }
-        EntityEvent entityEvent = new EntityEvent(event.getSender(), opId, new Date(), event.getClass().getSimpleName(), EventState.CREATED, eventData);
+        EntityEvent entityEvent = new EntityEvent(event.getSender(), opId, new Date(), event.getClass().getSimpleName(), EventState.CREATED, userContext.getAuditInfo(), eventData);
         eventRecorder.recordEntityEvent(entityEvent, concurrencyResolverFactory);
         return entityEvent.getEventKey();
     }

@@ -68,13 +68,13 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
                 EntityEventWrapper eventWrapper = new EntityEventWrapper<>(functionSpec.getQueryType(), objectMapper, entityEvent);
                 EntityFunction<E, ?> entityFunction = functionSpec.getEntityFunction();
                 result = (E) entityFunction.apply(result, eventWrapper);
-            }
-            if (result != null) {
-                result.setId(entityId);
-                result.setVersion(entityEvent.getEventKey().getVersion());
+                if (result != null) {
+                    result.setId(entityId);
+                    result.setVersion(entityEvent.getEventKey().getVersion());
+                }
             }
         }
-        return result;
+        return (result == null || result.getId() == null) ? null : result;
     }
 
     @Override
@@ -101,7 +101,10 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
             }*/
         return new EntityEvent(eventKey, opId,
                 entityEventData.getTimestamp(CassandraEventRecorder.OP_DATE),
-                entityEventData.getString(CassandraEventRecorder.EVENT_TYPE), EventState.valueOf(entityEventData.getString(CassandraEventRecorder.STATUS)), eventData);
+                entityEventData.getString(CassandraEventRecorder.EVENT_TYPE),
+                EventState.valueOf(entityEventData.getString(CassandraEventRecorder.STATUS)),
+                entityEventData.getString(CassandraEventRecorder.AUDIT_INFO),
+                eventData);
     }
 
     @Override

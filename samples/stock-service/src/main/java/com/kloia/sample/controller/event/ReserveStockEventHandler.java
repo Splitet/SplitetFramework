@@ -45,7 +45,7 @@ public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent>
         BeanUtils.copyProperties(dto, stockReservedEvent);
         stockReservedEvent.setOrderId(dto.getSender().getEntityId());
         try {
-            return eventRepository.recordAndPublish(new EventKey(stock.getId(), stock.getVersion() - 1), stockReservedEvent, entityEvent -> new StockConcurrencyResolver(stockQuery,dto));
+            return eventRepository.recordAndPublish(stock, stockReservedEvent, entityEvent -> new StockConcurrencyResolver(stockQuery,dto));
         } catch (ConcurrentEventException e) {
             StockNotEnoughEvent stockNotEnoughEvent = new StockNotEnoughEvent();
             BeanUtils.copyProperties(dto, stockNotEnoughEvent);
