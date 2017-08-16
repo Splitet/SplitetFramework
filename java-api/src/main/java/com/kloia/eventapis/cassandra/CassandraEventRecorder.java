@@ -15,6 +15,7 @@ import com.kloia.eventapis.view.Entity;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -47,27 +48,32 @@ public class CassandraEventRecorder<E extends Entity> implements EventRecorder<E
         return new EntityEvent(eventKey, opId, entityEventData.getTimestamp(OP_DATE), entityEventData.getString("eventType"), entityEventData.getString("status"), eventData);
     }*/
 
-    private ConcurrencyResolver concurrencyResolver = new DefaultConcurrencyResolver();
-    @Override
-    public void recordEntityEvent(EntityEvent entityEvent) throws EventStoreException {
-        Insert insert = QueryBuilder.insertInto(tableName);
-        insert.value(ENTITY_ID, entityEvent.getEventKey().getEntityId());
-        insert.value(VERSION, entityEvent.getEventKey().getVersion());
-        insert.value(OP_ID, entityEvent.getOpId());
-        insert.value(OP_DATE, entityEvent.getOpDate());
-        insert.value(EVENT_TYPE, entityEvent.getEventType());
-        insert.value(STATUS, entityEvent.getStatus().name());
-        insert.value(EVENT_DATA, entityEvent.getEventData());
+    //    private ConcurrencyResolver concurrencyResolver = new DefaultConcurrencyResolver();
+//    private Function<E, ConcurrencyResolver> concurrencyResolverFactory;
 
-        insert.ifNotExists();
-        log.info("Recording Event: " + insert.toString());
+    @Override
+    public void recordEntityEvent(EntityEvent entityEvent, Function<EntityEvent, ConcurrencyResolver> concurrencyResolverFactory) throws EventStoreException, ConcurrentEventException {
+
+        ConcurrencyResolver concurrencyResolver;
         do {
+            Insert insert = createInsertQuery(entityEvent);
+            log.info("Recording Event: " + insert.toString());
             ResultSet resultSet = cassandraSession.execute(insert);
             log.info("Recorded Event: " + resultSet.toString());
-            Row one = resultSet.one();
-            if (!one.getBool(0)) {
-                throw new EventStoreException("Concurrent Event from Op:" + one.getString(OP_ID));
+            if (resultSet.wasApplied()) {
+                break; // success
+            } else {
+                concurrencyResolver = concurrencyResolverFactory.apply(entityEvent);
+                if (!concurrencyResolver.hasMore()) {
+                    throw new EventStoreException("Concurrent Event from Op:" + resultSet.one().getString(OP_ID));
+                }
             }
+            Select select = QueryBuilder.select().max(VERSION).from(tableName);
+            select.where(QueryBuilder.eq(ENTITY_ID,entityEvent.getEventKey().getEntityId()));
+            ResultSet execute = cassandraSession.execute(select);
+            execute.wasApplied();
+            int lastVersion = execute.one().getInt(0);
+            entityEvent = concurrencyResolver.calculateNext(entityEvent, lastVersion);
         } while (concurrencyResolver.tryMore());
 
 
@@ -79,16 +85,25 @@ public class CassandraEventRecorder<E extends Entity> implements EventRecorder<E
 
     }
 
+    private Insert createInsertQuery(EntityEvent entityEvent) {
+        Insert insert = QueryBuilder.insertInto(tableName);
+        insert.value(ENTITY_ID, entityEvent.getEventKey().getEntityId());
+        insert.value(VERSION, entityEvent.getEventKey().getVersion());
+        insert.value(OP_ID, entityEvent.getOpId());
+        insert.value(OP_DATE, entityEvent.getOpDate());
+        insert.value(EVENT_TYPE, entityEvent.getEventType());
+        insert.value(STATUS, entityEvent.getStatus().name());
+        insert.value(EVENT_DATA, entityEvent.getEventData());
+        insert.ifNotExists();
+        return insert;
+    }
+
+
     @Override
     public List<EventKey> markFail(String key) {
         Select select = QueryBuilder.select().from(tableName);
         select.where(QueryBuilder.eq(OP_ID, key));
         List<Row> entityEventDatas  = cassandraSession.execute(select, PagingIterable::all);
-        try {
-            Thread.sleep(15000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         return entityEventDatas.stream().map(
                         row -> new EventKey(row.getString(ENTITY_ID), row.getInt(VERSION))

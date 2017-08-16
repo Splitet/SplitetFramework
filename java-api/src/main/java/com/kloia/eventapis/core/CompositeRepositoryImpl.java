@@ -2,6 +2,9 @@ package com.kloia.eventapis.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kloia.eventapis.cassandra.ConcurrencyResolver;
+import com.kloia.eventapis.cassandra.ConcurrentEventException;
+import com.kloia.eventapis.cassandra.DefaultConcurrencyResolver;
 import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.IUserContext;
@@ -21,6 +24,7 @@ import com.kloia.eventapis.view.Entity;
 
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Created by zeldalozdemir on 24/04/2017.
@@ -52,38 +56,8 @@ public class CompositeRepositoryImpl implements EventRepository {
         this.userContext = userContext;
         this.idCreationStrategy = idCreationStrategy;
     }
-/*
-    @Override
-    public <P extends PublishedOnly> void publishEvent(P publishedEvent) throws EventPulisherException {
-        try {
-            PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContext(), objectMapper.valueToTree(publishedEvent)); //todo add UserContext too
-            publishedEventWrapper.setUserContext(userContext.getUserContext());
-            operationRepository.publishEvent(publishedEvent.getClass().getSimpleName(), publishedEventWrapper);
-        } catch (IOException e) {
-            throw new EventPulisherException(e);
-        }
-    }*/
 
-/*    @Override
-    public <D> EventKey recordEntityEvent(E previousEntityState, D eventData) throws EventStoreException {
-        EventKey eventKey = new EventKey(previousEntityState.getId(), previousEntityState.getVersion() + 1);
-        return recordInternal( eventData, eventKey);
-    }*/
-/*
-    private <D> EventKey recordInternal(D eventData, EventKey eventKey) throws EventStoreException {
-        String opId = operationContext.getContext();
-        JsonNode eventData1 = null;
-        try {
-            eventData1 = objectMapper.valueToTree(eventData);
-        } catch (IllegalArgumentException e) {
-            throw new EventStoreException(e.getMessage(), e);
-        }
-        EntityEvent entityEvent = new EntityEvent(eventKey, opId, new Date(), eventData.getClass().getSimpleName(), ENTITY_EVENT_CREATED, eventData1);
-        eventRecorder.recordEntityEvent(entityEvent);
-        return eventKey;
-    }*/
-
-    private <P extends PublishedEvent> EventKey recordInternal(P event) throws EventStoreException {
+    private <P extends PublishedEvent> EventKey recordInternal(P event, Function<EntityEvent, ConcurrencyResolver> concurrencyResolverFactory) throws EventStoreException, ConcurrentEventException {
         String opId = operationContext.getContext();
         String eventData = null;
         try {
@@ -92,31 +66,18 @@ public class CompositeRepositoryImpl implements EventRepository {
             throw new EventStoreException(e.getMessage(), e);
         }
         EntityEvent entityEvent = new EntityEvent(event.getSender(), opId, new Date(), event.getClass().getSimpleName(), EventState.CREATED, eventData);
-        eventRecorder.recordEntityEvent(entityEvent);
+        eventRecorder.recordEntityEvent(entityEvent, concurrencyResolverFactory);
         return entityEvent.getEventKey();
     }
-
-/*    @Override
-    public <D> EventKey recordEntityEvent(D eventData) throws EventStoreException {
-        EventKey eventKey = new EventKey(idCreationStrategy.nextId(), 0);
-        return recordInternal(eventData, eventKey);
-    }*/
 
     @Override
     public List<EventKey> markFail(String opId) {
         return eventRecorder.markFail(opId);
     }
 
-    @Override
-    public <P extends PublishedEvent> EventKey recordAndPublish(P publishedEvent) throws EventStoreException {
-        EventKey eventKey = new EventKey(idCreationStrategy.nextId(), 0);
-        recordAndPublishInternal(publishedEvent, eventKey);
-        return eventKey;
-    }
-
-    private <P extends PublishedEvent> void recordAndPublishInternal(P publishedEvent, EventKey eventKey) throws EventStoreException {
+    private <P extends PublishedEvent> void recordAndPublishInternal(P publishedEvent, EventKey eventKey,Function<EntityEvent, ConcurrencyResolver> concurrencyResolverFactory) throws EventStoreException, ConcurrentEventException {
         publishedEvent.setSender(eventKey);
-        recordInternal(publishedEvent);
+        recordInternal(publishedEvent, concurrencyResolverFactory);
         String event = null;
         try {
             event = objectMapper.writerWithView(Views.PublishedOnly.class).writeValueAsString(publishedEvent);
@@ -138,16 +99,37 @@ public class CompositeRepositoryImpl implements EventRepository {
     }
 
     @Override
-    public <P extends PublishedEvent> EventKey recordAndPublish(Entity entity, P publishedEvent) throws EventStoreException {
-        EventKey eventKey = new EventKey(entity.getId(), entity.getVersion() + 1);
-        recordAndPublishInternal(publishedEvent, eventKey);
+    public <P extends PublishedEvent> EventKey recordAndPublish(P publishedEvent) throws EventStoreException, ConcurrentEventException {
+        EventKey eventKey = new EventKey(idCreationStrategy.nextId(), 0);
+        recordAndPublishInternal(publishedEvent, eventKey,entityEvent -> new DefaultConcurrencyResolver());
         return eventKey;
     }
 
     @Override
-    public <P extends PublishedEvent> EventKey recordAndPublish(EventKey eventKey, P publishedEvent) throws EventStoreException {
+    public <P extends PublishedEvent> EventKey recordAndPublish(Entity entity, P publishedEvent) throws EventStoreException, ConcurrentEventException {
+        EventKey eventKey = new EventKey(entity.getId(), entity.getVersion() + 1);
+        recordAndPublishInternal(publishedEvent, eventKey, p -> new DefaultConcurrencyResolver());
+        return eventKey;
+    }
+
+    @Override
+    public <P extends PublishedEvent> EventKey recordAndPublish(Entity entity, P publishedEvent, Function<EntityEvent, ConcurrencyResolver> concurrencyResolverFactory) throws EventStoreException, ConcurrentEventException {
+        EventKey eventKey = new EventKey(entity.getId(), entity.getVersion() + 1);
+        recordAndPublishInternal(publishedEvent, eventKey, concurrencyResolverFactory);
+        return eventKey;
+    }
+
+    @Override
+    public <P extends PublishedEvent> EventKey recordAndPublish(EventKey eventKey, P publishedEvent) throws EventStoreException, ConcurrentEventException {
         EventKey newEventKey = new EventKey(eventKey.getEntityId(), eventKey.getVersion() + 1);
-        recordAndPublishInternal(publishedEvent, newEventKey);
+        recordAndPublishInternal(publishedEvent, newEventKey, p -> new DefaultConcurrencyResolver());
+        return eventKey;
+    }
+
+    @Override
+    public <P extends PublishedEvent> EventKey recordAndPublish(EventKey eventKey, P publishedEvent, Function<EntityEvent, ConcurrencyResolver> concurrencyResolverFactory) throws EventStoreException, ConcurrentEventException {
+        EventKey newEventKey = new EventKey(eventKey.getEntityId(), eventKey.getVersion() + 1);
+        recordAndPublishInternal(publishedEvent, newEventKey,  concurrencyResolverFactory);
         return eventKey;
     }
 }

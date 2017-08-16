@@ -1,6 +1,7 @@
 package com.kloia.sample.controller.event;
 
 import com.kloia.eventapis.api.EventHandler;
+import com.kloia.eventapis.cassandra.ConcurrentEventException;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.exception.EventPulisherException;
@@ -35,7 +36,7 @@ public class DoPaymentEventHandler implements EventHandler<PaymentProcessEvent> 
     }
 
     @KafkaListener(topics = "PaymentProcessEvent", containerFactory = "eventsKafkaListenerContainerFactory")
-    public EventKey execute(PaymentProcessEvent dto) throws EventStoreException, EventPulisherException {
+    public EventKey execute(PaymentProcessEvent dto) throws EventStoreException, EventPulisherException, ConcurrentEventException {
 
         PaymentSuccessEvent paymentSuccessEvent = new PaymentSuccessEvent();
         BeanUtils.copyProperties(dto.getPaymentInformation(),paymentSuccessEvent);
