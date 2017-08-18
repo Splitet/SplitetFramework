@@ -157,7 +157,7 @@
             <version>${querydsl.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.oracle</groupId>
+            <groupId>com.oracle.jdbc</groupId>
             <artifactId>ojdbc8</artifactId>
             <version>${ojdbc.version}</version>
         </dependency>
@@ -197,10 +197,8 @@
             <id>maven.oracle.com</id>
             <releases>
                 <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
             </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
             <url>https://maven.oracle.com</url>
             <layout>default</layout>
         </repository>
