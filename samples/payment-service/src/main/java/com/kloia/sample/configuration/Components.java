@@ -1,62 +1,66 @@
 package com.kloia.sample.configuration;
 
-import com.kloia.eventapis.pojos.Operation;
-import com.kloia.eventapis.pojos.TransactionState;
-import com.kloia.evented.CassandraEventRepository;
-import com.kloia.evented.IEventRepository;
-import com.kloia.sample.dto.Payment;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kloia.eventapis.api.EventRepository;
+import com.kloia.eventapis.api.IUserContext;
+import com.kloia.eventapis.api.ViewQuery;
+import com.kloia.eventapis.cassandra.CassandraEventRecorder;
+import com.kloia.eventapis.cassandra.CassandraSession;
+import com.kloia.eventapis.cassandra.CassandraViewQuery;
+import com.kloia.eventapis.common.EventRecorder;
+import com.kloia.eventapis.common.OperationContext;
+import com.kloia.eventapis.core.CompositeRepositoryImpl;
+import com.kloia.eventapis.kafka.IOperationRepository;
+import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
+import com.kloia.eventapis.view.AggregateListener;
+import com.kloia.eventapis.view.EntityFunctionSpec;
+import com.kloia.eventapis.view.RollbackSpec;
+import com.kloia.sample.model.Payment;
+import com.kloia.sample.repository.PaymentRepository;
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.kafka.annotation.KafkaListener;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Configuration
 @Slf4j
 public class Components {
-/*    @Bean
-    public StoreApi getStoreApi(ApplicationContext context) throws IgniteCheckedException {
-        return StoreApi.createStoreApi("127.0.0.1:7500,127.0.0.1:7501,127.0.0.1:7502", context);
+
+    @Autowired
+    CassandraSession cassandraSession;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private OperationContext operationContext;
+
+    @Bean
+    AggregateListener snapshotRecorder(ViewQuery<Payment> paymentViewRepository, EventRepository paymentEventRepository, PaymentRepository paymentRepository,
+                                       Optional<List<RollbackSpec>> rollbackSpecs) {
+        return new AggregateListener(paymentViewRepository, paymentEventRepository, paymentRepository, rollbackSpecs.orElseGet(ArrayList::new));
     }
 
     @Bean
-    public OperationRepository getOperationRepository(StoreApi storeApi) {
-        return storeApi.getOperationRepository();
-    }*/
-
-    @Bean("orderEventRepository")
-    public IEventRepository<Payment> createOrderEventRepository(@Autowired CassandraTemplate cassandraTemplate){
-        return new CassandraEventRepository<Payment>("PaymentEvents",cassandraTemplate);
+    ViewQuery<Payment> paymentViewRepository(List<EntityFunctionSpec<Payment, ?>> functionSpecs,EventApisConfiguration eventApisConfiguration) {
+        return new CassandraViewQuery<>(
+                eventApisConfiguration.getTableNameForEvents("payment"),
+                cassandraSession, objectMapper, functionSpecs);
     }
 
-    @Autowired
-    private ApplicationContext applicationContext;
-
-
-    @KafkaListener(id = "op-listener", topics = "operation-events")
-    private void listenOperations(ConsumerRecord<UUID, Operation> data) {
-        IEventRepository paymentEventRepository = applicationContext.getBean(IEventRepository.class);
-        log.warn("Incoming Message: " + data.value());
-        if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
-            paymentEventRepository.markFail(data.key());
-        }
+    @Bean
+    EventRecorder paymentPersistentEventRepository(EventApisConfiguration eventApisConfiguration, IUserContext userContext) {
+        return new CassandraEventRecorder(eventApisConfiguration.getTableNameForEvents("payment"), cassandraSession, operationContext, userContext, new ObjectMapper());
     }
 
-/*    @Bean
-    @Scope("prototype")
-    public Feign.Builder feignBuilder() {
-        return Feign.builder();
-    }*/
+    @Bean
+    EventRepository paymentEventRepository(EventRecorder paymentEventRecorder, IOperationRepository operationRepository, IUserContext userContext) {
+        return new CompositeRepositoryImpl(paymentEventRecorder, operationContext, new ObjectMapper(), operationRepository, userContext);
+    }
 
-
-
-/*    @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }*/
 }

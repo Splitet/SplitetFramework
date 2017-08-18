@@ -1,6 +1,6 @@
 package com.kloia.eventapis.api.store.filter;
 
-import com.kloia.eventapis.api.filter.OpContextFilter;
+import com.kloia.eventapis.spring.filter.OpContextFilter;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

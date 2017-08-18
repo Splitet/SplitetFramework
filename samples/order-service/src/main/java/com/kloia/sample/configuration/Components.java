@@ -1,52 +1,68 @@
 package com.kloia.sample.configuration;
 
-import com.kloia.eventapis.pojos.Operation;
-import com.kloia.eventapis.pojos.TransactionState;
-import com.kloia.evented.CassandraEventRepository;
-import com.kloia.evented.IEventRepository;
-import com.kloia.sample.dto.Order;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kloia.eventapis.api.EventRepository;
+import com.kloia.eventapis.api.IUserContext;
+import com.kloia.eventapis.api.ViewQuery;
+import com.kloia.eventapis.cassandra.CassandraEventRecorder;
+import com.kloia.eventapis.cassandra.CassandraSession;
+import com.kloia.eventapis.cassandra.CassandraViewQuery;
+import com.kloia.eventapis.common.EventRecorder;
+import com.kloia.eventapis.common.OperationContext;
+import com.kloia.eventapis.core.CompositeRepositoryImpl;
+import com.kloia.eventapis.kafka.IOperationRepository;
+import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
+import com.kloia.eventapis.view.AggregateListener;
+import com.kloia.eventapis.view.EntityFunctionSpec;
+import com.kloia.eventapis.view.RollbackSpec;
+import com.kloia.sample.model.Order;
+import com.kloia.sample.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.kafka.annotation.KafkaListener;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 @Configuration
 @Slf4j
 public class Components {
 
-
-    @Bean("orderEventRepository")
-    public IEventRepository<Order> createOrderEventRepository(@Autowired CassandraTemplate cassandraTemplate) {
-        return new CassandraEventRepository<Order>("OrderEvents", cassandraTemplate);
-    }
-
-/*    @Bean
-    @Scope("prototype")
-    public Feign.Builder feignBuilder() {
-        return Feign.builder();
-    }*/
+    @Autowired
+    CassandraSession cassandraSession;
 
     @Autowired
-    private ApplicationContext applicationContext;
+    private ObjectMapper objectMapper;
 
+    @Autowired
+    private OperationContext operationContext;
 
-    @KafkaListener(id = "op-listener", topics = "operation-events")
-    private void listenOperations(ConsumerRecord<UUID, Operation> data) {
-        IEventRepository paymentEventRepository = applicationContext.getBean(IEventRepository.class);
-        log.warn("Incoming Message: " + data.value());
-        if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
-            paymentEventRepository.markFail(data.key());
-        }
+    @Bean
+    AggregateListener snapshotRecorder(ViewQuery<Order> orderViewRepository, EventRepository orderEventRepository, OrderRepository orderRepository,
+                                       Optional<List<RollbackSpec>> rollbackSpecs) {
+        return new AggregateListener(orderViewRepository, orderEventRepository, orderRepository, rollbackSpecs.orElseGet(ArrayList::new));
     }
 
-/*    @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }*/
+    @Bean
+    ViewQuery<Order> orderViewRepository(List<EntityFunctionSpec<Order, ?>> functionSpecs,EventApisConfiguration eventApisConfiguration) {
+        return new CassandraViewQuery<>(
+                eventApisConfiguration.getTableNameForEvents("order"),
+                cassandraSession, objectMapper, functionSpecs);
+    }
+
+    @Bean
+    EventRecorder orderPersistentEventRepository(EventApisConfiguration eventApisConfiguration,IUserContext userContext) {
+        return new CassandraEventRecorder(eventApisConfiguration.getTableNameForEvents("order"), cassandraSession, operationContext, userContext, new ObjectMapper());
+    }
+
+    @Bean
+    EventRepository orderEventRepository(EventRecorder orderEventRecorder, IOperationRepository operationRepository, IUserContext userContext) {
+        return new CompositeRepositoryImpl(orderEventRecorder, operationContext, new ObjectMapper(), operationRepository, userContext);
+    }
+
+
+
 }
