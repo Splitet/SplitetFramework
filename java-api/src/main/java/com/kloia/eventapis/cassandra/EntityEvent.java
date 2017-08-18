@@ -26,7 +26,7 @@ public class EntityEvent {
 
     private EventState status;
 
-    private String auditinfo;
+    private String auditInfo;
 
     private String eventData;
 
