@@ -2,9 +2,9 @@ package com.kloia.eventapis.spring.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
-import com.kloia.eventapis.api.IUserContext;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.errors.SerializationException;
 import org.springframework.kafka.support.converter.MessagingMessageConverter;

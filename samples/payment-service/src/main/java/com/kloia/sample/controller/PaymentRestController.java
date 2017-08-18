@@ -2,8 +2,6 @@ package com.kloia.sample.controller;
 
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.exception.EventStoreException;
-import com.kloia.eventapis.common.EventRecorder;
-import com.kloia.sample.controller.event.DoPaymentEventHandler;
 import com.kloia.sample.model.Payment;
 import com.kloia.sample.repository.PaymentRepository;
 import lombok.extern.slf4j.Slf4j;

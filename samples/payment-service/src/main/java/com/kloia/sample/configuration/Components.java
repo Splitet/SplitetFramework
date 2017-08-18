@@ -3,6 +3,7 @@ package com.kloia.sample.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.IUserContext;
+import com.kloia.eventapis.api.RollbackSpec;
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.cassandra.CassandraEventRecorder;
 import com.kloia.eventapis.cassandra.CassandraSession;
@@ -14,10 +15,8 @@ import com.kloia.eventapis.kafka.IOperationRepository;
 import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
 import com.kloia.eventapis.view.AggregateListener;
 import com.kloia.eventapis.view.EntityFunctionSpec;
-import com.kloia.eventapis.view.RollbackSpec;
 import com.kloia.sample.model.Payment;
 import com.kloia.sample.repository.PaymentRepository;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -43,7 +42,7 @@ public class Components {
     @Bean
     AggregateListener snapshotRecorder(ViewQuery<Payment> paymentViewRepository, EventRepository paymentEventRepository, PaymentRepository paymentRepository,
                                        Optional<List<RollbackSpec>> rollbackSpecs) {
-        return new AggregateListener(paymentViewRepository, paymentEventRepository, paymentRepository, rollbackSpecs.orElseGet(ArrayList::new));
+        return new AggregateListener(paymentViewRepository, paymentEventRepository, paymentRepository, rollbackSpecs.orElseGet(ArrayList::new),objectMapper);
     }
 
     @Bean

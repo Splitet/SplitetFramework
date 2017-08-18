@@ -2,7 +2,6 @@ package com.kloia.sample.model;
 
 import com.kloia.eventapis.view.Entity;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -39,7 +39,7 @@ public class OpContextFilter extends OncePerRequestFilter {
                     operationContext.switchContext(opIdStr);
                 } else {
                     String opId = operationContext.generateContext();
-                    httpServletResponse.setHeader("opId",opId.toString());
+                    httpServletResponse.setHeader("opId",opId);
                 }
 
 

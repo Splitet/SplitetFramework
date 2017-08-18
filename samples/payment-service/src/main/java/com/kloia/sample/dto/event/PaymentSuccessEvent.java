@@ -1,9 +1,9 @@
 package com.kloia.sample.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.kloia.eventapis.api.Views;
 import com.kloia.eventapis.common.EventType;
 import com.kloia.eventapis.common.PublishedEvent;
-import com.kloia.eventapis.api.Views;
 import lombok.Data;
 
 @Data

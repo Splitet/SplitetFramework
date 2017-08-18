@@ -1,6 +1,11 @@
 package com.kloia.eventapis.api.store.rest;
 
-import com.kloia.eventapis.pojos.*;
+import com.kloia.eventapis.pojos.Event;
+import com.kloia.eventapis.pojos.EventState;
+import com.kloia.eventapis.pojos.IEventType;
+import com.kloia.eventapis.pojos.IOperationEvents;
+import com.kloia.eventapis.pojos.Operation;
+import com.kloia.eventapis.pojos.TransactionState;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
@@ -15,15 +20,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.messaging.support.GenericMessage;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by zeldalozdemir on 22/01/2017.

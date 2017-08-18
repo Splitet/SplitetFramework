@@ -1,11 +1,6 @@
-package com.kloia.eventapis.view;
+package com.kloia.eventapis.api;
 
-import com.google.common.reflect.TypeToken;
 import com.kloia.eventapis.common.PublishedEvent;
-import lombok.Getter;
-import lombok.NonNull;
-
-import java.lang.reflect.ParameterizedType;
 
 /**
  * Created by zeldalozdemir on 21/02/2017.

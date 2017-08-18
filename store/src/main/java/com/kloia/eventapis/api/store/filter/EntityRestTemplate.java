@@ -1,24 +1,24 @@
 package com.kloia.eventapis.api.store.filter;
 
-    import com.kloia.eventapis.pojos.Event;
-    import com.kloia.eventapis.pojos.Operation;
-    import com.kloia.eventapis.pojos.TransactionState;
-    import lombok.Data;
-    import lombok.extern.slf4j.Slf4j;
-    import org.apache.ignite.Ignite;
-    import org.apache.ignite.IgniteCache;
-    import org.apache.ignite.cache.CachePeekMode;
-    import org.springframework.beans.factory.annotation.Autowired;
-    import org.springframework.http.HttpEntity;
-    import org.springframework.http.HttpHeaders;
-    import org.springframework.http.HttpMethod;
-    import org.springframework.http.ResponseEntity;
-    import org.springframework.web.client.RestTemplate;
+import com.kloia.eventapis.pojos.Event;
+import com.kloia.eventapis.pojos.Operation;
+import com.kloia.eventapis.pojos.TransactionState;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.ignite.Ignite;
+import org.apache.ignite.IgniteCache;
+import org.apache.ignite.cache.CachePeekMode;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
-    import java.util.ArrayList;
-    import java.util.Map;
-    import java.util.Optional;
-    import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Created by mesutcan.gurle on 02/02/17.

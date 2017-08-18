@@ -1,6 +1,5 @@
 package com.kloia.sample.dto.command;
 
-import com.kloia.sample.model.PaymentInformation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

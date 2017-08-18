@@ -1,8 +1,8 @@
 package com.kloia.eventapis.common;
 
 
-import com.kloia.eventapis.api.Views;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.kloia.eventapis.api.Views;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

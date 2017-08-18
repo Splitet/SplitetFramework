@@ -156,11 +156,11 @@
             <artifactId>querydsl-jpa</artifactId>
             <version>${querydsl.version}</version>
         </dependency>
-<!--        <dependency>
+        <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc8</artifactId>
             <version>${ojdbc.version}</version>
-        </dependency>-->
+        </dependency>
     </dependencies>
     <build>
         <resources>

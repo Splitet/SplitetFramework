@@ -3,6 +3,7 @@ package com.kloia.sample.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.IUserContext;
+import com.kloia.eventapis.api.RollbackSpec;
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.cassandra.CassandraEventRecorder;
 import com.kloia.eventapis.cassandra.CassandraSession;
@@ -14,7 +15,6 @@ import com.kloia.eventapis.kafka.IOperationRepository;
 import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
 import com.kloia.eventapis.view.AggregateListener;
 import com.kloia.eventapis.view.EntityFunctionSpec;
-import com.kloia.eventapis.view.RollbackSpec;
 import com.kloia.sample.model.Order;
 import com.kloia.sample.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,6 @@ import org.springframework.context.annotation.Configuration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 @Configuration
 @Slf4j
@@ -43,7 +42,7 @@ public class Components {
     @Bean
     AggregateListener snapshotRecorder(ViewQuery<Order> orderViewRepository, EventRepository orderEventRepository, OrderRepository orderRepository,
                                        Optional<List<RollbackSpec>> rollbackSpecs) {
-        return new AggregateListener(orderViewRepository, orderEventRepository, orderRepository, rollbackSpecs.orElseGet(ArrayList::new));
+        return new AggregateListener(orderViewRepository, orderEventRepository, orderRepository, rollbackSpecs.orElseGet(ArrayList::new), objectMapper);
     }
 
     @Bean

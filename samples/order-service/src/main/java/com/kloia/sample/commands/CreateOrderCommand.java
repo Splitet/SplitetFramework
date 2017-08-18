@@ -1,9 +1,9 @@
 package com.kloia.sample.commands;
 
 import com.kloia.eventapis.api.CommandHandler;
-import com.kloia.eventapis.view.EntityFunctionSpec;
-import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.api.EventRepository;
+import com.kloia.eventapis.common.EventKey;
+import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.sample.dto.command.CreateOrderCommandDto;
 import com.kloia.sample.dto.event.OrderCreatedEvent;
 import com.kloia.sample.model.Order;
