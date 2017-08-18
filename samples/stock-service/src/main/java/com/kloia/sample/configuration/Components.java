@@ -12,8 +12,9 @@ import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.core.CompositeRepositoryImpl;
 import com.kloia.eventapis.kafka.IOperationRepository;
 import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
+import com.kloia.eventapis.view.AggregateListener;
 import com.kloia.eventapis.view.EntityFunctionSpec;
-import com.kloia.eventapis.view.SnapshotRecorder;
+import com.kloia.eventapis.view.RollbackSpec;
 import com.kloia.sample.model.Stock;
 import com.kloia.sample.repository.StockRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 @Configuration
 @Slf4j
@@ -38,8 +42,9 @@ public class Components {
     private OperationContext operationContext;
 
     @Bean
-    SnapshotRecorder snapshotRecorder(ViewQuery<Stock> stockViewRepository,EventRepository stockEventRepository, StockRepository stockRepository){
-        return new SnapshotRecorder(stockViewRepository,stockEventRepository, stockRepository );
+    AggregateListener snapshotRecorder(ViewQuery<Stock> stockViewRepository, EventRepository stockEventRepository, StockRepository stockRepository,
+                                       Optional<List<RollbackSpec>> rollbackSpecs){
+        return new AggregateListener(stockViewRepository,stockEventRepository, stockRepository, rollbackSpecs.orElseGet(ArrayList::new) );
     }
 
     @Bean
@@ -50,12 +55,12 @@ public class Components {
     }
 
     @Bean
-    EventRecorder<Stock> stockPersistentEventRepository(EventApisConfiguration eventApisConfiguration) {
-        return new CassandraEventRecorder<>(eventApisConfiguration.getTableNameForEvents("stock"), cassandraSession, objectMapper);
+    EventRecorder stockPersistentEventRepository(EventApisConfiguration eventApisConfiguration,IUserContext userContext) {
+        return new CassandraEventRecorder(eventApisConfiguration.getTableNameForEvents("stock"), cassandraSession, operationContext,userContext, new ObjectMapper());
     }
 
     @Bean
-    EventRepository stockEventRepository(EventRecorder<Stock> stockEventRecorder, IOperationRepository operationRepository, IUserContext userContext) {
+    EventRepository stockEventRepository(EventRecorder stockEventRecorder, IOperationRepository operationRepository, IUserContext userContext) {
         return new CompositeRepositoryImpl(stockEventRecorder, operationContext, new ObjectMapper(), operationRepository, userContext);
     }
 

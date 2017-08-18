@@ -1,11 +1,12 @@
 package com.kloia.eventapis.cassandra;
 
+import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.exception.EventStoreException;
 
-public interface ConcurrencyResolver {
-    boolean tryMore();
+public interface ConcurrencyResolver<T extends Exception> {
 
-    boolean hasMore();
+    void tryMore() throws T;
 
-    EntityEvent calculateNext(EntityEvent entityEvent, int lastVersion) throws ConcurrentEventException, EventStoreException;
+    EventKey calculateNext(EventKey failedEventKey) throws T, EventStoreException;
+
 }

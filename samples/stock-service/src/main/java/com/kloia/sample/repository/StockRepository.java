@@ -1,6 +1,5 @@
 package com.kloia.sample.repository;
 
-import com.kloia.eventapis.view.SnapshotRecorder;
 import com.kloia.eventapis.view.SnapshotRepository;
 import com.kloia.sample.model.Stock;
 import org.springframework.data.jpa.repository.JpaRepository;

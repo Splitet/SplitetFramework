@@ -19,6 +19,6 @@ public class ReserveStockEvent extends PublishedEvent {
     private PaymentInformation paymentInformation;
     @Override
     public EventType getEventType() {
-        return EventType.EVENT;
+        return EventType.OP_START;
     }
 }

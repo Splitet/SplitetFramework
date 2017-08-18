@@ -4,12 +4,10 @@ import com.kloia.eventapis.api.EventHandler;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.cassandra.ConcurrencyResolver;
-import com.kloia.eventapis.cassandra.ConcurrentEventException;
-import com.kloia.eventapis.cassandra.EntityEvent;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.exception.EventStoreException;
-import com.kloia.eventapis.view.Entity;
 import com.kloia.eventapis.view.EntityFunctionSpec;
+import com.kloia.sample.dto.StockNotEnoughException;
 import com.kloia.sample.dto.event.ReserveStockEvent;
 import com.kloia.sample.dto.event.StockNotEnoughEvent;
 import com.kloia.sample.dto.event.StockReservedEvent;
@@ -41,30 +39,26 @@ public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent>
     @KafkaListener(topics = "ReserveStockEvent", containerFactory = "eventsKafkaListenerContainerFactory")
     public EventKey execute(ReserveStockEvent dto) throws Exception {
         Stock stock = stockQuery.queryEntity(dto.getStockId());
-        StockReservedEvent stockReservedEvent = new StockReservedEvent();
-        BeanUtils.copyProperties(dto, stockReservedEvent);
-        stockReservedEvent.setOrderId(dto.getSender().getEntityId());
-        try {
-            return eventRepository.recordAndPublish(stock, stockReservedEvent, entityEvent -> new StockConcurrencyResolver(stockQuery,dto));
-        } catch (ConcurrentEventException e) {
-            StockNotEnoughEvent stockNotEnoughEvent = new StockNotEnoughEvent();
-            BeanUtils.copyProperties(dto, stockNotEnoughEvent);
-            return eventRepository.recordAndPublish(stock,stockNotEnoughEvent);
-        }catch (Throwable e) {
-            log.error(e.getMessage(),e);
-            return stock.getEventKey();
-        }
-
-/*        if (stock.getRemainingStock() < dto.getNumberOfItemsSold()) {
-            StockNotEnoughEvent stockNotEnoughEvent = new StockNotEnoughEvent();
-            BeanUtils.copyProperties(dto, stockNotEnoughEvent);
-            return eventRepository.recordAndPublish(stockNotEnoughEvent);
-        } else {
+        if (stock.getRemainingStock() >= dto.getNumberOfItemsSold()) {
             StockReservedEvent stockReservedEvent = new StockReservedEvent();
             BeanUtils.copyProperties(dto, stockReservedEvent);
             stockReservedEvent.setOrderId(dto.getSender().getEntityId());
-            return eventRepository.recordAndPublish(new EventKey(stock.getId(),stock.getVersion()-1),stockReservedEvent);
-        }*/
+            try {
+                return eventRepository.recordAndPublish(stock, stockReservedEvent, entityEvent -> new StockConcurrencyResolver(stockQuery, dto));
+            } catch (StockNotEnoughException e) {
+                return recordStockNotEnough(dto, stock);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return stock.getEventKey();
+            }
+        } else
+            return recordStockNotEnough(dto, stock);
+    }
+
+    private EventKey recordStockNotEnough(ReserveStockEvent dto, Stock stock) throws EventStoreException, com.kloia.eventapis.cassandra.ConcurrentEventException {
+        StockNotEnoughEvent stockNotEnoughEvent = new StockNotEnoughEvent();
+        BeanUtils.copyProperties(dto, stockNotEnoughEvent);
+        return eventRepository.recordAndPublish(stock, stockNotEnoughEvent);
     }
 
     @Component
@@ -89,8 +83,7 @@ public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent>
         }
     }
 
-
-    private static class StockConcurrencyResolver implements ConcurrencyResolver {
+    private static class StockConcurrencyResolver implements ConcurrencyResolver<StockNotEnoughException> {
         private int maxTry = 3;
         private int currentTry = 0;
 
@@ -103,23 +96,19 @@ public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent>
         ReserveStockEvent reserveStockEvent;
 
         @Override
-        public boolean tryMore() {
-            return maxTry > currentTry++;
+        public void tryMore() throws StockNotEnoughException {
+            if (maxTry <= currentTry++)
+                throw new StockNotEnoughException("Cannot allocate stock in Max Try: " + maxTry);
         }
 
-        @Override
-        public boolean hasMore() {
-            return maxTry > currentTry;
-        }
 
         @Override
-        public EntityEvent calculateNext(EntityEvent entityEvent, int lastVersion) throws ConcurrentEventException, EventStoreException {
-            Stock stock = stockQuery.queryEntity(entityEvent.getEventKey().getEntityId());
+        public EventKey calculateNext(EventKey eventKey) throws StockNotEnoughException, EventStoreException {
+            Stock stock = stockQuery.queryEntity(eventKey.getEntityId());
             if (stock.getRemainingStock() < reserveStockEvent.getNumberOfItemsSold()){
-                throw new ConcurrentEventException("Out Of Stock Event");
+                throw new StockNotEnoughException("Out Of Stock Event");
             }else{
-                entityEvent.setEventKey(new EventKey(entityEvent.getEventKey().getEntityId(),lastVersion +1));
-                return entityEvent;
+                return new EventKey(eventKey.getEntityId(), stock.getVersion() + 1);
             }
         }
     }

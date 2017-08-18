@@ -43,7 +43,4 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-logging:
-  level:
-    com.datastax.driver.core.QueryLogger.NORMAL: DEBUG
-    com.datastax.driver.core.QueryLogger.ERROR: DEBUG
+

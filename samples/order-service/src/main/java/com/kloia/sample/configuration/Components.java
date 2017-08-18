@@ -12,8 +12,9 @@ import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.core.CompositeRepositoryImpl;
 import com.kloia.eventapis.kafka.IOperationRepository;
 import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
+import com.kloia.eventapis.view.AggregateListener;
 import com.kloia.eventapis.view.EntityFunctionSpec;
-import com.kloia.eventapis.view.SnapshotRecorder;
+import com.kloia.eventapis.view.RollbackSpec;
 import com.kloia.sample.model.Order;
 import com.kloia.sample.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 @Configuration
 @Slf4j
@@ -37,8 +41,9 @@ public class Components {
     private OperationContext operationContext;
 
     @Bean
-    SnapshotRecorder snapshotRecorder(ViewQuery<Order> orderViewRepository,EventRepository orderEventRepository,OrderRepository orderRepository){
-        return new SnapshotRecorder(orderViewRepository,orderEventRepository, orderRepository );
+    AggregateListener snapshotRecorder(ViewQuery<Order> orderViewRepository, EventRepository orderEventRepository, OrderRepository orderRepository,
+                                       Optional<List<RollbackSpec>> rollbackSpecs) {
+        return new AggregateListener(orderViewRepository, orderEventRepository, orderRepository, rollbackSpecs.orElseGet(ArrayList::new));
     }
 
     @Bean
@@ -49,12 +54,12 @@ public class Components {
     }
 
     @Bean
-    EventRecorder<Order> orderPersistentEventRepository(EventApisConfiguration eventApisConfiguration) {
-        return new CassandraEventRecorder<>(eventApisConfiguration.getTableNameForEvents("order"), cassandraSession, objectMapper);
+    EventRecorder orderPersistentEventRepository(EventApisConfiguration eventApisConfiguration,IUserContext userContext) {
+        return new CassandraEventRecorder(eventApisConfiguration.getTableNameForEvents("order"), cassandraSession, operationContext, userContext, new ObjectMapper());
     }
 
     @Bean
-    EventRepository orderEventRepository(EventRecorder<Order> orderEventRecorder, IOperationRepository operationRepository, IUserContext userContext) {
+    EventRepository orderEventRepository(EventRecorder orderEventRecorder, IOperationRepository operationRepository, IUserContext userContext) {
         return new CompositeRepositoryImpl(orderEventRecorder, operationContext, new ObjectMapper(), operationRepository, userContext);
     }
 

@@ -6,6 +6,7 @@ import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.api.ViewQuery;
+import com.kloia.eventapis.view.RollbackSpec;
 import com.kloia.sample.dto.command.ProcessOrderCommandDto;
 import com.kloia.sample.dto.event.ReserveStockEvent;
 import com.kloia.sample.model.Order;
@@ -67,6 +68,13 @@ public class ProcessOrderCommand implements CommandHandler<Order, ProcessOrderCo
                 order.setState(OrderState.PROCESSING);
                 return order;
             });
+        }
+    }
+    @Component
+    public static class ProcessOrderRollback implements RollbackSpec<ReserveStockEvent>{
+        @Override
+        public void rollback(ReserveStockEvent event) {
+            log.warn("ProcessOrderRollback for :"+event);
         }
     }
 }

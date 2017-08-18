@@ -55,7 +55,7 @@ public class CassandraSession {
     }
     public <R, E extends Exception> R execute(Statement t, Optional<ThrowingFunction<ResultSet, R, E>> f) throws E {
 //        try (Session session = getCluster().connect(eventStoreConfig.getKeyspaceName())) {
-            log.info("Session:"+getSession());
+            log.trace("Session:"+getSession());
             ResultSet execute = getSession().execute(t);
             if(f.isPresent())
                 return f.get().apply(execute);

@@ -8,13 +8,15 @@ import com.kloia.eventapis.pojos.TransactionState;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
+import java.util.List;
+
 @Slf4j
-public class SnapshotRecorder {
+public class AggregateListener {
     ViewQuery viewQuery;
     EventRepository eventRepository;
     SnapshotRepository snapshotRepository;
 
-    public SnapshotRecorder(ViewQuery viewQuery, EventRepository eventRepository, SnapshotRepository snapshotRepository) {
+    public AggregateListener(ViewQuery viewQuery, EventRepository eventRepository, SnapshotRepository snapshotRepository, List<RollbackSpec> rollbackSpecs) {
         this.viewQuery = viewQuery;
         this.eventRepository = eventRepository;
         this.snapshotRepository = snapshotRepository;
