@@ -58,18 +58,47 @@ public class CompositeRepositoryImpl implements EventRepository {
     }
 
 
-
     @Override
     public List<EntityEvent> markFail(String opId) {
         return eventRecorder.markFail(opId);
     }
 
-    private <P extends PublishedEvent, T extends Exception>
-    EventKey recordAndPublishInternal(P publishedEvent, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
-            throws EventStoreException, T {
+    @Override
+    public <P extends PublishedEvent> EventKey recordAndPublish(P publishedEvent) throws EventStoreException, ConcurrentEventException {
+        return recordAndPublishInternal(publishedEvent, Optional.empty(), entityEvent -> new DefaultConcurrencyResolver());
+    }
+
+    @Override
+    public <P extends PublishedEvent> EventKey recordAndPublish(Entity previousEntity, P publishedEvent) throws EventStoreException, ConcurrentEventException {
+        return recordAndPublishInternal(publishedEvent, Optional.of(previousEntity.getEventKey()), p -> new DefaultConcurrencyResolver());
+    }
+
+    @Override
+    public <P extends PublishedEvent> EventKey recordAndPublish(EventKey previousEventKey, P publishedEvent) throws EventStoreException, ConcurrentEventException {
+        return recordAndPublishInternal(publishedEvent, Optional.of(previousEventKey), p -> new DefaultConcurrencyResolver());
+    }
+
+    @Override
+    public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
+            Entity entity, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T {
+        return recordAndPublishInternal(publishedEvent, Optional.of(entity.getEventKey()), concurrencyResolverFactory);
+    }
+
+    @Override
+    public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
+            EventKey previousEventKey, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T {
+        return recordAndPublishInternal(publishedEvent, Optional.of(previousEventKey), concurrencyResolverFactory);
+    }
+
+
+    private <P extends PublishedEvent, T extends Exception> EventKey recordAndPublishInternal(
+            P publishedEvent, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T {
         EventKey eventKey = eventRecorder.recordEntityEvent(publishedEvent, previousEventKey, concurrencyResolverFactory);
         publishedEvent.setSender(eventKey);
-        String event = null;
+        String event;
         try {
             event = objectMapper.writerWithView(Views.PublishedOnly.class).writeValueAsString(publishedEvent);
         } catch (JsonProcessingException e) {
@@ -84,39 +113,10 @@ public class CompositeRepositoryImpl implements EventRepository {
     }
 
     private <P extends PublishedEvent> void checkOperationFinalStates(P publishedEvent) {
-        if(publishedEvent.getEventType() == EventType.OP_SUCCESS || publishedEvent.getEventType() == EventType.OP_SINGLE ){
-            operationRepository.successOperation(operationContext.getContext(),operationContext.getCommandContext(),successEvent -> successEvent.setEventState(EventState.TXN_SUCCEDEED));
-        }else if(publishedEvent.getEventType() == EventType.OP_FAIL){
-            operationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),failEvent -> failEvent.setEventState(EventState.TXN_FAILED));
+        if (publishedEvent.getEventType() == EventType.OP_SUCCESS || publishedEvent.getEventType() == EventType.OP_SINGLE) {
+            operationRepository.successOperation(operationContext.getContext(), operationContext.getCommandContext(), successEvent -> successEvent.setEventState(EventState.TXN_SUCCEDEED));
+        } else if (publishedEvent.getEventType() == EventType.OP_FAIL) {
+            operationRepository.failOperation(operationContext.getContext(), operationContext.getCommandContext(), failEvent -> failEvent.setEventState(EventState.TXN_FAILED));
         }
-    }
-
-    @Override
-    public <P extends PublishedEvent> EventKey recordAndPublish(P publishedEvent) throws EventStoreException, ConcurrentEventException {
-        return recordAndPublishInternal(publishedEvent, Optional.empty(), entityEvent -> new DefaultConcurrencyResolver());
-    }
-
-    @Override
-    public <P extends PublishedEvent> EventKey recordAndPublish(Entity previousEntity, P publishedEvent) throws EventStoreException, ConcurrentEventException {
-        return recordAndPublishInternal(publishedEvent, Optional.of(previousEntity.getEventKey()), p -> new DefaultConcurrencyResolver());
-    }
-
-    @Override
-    public <P extends PublishedEvent, T extends Exception>
-    EventKey recordAndPublish(Entity entity, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
-            throws EventStoreException, T {
-        return recordAndPublishInternal(publishedEvent, Optional.of(entity.getEventKey()), concurrencyResolverFactory);
-    }
-
-    @Override
-    public <P extends PublishedEvent> EventKey recordAndPublish(EventKey previousEventKey, P publishedEvent) throws EventStoreException, ConcurrentEventException {
-        return recordAndPublishInternal(publishedEvent, Optional.of(previousEventKey), p -> new DefaultConcurrencyResolver());
-    }
-
-    @Override
-    public <P extends PublishedEvent, T extends Exception> EventKey
-    recordAndPublish(EventKey previousEventKey, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
-            throws EventStoreException, T {
-        return recordAndPublishInternal(publishedEvent, Optional.of(previousEventKey), concurrencyResolverFactory);
     }
 }

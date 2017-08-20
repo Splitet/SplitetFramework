@@ -15,22 +15,21 @@ import java.util.function.Function;
  * Created by zeldalozdemir on 21/04/2017.
  */
 public interface EventRepository{
-//    <P extends PublishedOnly> void publishEvent(P publishedEvent) throws EventPulisherException;
-
-//    <D> EventKey recordEntityEvent(E previousEntityState, D eventData) throws EventStoreException;
-//    <D> EventKey recordEntityEvent(D eventData) throws EventStoreException;
 
     List<EntityEvent> markFail(String opId);
 
     <P extends PublishedEvent> EventKey recordAndPublish(P publishedEvent) throws EventStoreException, ConcurrentEventException;
-    <P extends PublishedEvent> EventKey recordAndPublish(Entity entity, P publishedEvent) throws EventStoreException, ConcurrentEventException;
 
-    <P extends PublishedEvent, T extends Exception> EventKey
-    recordAndPublish(Entity entity, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory) throws EventStoreException, T;
+    <P extends PublishedEvent> EventKey recordAndPublish(Entity entity, P publishedEvent) throws EventStoreException, ConcurrentEventException;
 
     <P extends PublishedEvent> EventKey recordAndPublish(EventKey eventKey, P publishedEvent) throws EventStoreException, ConcurrentEventException;
 
-    <P extends PublishedEvent, T extends Exception> EventKey
-    recordAndPublish(EventKey eventKey, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory) throws EventStoreException, T;
+    <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
+            Entity entity, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T;
+
+    <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
+            EventKey eventKey, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T;
 
 }
