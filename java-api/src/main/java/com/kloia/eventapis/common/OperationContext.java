@@ -9,7 +9,8 @@ import java.util.UUID;
 
 
 public class OperationContext {
-    ThreadLocal<Map.Entry<String, String>> operationContext = new ThreadLocal<Map.Entry<String, String>>() {
+
+    private ThreadLocal<Map.Entry<String, String>> operationContext = new ThreadLocal<Map.Entry<String, String>>() {
         @Override
         protected Map.Entry<String, String> initialValue() {
             return super.initialValue();
@@ -17,7 +18,7 @@ public class OperationContext {
     };
 
     public void switchContext(String opId) {
-        operationContext.set(new AbstractMap.SimpleEntry<String, String>(opId, null));
+        operationContext.set(new AbstractMap.SimpleEntry<>(opId, null));
     }
 
     public String getContext() {
@@ -32,10 +33,10 @@ public class OperationContext {
 
     public void setCommandContext(String eventId) throws EventContextException {
         Map.Entry<String, String> entry = operationContext.get();
-        if (entry == null)
+        if (entry == null) {
             throw new EventContextException("There is no Operation Context");
-        else
-            entry.setValue(eventId);
+        }
+        entry.setValue(eventId);
     }
 
     public void clearContext() {
@@ -44,8 +45,9 @@ public class OperationContext {
 
     public String clearCommandContext() {
         Map.Entry<String, String> entry = operationContext.get();
-        if(entry != null)
+        if (entry != null) {
             return entry.setValue(null);
+        }
         return null;
     }
 
