@@ -127,6 +127,7 @@ public class CassandraEventRecorder<E extends Entity> implements EventRecorder {
         insert.value(OP_DATE, entityEvent.getOpDate());
         insert.value(EVENT_TYPE, entityEvent.getEventType());
         insert.value(STATUS, entityEvent.getStatus().name());
+        insert.value(AUDIT_INFO, entityEvent.getAuditInfo());
         insert.value(EVENT_DATA, entityEvent.getEventData());
         insert.ifNotExists();
         return insert;

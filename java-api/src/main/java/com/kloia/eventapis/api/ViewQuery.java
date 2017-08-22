@@ -1,6 +1,7 @@
 package com.kloia.eventapis.api;
 
 
+import com.kloia.eventapis.cassandra.EntityEvent;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.Entity;
@@ -12,6 +13,8 @@ import java.util.List;
  */
 public interface ViewQuery<T extends Entity> {
     T queryEntity(String entityId) throws EventStoreException;
+
+    List<EntityEvent> queryHistory(String entityId) throws EventStoreException;
 
     T queryEntity(String entityId, int version) throws EventStoreException;
 

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by zeldalozdemir on 12/02/2017.
@@ -80,6 +81,14 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
     @Override
     public E queryEntity(EventKey eventKey) throws EventStoreException {
         return queryEntity(eventKey.getEntityId(),eventKey.getVersion());
+    }
+
+    @Override
+    public List<EntityEvent> queryHistory(String entityId) throws EventStoreException {
+        Select select = QueryBuilder.select().from(tableName);
+        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
+         return cassandraSession.execute(select, PagingIterable::all)
+                 .stream().map(CassandraViewQuery::convertToEntityEvent).collect(Collectors.toList());
     }
 
     @Override

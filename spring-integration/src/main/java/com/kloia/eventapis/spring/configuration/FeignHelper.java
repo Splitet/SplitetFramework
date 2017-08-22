@@ -14,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 @Configuration
-public class FeignConfiguration {
+public class FeignHelper {
 
     @Autowired
     private ObjectMapper objectMapper;

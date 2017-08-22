@@ -1,5 +1,6 @@
 package com.kloia.sample.model;
 
+import com.kloia.eventapis.spring.model.JpaEntity;
 import com.kloia.eventapis.view.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,15 +17,7 @@ import javax.persistence.Id;
 @AllArgsConstructor
 @NoArgsConstructor
 @javax.persistence.Entity(name = "\"ORDER\"")
-public class Order extends Entity {
-    @Id
-    public String getId(){
-        return super.getId();
-    }
-    @Id
-    public void setId(String id){
-        super.setId(id);
-    }
+public class Order extends JpaEntity {
     private long price;
     private String stockId;
     private int orderAmount ;

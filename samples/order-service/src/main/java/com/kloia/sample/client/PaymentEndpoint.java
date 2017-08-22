@@ -1,6 +1,6 @@
 package com.kloia.sample.client;
 
-import com.kloia.eventapis.spring.configuration.FeignConfiguration;
+import com.kloia.eventapis.spring.configuration.FeignHelper;
 import com.kloia.sample.dto.command.CreateOrderCommandDto;
 import com.kloia.sample.model.PaymentInformation;
 import org.springframework.cloud.netflix.feign.FeignClient;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 /**
  * Created by zeldalozdemir on 20/02/2017.
  */
-@FeignClient(value = "payment",url = "${payment.url}", configuration = FeignConfiguration.class)
+@FeignClient(value = "payment",url = "${payment.url}", configuration = FeignHelper.class)
 public interface PaymentEndpoint{
 //    @RequestMapping(value = "/aggr/v1/payment/process", method = RequestMethod.POST)
     @RequestMapping(value = "${payment.process.path}", method = RequestMethod.POST)
