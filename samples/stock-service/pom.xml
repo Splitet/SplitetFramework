@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.kloia.test</groupId>
         <artifactId>samples</artifactId>
-        <version>0.3.2</version>
+        <version>0.3.3</version>
     </parent>
     <artifactId>stock-service</artifactId>
 
