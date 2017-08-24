@@ -90,13 +90,14 @@ public class EventBusConfig {
     @Bean("operationsConsumerFactory")
 //    @Qualifier("operationsConsumerFactory")
     public ConsumerFactory<UUID, Operation> operationsConsumerFactory(@Autowired ObjectMapper objectMapper) {
-        return new DefaultKafkaConsumerFactory<UUID, Operation>(consumerConfigs(), new JsonDeserializer<UUID>(UUID.class), new JsonDeserializer(Operation.class, objectMapper));
+        return new DefaultKafkaConsumerFactory<UUID, Operation>(consumerConfigs(), new JsonDeserializerWithUUID(), new JsonDeserializer(Operation.class, objectMapper));
     }
 
     @Bean({"eventsConsumerFactory"})
 //    @Qualifier("consumerFactory")
     public ConsumerFactory<UUID, PublishedEventWrapper> eventsConsumerFactory(@Autowired ObjectMapper objectMapper) {
-        DefaultKafkaConsumerFactory<UUID, PublishedEventWrapper> eventsConsumerFactory = new DefaultKafkaConsumerFactory<UUID, PublishedEventWrapper>(consumerConfigs(), new JsonDeserializer<UUID>(UUID.class), new JsonDeserializer<PublishedEventWrapper>(PublishedEventWrapper.class, objectMapper));
+        DefaultKafkaConsumerFactory<UUID, PublishedEventWrapper> eventsConsumerFactory =
+                new DefaultKafkaConsumerFactory<UUID, PublishedEventWrapper>(consumerConfigs(), new JsonDeserializerWithUUID(), new JsonDeserializer<PublishedEventWrapper>(PublishedEventWrapper.class, objectMapper));
         return eventsConsumerFactory;
     }
 
