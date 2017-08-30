@@ -1,5 +1,8 @@
 ![eventapis](resources/eventapis.png)
-An event database to enable event sourcing and distributed transactions for applications that use the microservice architecture.
+<p>
+Enterprise-Scale Eventually Consistent CQRS Framework
+<p>
+Event Sourcing Framework that you can benefit during your transition towards CQRS
 
 - Website: https://eventapis.kloia.com
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/eventapis/Lobby)
