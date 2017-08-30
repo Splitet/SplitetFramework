@@ -1,24 +1,28 @@
+# eventapis
+
 ![eventapis](resources/eventapis.png)
-<p>
-# Enterprise-Scale Eventually Consistent CQRS Framework
-<p>
-Event Sourcing Framework that you can benefit during your transition towards CQRS
+
+Enterprise-Scale Eventually Consistent CQRS Framework
+
+eventapis is a Java based Event Sourcing framework which can be benefited by the teams who are planning to make CQRS transitions with minimum learning curve and ease of adaptation.
+
+It has a unique architecture called Operation Store™ together with the stack elements including Docker, Kafka, Hazelcast and Cassandra.
 
 - Website: https://eventapis.kloia.com
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/eventapis/Lobby)
 
-# Build
+## Build
 ![Image of Yaktocat](https://travis-ci.org/kloiasoft/eventapis.svg?branch=master)
 ```
 mvn package
 ```
 
-# Build Docker Image
+## Build Docker Image
 ```
 docker build -t kloiasoft/eventapis:latest .
 ```
 
-# Run
+## Run
 ```
 docker-compose up
 ```
