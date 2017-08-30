@@ -1,6 +1,6 @@
 ![eventapis](resources/eventapis.png)
 <p>
-Enterprise-Scale Eventually Consistent CQRS Framework
+# Enterprise-Scale Eventually Consistent CQRS Framework
 <p>
 Event Sourcing Framework that you can benefit during your transition towards CQRS
 
