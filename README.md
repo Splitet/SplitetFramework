@@ -1,4 +1,4 @@
-# Eventapis
+![eventapis](resources/eventapis.png)
 An event database to enable event sourcing and distributed transactions for applications that use the microservice architecture.
 
 - Website: https://eventapis.kloia.com
