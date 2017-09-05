@@ -36,25 +36,15 @@ public class CompositeRepositoryImpl implements EventRepository {
     private ObjectMapper objectMapper;
     private IOperationRepository operationRepository;
     private IUserContext userContext;
-    private IdCreationStrategy idCreationStrategy = new UUIDCreationStrategy();
 
 
-    public CompositeRepositoryImpl(EventRecorder eventRecorder, OperationContext operationContext, ObjectMapper objectMapper, IOperationRepository operationRepository, IUserContext userContext) {
+    public CompositeRepositoryImpl(EventRecorder eventRecorder, OperationContext operationContext, ObjectMapper objectMapper,
+                                   IOperationRepository operationRepository, IUserContext userContext) {
         this.eventRecorder = eventRecorder;
         this.operationContext = operationContext;
         this.objectMapper = objectMapper;
         this.operationRepository = operationRepository;
         this.userContext = userContext;
-    }
-
-    public CompositeRepositoryImpl(EventRecorder eventRecorder, OperationContext operationContext, ObjectMapper objectMapper, IOperationRepository operationRepository,
-                                   IUserContext userContext, IdCreationStrategy idCreationStrategy) {
-        this.eventRecorder = eventRecorder;
-        this.operationContext = operationContext;
-        this.objectMapper = objectMapper;
-        this.operationRepository = operationRepository;
-        this.userContext = userContext;
-        this.idCreationStrategy = idCreationStrategy;
     }
 
 
@@ -114,9 +104,9 @@ public class CompositeRepositoryImpl implements EventRepository {
 
     private <P extends PublishedEvent> void checkOperationFinalStates(P publishedEvent) {
         if (publishedEvent.getEventType() == EventType.OP_SUCCESS || publishedEvent.getEventType() == EventType.OP_SINGLE) {
-            operationRepository.successOperation(operationContext.getContext(), operationContext.getCommandContext(), successEvent -> successEvent.setEventState(EventState.TXN_SUCCEDEED));
+            operationRepository.successOperation(operationContext.getContext(), publishedEvent.getClass().getSimpleName(), successEvent -> successEvent.setEventState(EventState.TXN_SUCCEDEED));
         } else if (publishedEvent.getEventType() == EventType.OP_FAIL) {
-            operationRepository.failOperation(operationContext.getContext(), operationContext.getCommandContext(), failEvent -> failEvent.setEventState(EventState.TXN_FAILED));
+            operationRepository.failOperation(operationContext.getContext(), publishedEvent.getClass().getSimpleName(), failEvent -> failEvent.setEventState(EventState.TXN_FAILED));
         }
     }
 }

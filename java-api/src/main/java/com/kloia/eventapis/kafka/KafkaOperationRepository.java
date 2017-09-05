@@ -14,10 +14,13 @@ import java.util.UUID;
 public class KafkaOperationRepository implements IOperationRepository {
     private KafkaProducer<String,Operation> operationsKafka;
     private KafkaProducer<String,PublishedEventWrapper> eventsKafka;
+    private String senderGroupId;
 
-    public KafkaOperationRepository(KafkaProducer<String, Operation> operationsKafka, KafkaProducer<String, PublishedEventWrapper> eventsKafka) {
+    public KafkaOperationRepository(KafkaProducer<String, Operation> operationsKafka,
+                                    KafkaProducer<String, PublishedEventWrapper> eventsKafka, String senderGroupId) {
         this.operationsKafka = operationsKafka;
         this.eventsKafka = eventsKafka;
+        this.senderGroupId = senderGroupId;
     }
 
     /*    private KafkaTemplate<UUID,Operation> operationsKafka;
@@ -57,16 +60,21 @@ public class KafkaOperationRepository implements IOperationRepository {
     public void failOperation(String opId, String eventId, SerializableConsumer<Event> action) {
         Operation operation = new Operation();
         operation.setTransactionState(TransactionState.TXN_FAILED);
+        operation.setSender(senderGroupId);
+        operation.setAggregateId(eventId);
         operationsKafka.send(new ProducerRecord<>("operation-events", opId, operation));
     }
     @Override
     public void successOperation(String opId, String eventId, SerializableConsumer<Event> action) {
         Operation operation = new Operation();
+        operation.setSender(senderGroupId);
+        operation.setAggregateId(eventId);
         operation.setTransactionState(TransactionState.TXN_SUCCEDEED);
         operationsKafka.send(new ProducerRecord<>("operation-events", opId, operation));
     }
 
     public void publishEvent(String name, PublishedEventWrapper event) {
+        event.setSender(senderGroupId);
         eventsKafka.send(new ProducerRecord<>(name,event.getOpId(),event));
     }
 }

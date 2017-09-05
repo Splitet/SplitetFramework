@@ -1,6 +1,7 @@
 package com.kloia.eventapis.cassandra;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.QueryLogger;
 import com.datastax.driver.core.QueryOptions;
 import com.datastax.driver.core.ResultSet;
@@ -117,7 +118,7 @@ public class CassandraSession {
         }
     }
 
-    public Session getSession() {
+    private Session getSession() {
         if (session == null) {
             synchronized (this) {
                 if (session == null)
@@ -142,6 +143,10 @@ public class CassandraSession {
     }
     public ResultSet execute(Statement t) {
        return execute(t,Optional.empty());
+    }
+
+    public PreparedStatement prepare(String statement) {
+        return getSession().prepare(statement);
     }
 
 

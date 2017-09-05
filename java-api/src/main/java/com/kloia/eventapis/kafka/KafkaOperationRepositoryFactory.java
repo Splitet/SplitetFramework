@@ -20,7 +20,7 @@ public class KafkaOperationRepositoryFactory {
                 kafkaProperties.buildProducerProperties(), new StringSerializer(), new JsonSerializer<>(objectMapper));
         KafkaProducer<String, PublishedEventWrapper> eventsKafka = new KafkaProducer<>(kafkaProperties.buildProducerProperties(),
                 new StringSerializer(), new JsonSerializer<>(objectMapper));
-        return new KafkaOperationRepository(operationsKafka, eventsKafka);
+        return new KafkaOperationRepository(operationsKafka, eventsKafka, kafkaProperties.getConsumer().getGroupId());
     }
 
     public Consumer<String, PublishedEventWrapper> createEventConsumer(ObjectMapper objectMapper) {

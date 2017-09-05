@@ -16,8 +16,8 @@ public class Operation implements /*Externalizable,Binarylizable,*/  Serializabl
     private List<Event> events;
 
     private TransactionState transactionState;
-    private String mainAggregateName;
-
+    private String aggregateId;
+    private String sender;
 //    private static transient ObjectMapper objectMapper = new ObjectMapper();
 
 
@@ -25,7 +25,7 @@ public class Operation implements /*Externalizable,Binarylizable,*/  Serializabl
     }
 
     public Operation(String mainAggregateName, List<Event> events, TransactionState transactionState) {
-        this.mainAggregateName = mainAggregateName;
+        this.aggregateId = mainAggregateName;
         this.events = events;
         this.transactionState = transactionState;
     }
@@ -36,13 +36,13 @@ public class Operation implements /*Externalizable,Binarylizable,*/  Serializabl
 
 /*    public void writeExternal(ObjectOutput out) throws IOException {
 
-        out.writeUTF(mainAggregateName);
+        out.writeUTF(aggregateId);
         out.writeUTF(transactionState.name());
         out.writeObject(events);
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        mainAggregateName = in.readUTF();
+        aggregateId = in.readUTF();
         transactionState = TransactionState.valueOf(TransactionState.class, in.readUTF());
         events = (List<Event>) in.readObject();
     }*/
@@ -64,14 +64,14 @@ public class Operation implements /*Externalizable,Binarylizable,*/  Serializabl
 
 /*    public void writeBinary(BinaryWriter writer) throws BinaryObjectException {
         BinaryRawWriter binaryRawWriter = writer.rawWriter();
-        binaryRawWriter.writeString(mainAggregateName);
+        binaryRawWriter.writeString(aggregateId);
         binaryRawWriter.writeEnum(transactionState);
         binaryRawWriter.writeObjectArray(events.toArray(new Event[events.size()]));
     }
 
     public void readBinary(BinaryReader reader) throws BinaryObjectException {
         BinaryRawReader binaryRawReader = reader.rawReader();
-        mainAggregateName = binaryRawReader.readString();
+        aggregateId = binaryRawReader.readString();
         transactionState = binaryRawReader.readEnum();
         Object[] objects = binaryRawReader.readObjectArray();
         events = Stream.of(objects).map(Event.class::cast).collect(Collectors.toList());

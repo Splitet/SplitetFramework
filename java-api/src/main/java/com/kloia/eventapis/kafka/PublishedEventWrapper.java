@@ -38,6 +38,9 @@ public class PublishedEventWrapper implements Serializable {
     }
 
     private String opId;
+    
+    private String sender;
+
     private Map<String,String> userContext;
 
     public PublishedEventWrapper() {
