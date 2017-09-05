@@ -246,7 +246,7 @@ public class CompositeRepositoryImplTest {
         compositeRepository.recordAndPublish(successEvent);
 
         ArgumentCaptor<SerializableConsumer> serializableConsumerCaptor = ArgumentCaptor.forClass(SerializableConsumer.class);
-        verify(operationRepository).successOperation(eq("opId"), eq("eventId"), serializableConsumerCaptor.capture());
+        verify(operationRepository).successOperation(eq("opId"), eq(""), serializableConsumerCaptor.capture());
 
         Event event = new Event();
         serializableConsumerCaptor.getValue().accept(event);
@@ -261,7 +261,7 @@ public class CompositeRepositoryImplTest {
         compositeRepository.recordAndPublish(failEvent);
 
         ArgumentCaptor<SerializableConsumer> serializableConsumerCaptor = ArgumentCaptor.forClass(SerializableConsumer.class);
-        verify(operationRepository).failOperation(eq("opId"), eq("eventId"), serializableConsumerCaptor.capture());
+        verify(operationRepository).failOperation(eq("opId"), eq(""), serializableConsumerCaptor.capture());
 
         Event event = new Event();
         serializableConsumerCaptor.getValue().accept(event);
