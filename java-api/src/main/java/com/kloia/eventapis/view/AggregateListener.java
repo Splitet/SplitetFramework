@@ -46,7 +46,6 @@ public class AggregateListener {
 
     public void listenOperations(ConsumerRecord<String, Operation> data) {
         try {
-            log.info("Incoming Message: " + data.key()+ " "+ data.value());
             if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
                 List<EntityEvent> entityEvents = eventRepository.markFail(data.key());
                 entityEvents.forEach(entityEvent -> {

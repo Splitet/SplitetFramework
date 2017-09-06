@@ -43,62 +43,6 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
         addCommandSpecs(commandSpecs);
     }
 
-
-    @Override
-    public E queryEntity(String entityId) throws EventStoreException {
-        Select select = QueryBuilder.select().from(tableName);
-        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
-        return queryEntityInternal(entityId, select);
-    }
-
-    private E queryEntityInternal(String entityId, Select select) throws EventStoreException {
-        List<Row> entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
-
-
-        E result;
-        try {
-            result = entityType.newInstance();
-        } catch (InstantiationException|IllegalAccessException e) {
-            log.error(e.getMessage(),e);
-            throw new EventStoreException(e);
-        }
-        for (Row entityEventData : entityEventDatas) {
-            EntityEvent entityEvent = convertToEntityEvent(entityEventData);
-            if ( entityEvent.getStatus() == EventState.CREATED || entityEvent.getStatus() == EventState.SUCCEDEED ) {
-                EntityFunctionSpec<E, ?> functionSpec = functionMap.get(entityEvent.getEventType());
-                EntityEventWrapper eventWrapper = new EntityEventWrapper<>(functionSpec.getQueryType(), objectMapper, entityEvent);
-                EntityFunction<E, ?> entityFunction = functionSpec.getEntityFunction();
-                result = (E) entityFunction.apply(result, eventWrapper);
-            }
-            if (result != null) {
-                result.setId(entityId);
-                result.setVersion(entityEvent.getEventKey().getVersion());
-            }
-        }
-        return (result == null || result.getId() == null) ? null : result;
-    }
-
-    @Override
-    public E queryEntity(EventKey eventKey) throws EventStoreException {
-        return queryEntity(eventKey.getEntityId(),eventKey.getVersion());
-    }
-
-    @Override
-    public List<EntityEvent> queryHistory(String entityId) throws EventStoreException {
-        Select select = QueryBuilder.select().from(tableName);
-        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
-         return cassandraSession.execute(select, PagingIterable::all)
-                 .stream().map(CassandraViewQuery::convertToEntityEvent).collect(Collectors.toList());
-    }
-
-    @Override
-    public E queryEntity(String entityId, int version) throws EventStoreException {
-        Select select = QueryBuilder.select().from(tableName);
-        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
-        select.where(QueryBuilder.lte(CassandraEventRecorder.VERSION, version));
-        return queryEntityInternal(entityId, select);
-    }
-
     static EntityEvent convertToEntityEvent(Row entityEventData) {
         EventKey eventKey = new EventKey(entityEventData.getString(CassandraEventRecorder.ENTITY_ID), entityEventData.getInt(CassandraEventRecorder.VERSION));
         String opId = entityEventData.getString(CassandraEventRecorder.OP_ID);
@@ -114,6 +58,64 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
                 EventState.valueOf(entityEventData.getString(CassandraEventRecorder.STATUS)),
                 entityEventData.getString(CassandraEventRecorder.AUDIT_INFO),
                 eventData);
+    }
+
+    @Override
+    public E queryEntity(String entityId) throws EventStoreException {
+        Select select = QueryBuilder.select().from(tableName);
+        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
+        return queryEntityInternal(entityId, select);
+    }
+
+    private E queryEntityInternal(String entityId, Select select) throws EventStoreException {
+        List<Row> entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
+
+
+        E initialInstance, result = null;
+        try {
+            initialInstance = entityType.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            log.error(e.getMessage(), e);
+            throw new EventStoreException(e);
+        }
+        for (Row entityEventData : entityEventDatas) {
+            EntityEvent entityEvent = convertToEntityEvent(entityEventData);
+            if (entityEvent.getStatus() == EventState.CREATED || entityEvent.getStatus() == EventState.SUCCEDEED) {
+                EntityFunctionSpec<E, ?> functionSpec = functionMap.get(entityEvent.getEventType());
+                if (functionSpec != null) {
+                    EntityEventWrapper eventWrapper = new EntityEventWrapper<>(functionSpec.getQueryType(), objectMapper, entityEvent);
+                    EntityFunction<E, ?> entityFunction = functionSpec.getEntityFunction();
+                    result = (E) entityFunction.apply(result == null ? initialInstance : result, eventWrapper);
+                } else
+                    log.trace("Function Spec is not available for " + entityEvent.getEventType() + " EntityId:" + entityId + " Table:" + tableName);
+            }
+            if (result != null) {
+                result.setId(entityId);
+                result.setVersion(entityEvent.getEventKey().getVersion());
+            }
+        }
+        return (result == null || result.getId() == null) ? null : result;
+    }
+
+    @Override
+    public E queryEntity(EventKey eventKey) throws EventStoreException {
+        return queryEntity(eventKey.getEntityId(), eventKey.getVersion());
+    }
+
+    @Override
+    public List<EntityEvent> queryHistory(String entityId) throws EventStoreException {
+        Select select = QueryBuilder.select().from(tableName);
+        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
+        return cassandraSession.execute(select, PagingIterable::all)
+                .stream().map(CassandraViewQuery::convertToEntityEvent).collect(Collectors.toList());
+    }
+
+    @Override
+    public E queryEntity(String entityId, int version) throws EventStoreException {
+        Select select = QueryBuilder.select().from(tableName);
+        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
+        select.where(QueryBuilder.lte(CassandraEventRecorder.VERSION, version));
+        return queryEntityInternal(entityId, select);
     }
 
     @Override
