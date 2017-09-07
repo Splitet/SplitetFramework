@@ -133,6 +133,16 @@ public class KafkaProperties {
         private String groupId;
 
         /**
+         * Concurrency option, default 1
+         */
+        private Integer eventConcurrency = 1;
+
+        /**
+         * Concurrency option, default 1
+         */
+        private Integer operationConcurrency = 3;
+
+        /**
          * Expected time in milliseconds between heartbeats to the consumer coordinator.
          */
         private Integer heartbeatInterval;

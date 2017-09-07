@@ -117,21 +117,22 @@ public class EventApisFactory {
 
     @Bean({"eventsKafkaListenerContainerFactory", "kafkaListenerContainerFactory"})
     public ConcurrentKafkaListenerContainerFactory<String, PublishedEventWrapper> eventsKafkaListenerContainerFactory(
-            EventMessageConverter eventMessageConverter, ConsumerFactory<String,PublishedEventWrapper> consumerFactory) {
+            EventApisConfiguration eventApisConfiguration,EventMessageConverter eventMessageConverter, ConsumerFactory<String,PublishedEventWrapper> consumerFactory) {
 
         ConcurrentKafkaListenerContainerFactory<String, PublishedEventWrapper> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
-        factory.setConcurrency(3);
+        factory.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getEventConcurrency());
         factory.setMessageConverter(eventMessageConverter);
         factory.getContainerProperties().setPollTimeout(3000);
         return factory;
     }
 
     @Bean("operationsKafkaListenerContainerFactory")
-    public ConcurrentKafkaListenerContainerFactory<String, Operation> operationsKafkaListenerContainerFactory(ConsumerFactory<String,Operation> consumerFactory) {
+    public ConcurrentKafkaListenerContainerFactory<String, Operation> operationsKafkaListenerContainerFactory(
+            EventApisConfiguration eventApisConfiguration,ConsumerFactory<String,Operation> consumerFactory) {
         ConcurrentKafkaListenerContainerFactory<String, Operation> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
-        factory.setConcurrency(3);
+        factory.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getOperationConcurrency());
         factory.getContainerProperties().setPollTimeout(3000);
         return factory;
     }
