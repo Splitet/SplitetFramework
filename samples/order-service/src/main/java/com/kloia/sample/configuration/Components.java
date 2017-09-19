@@ -40,8 +40,11 @@ public class Components {
     private OperationContext operationContext;
 
     @Bean
-    AggregateListener snapshotRecorder(ViewQuery<Order> orderViewRepository, EventRepository orderEventRepository, OrderRepository orderRepository,
-                                       Optional<List<RollbackSpec>> rollbackSpecs) {
+    AggregateListener snapshotRecorder(ViewQuery<Order> orderViewRepository, // View Query with Function Specs
+                                       EventRepository orderEventRepository, // Event Repository to mark failed events
+                                       OrderRepository orderRepository,      // Jpa Repository to record snapshots
+                                       Optional<List<RollbackSpec>> rollbackSpecs // Custom Rollback Specs for Event Failures
+    ) {
         return new AggregateListener(orderViewRepository, orderEventRepository, orderRepository, rollbackSpecs.orElseGet(ArrayList::new), objectMapper);
     }
 
