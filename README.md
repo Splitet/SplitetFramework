@@ -16,13 +16,3 @@ It has a unique architecture called Operation Store™ together with the stack e
 ```
 mvn package
 ```
-
-## Build Docker Image
-```
-docker build -t kloiasoft/eventapis:latest .
-```
-
-## Run
-```
-docker-compose up
-```
