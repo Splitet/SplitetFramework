@@ -2,6 +2,7 @@ package com.kloia.eventapis.common;
 
 
 import com.kloia.eventapis.exception.EventContextException;
+import org.slf4j.MDC;
 
 import java.util.AbstractMap;
 import java.util.Map;
@@ -19,6 +20,7 @@ public class OperationContext {
 
     public void switchContext(String opId) {
         operationContext.set(new AbstractMap.SimpleEntry<>(opId, null));
+        MDC.put("opId", opId);
     }
 
     public String getContext() {
@@ -37,10 +39,14 @@ public class OperationContext {
             throw new EventContextException("There is no Operation Context");
         }
         entry.setValue(eventId);
+        MDC.put("command",eventId);
     }
 
     public void clearContext() {
         operationContext.remove();
+        MDC.remove("session");
+        MDC.remove("opId");
+        MDC.remove("command");
     }
 
     public String clearCommandContext() {

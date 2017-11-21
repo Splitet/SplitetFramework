@@ -4,6 +4,7 @@ package com.kloia.eventapis.common;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
@@ -27,22 +28,25 @@ public class CommandExecutionInterceptor {
     }
 
     @Before("within(com.kloia.eventapis.api.CommandHandler+ || com.kloia.eventapis.api.EventHandler+) && execution(* execute(..)) && args(object)")
-    public void before( Object object) throws Throwable {
-        UUID eventId = UUID.randomUUID();
-        operationContext.setCommandContext(eventId.toString());
+    public void before(JoinPoint jp, Object object) throws Throwable {
+        operationContext.setCommandContext(jp.getTarget().getClass().getSimpleName());
         log.info("before method:"+(object == null ? "" : object.toString()));
     }
 
     @AfterReturning(value = "within(com.kloia.eventapis.api.CommandHandler+ || com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))",returning="retVal")
     public void afterReturning( Object retVal) throws Throwable {
-//        kafkaOperationRepository.updateEvent(operationContext.getContext(),operationContext.clearCommandContext(),event -> event.setEventState(EventState.SUCCEDEED));
         log.info("AfterReturning:"+ (retVal == null ? "" : retVal.toString()));
+        operationContext.clearContext();
     }
 
     @AfterThrowing(value = "within(com.kloia.eventapis.api.CommandHandler+ || com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "e")
     public void afterThrowing( Exception e) throws Throwable {
-        log.info("afterThrowing method:"+e);
-        kafkaOperationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),event -> event.setEventState(EventState.TXN_FAILED));
+        try {
+            log.info("afterThrowing method:"+e);
+            kafkaOperationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),event -> event.setEventState(EventState.TXN_FAILED));
+        } finally {
+            operationContext.clearContext();
+        }
     }
 
 /*    @Around(value = " @annotation(org.springframework.kafka.annotation.KafkaListener))")

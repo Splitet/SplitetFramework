@@ -2,6 +2,7 @@ package com.kloia.eventapis.spring.filter;
 
 import com.kloia.eventapis.common.OperationContext;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -18,31 +19,26 @@ import java.util.List;
 public class OpContextFilter extends OncePerRequestFilter {
 
 
+    public static final List<String> changeMethods = Collections.unmodifiableList(Arrays.asList("POST", "PUT", "DELETE"));
     private OperationContext operationContext;
-
 
     @Autowired
     public OpContextFilter(OperationContext operationContext) {
         this.operationContext = operationContext;
     }
 
-    public static final List<String> changeMethods = Collections.unmodifiableList(Arrays.asList("POST", "PUT", "DELETE"));
-
-
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         try {
             if (changeMethods.contains(httpServletRequest.getMethod())) {
 
-                String opIdStr = httpServletRequest.getHeader("opId");
-                if (opIdStr != null) {
-                    operationContext.switchContext(opIdStr);
+                String opId = httpServletRequest.getHeader("opId");
+                if (opId != null) {
+                    operationContext.switchContext(opId);
                 } else {
-                    String opId = operationContext.generateContext();
-                    httpServletResponse.setHeader("opId",opId);
+                    opId = operationContext.generateContext();
+                    httpServletResponse.setHeader("opId", opId);
                 }
-
-
             }
         } finally {
             filterChain.doFilter(httpServletRequest, httpServletResponse);
