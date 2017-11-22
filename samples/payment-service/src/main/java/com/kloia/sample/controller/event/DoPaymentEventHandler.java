@@ -39,12 +39,13 @@ public class DoPaymentEventHandler implements EventHandler<PaymentProcessEvent> 
     public EventKey execute(PaymentProcessEvent dto) throws EventStoreException, EventPulisherException, ConcurrentEventException {
 
         PaymentSuccessEvent paymentSuccessEvent = new PaymentSuccessEvent();
-        BeanUtils.copyProperties(dto.getPaymentInformation(),paymentSuccessEvent);
+        BeanUtils.copyProperties(dto.getPaymentInformation(), paymentSuccessEvent);
         paymentSuccessEvent.setOrderId(dto.getSender().getEntityId());
 
         return eventRepository.recordAndPublish(paymentSuccessEvent);
 
     }
+
     @Component
     public static class DoPaymentSpec extends EntityFunctionSpec<Payment, PaymentSuccessEvent> {
         public DoPaymentSpec() {

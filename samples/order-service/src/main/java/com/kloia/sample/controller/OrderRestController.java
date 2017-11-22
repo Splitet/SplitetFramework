@@ -6,7 +6,6 @@ import com.kloia.sample.model.Order;
 import com.kloia.sample.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +22,6 @@ import java.io.IOException;
 @Slf4j
 @RestController
 @RequestMapping(value = "/order/v1/")
-@EnableFeignClients
 public class OrderRestController {
 
     @Autowired

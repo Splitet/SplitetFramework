@@ -1,0 +1,15 @@
+server:
+  port: 7800
+  jetty:
+    acceptors: 2
+service:
+  name: Eventapis Operation Center
+
+eventapis:
+  eventBus:
+    bootstrapServers: localhost:9092
+    consumer:
+      groupId: ${info.build.artifact}
+
+
+

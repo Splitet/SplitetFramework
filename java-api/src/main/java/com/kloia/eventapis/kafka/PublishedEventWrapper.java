@@ -41,13 +41,16 @@ public class PublishedEventWrapper implements Serializable {
     
     private String sender;
 
+    private String aggregateId;
+
     private Map<String,String> userContext;
 
     public PublishedEventWrapper() {
     }
 
-    public PublishedEventWrapper(String opId, String eventData) {
+    public PublishedEventWrapper(String opId, String aggregateId,String eventData) {
         this.opId = opId;
+        this.aggregateId = aggregateId;
         this.event = eventData;
     }
 

@@ -5,7 +5,7 @@
 
     <groupId>com.kloia.eventapis</groupId>
     <artifactId>eventapis-parent</artifactId>
-    <version>0.3.7-SNAPSHOT</version>
+    <version>0.4.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>eventapis-parent</name>
@@ -33,8 +33,8 @@
         <module>spring-jpa-view</module>
         <!--<module>samples</module>-->
         <!--<module>samples-empty</module>-->
-        <!--<module>kafka-tester</module>-->
-        <!--<module>store</module>-->
+        <module>kafka-tester</module>
+        <module>store</module>
     </modules>
 
     <dependencyManagement>
