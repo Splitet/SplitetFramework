@@ -1,0 +1,15 @@
+{{outlet}}
+<div class="network-canvas"></div>
+
+
+{{#visjs-network backgroundOffsetX=1600 backgroundOffsetY=1400}}
+
+  {{#each model.nodes as |x|}}
+    {{visjs-node nId=x.nId label=x.label color=x.color}}
+  {{/each}}
+  {{#each model.edges as |x|}}
+    {{visjs-edge from=x.from to=x.to label=x.label arrows='to'}}
+  {{/each}}
+{{/visjs-network}}
+
+

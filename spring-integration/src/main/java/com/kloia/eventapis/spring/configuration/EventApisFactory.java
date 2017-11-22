@@ -5,6 +5,7 @@ import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.api.impl.EmptyUserContext;
 import com.kloia.eventapis.cassandra.CassandraSession;
 import com.kloia.eventapis.common.CommandExecutionInterceptor;
+import com.kloia.eventapis.common.EventExecutionInterceptor;
 import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
 import com.kloia.eventapis.kafka.KafkaOperationRepositoryFactory;
@@ -68,6 +69,12 @@ public class EventApisFactory {
     public CommandExecutionInterceptor createCommandExecutionInterceptor(@Autowired KafkaOperationRepository kafkaOperationRepository,
                                                                          @Autowired OperationContext operationContext) {
         return new CommandExecutionInterceptor(kafkaOperationRepository, operationContext);
+    }
+
+    @Bean
+    public EventExecutionInterceptor createEventExecutionInterceptor(@Autowired KafkaOperationRepository kafkaOperationRepository,
+                                                                       @Autowired OperationContext operationContext) {
+        return new EventExecutionInterceptor(kafkaOperationRepository, operationContext);
     }
 
     @Bean

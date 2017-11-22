@@ -27,11 +27,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 
 @Data
 public class KafkaProperties {
 
+    private final Consumer consumer = new Consumer();
+    private final Producer producer = new Producer();
     /**
      * Comma-delimited list of host:port pairs to use for establishing the initial
      * connection to the Kafka cluster.
@@ -40,18 +43,19 @@ public class KafkaProperties {
             Collections.singletonList("localhost:9092"));
 
     /**
+     * Comma-delimited list of host:port pairs to use for establishing the initial
+     * connection to the Kafka cluster.
+     */
+    private List<String> zookeeperServers = new ArrayList<String>(
+            Collections.singletonList("localhost:2181"));
+    /**
      * Id to pass to the server when making requests; used for server-side logging.
      */
     private String clientId;
-
     /**
      * Additional properties used to configure the client.
      */
     private Map<String, String> properties = new HashMap<String, String>();
-
-    private final Consumer consumer = new Consumer();
-
-    private final Producer producer = new Producer();
 
     private Map<String, Object> buildCommonProperties() {
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -61,7 +65,10 @@ public class KafkaProperties {
         }
         if (this.clientId != null) {
             properties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.clientId);
-        }
+        } else if (this.consumer.groupId != null)
+            properties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.consumer.groupId +"-"+ new Random().nextInt(1000));
+
+
         if (!MapUtils.isEmpty(this.properties)) {
             properties.putAll(this.properties);
         }
