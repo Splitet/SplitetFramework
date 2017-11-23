@@ -47,6 +47,7 @@ public class OperationContext {
         MDC.remove("session");
         MDC.remove("opId");
         MDC.remove("command");
+        MDC.remove("request");
     }
 
     public String clearCommandContext() {
