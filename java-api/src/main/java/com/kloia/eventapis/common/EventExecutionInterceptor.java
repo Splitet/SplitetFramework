@@ -37,12 +37,17 @@ public class EventExecutionInterceptor {
     public void afterReturning( Object retVal) throws Throwable {
 //        kafkaOperationRepository.updateEvent(operationContext.getContext(),operationContext.clearCommandContext(),event -> event.setEventState(EventState.SUCCEDEED));
         log.info("AfterReturning:"+ (retVal == null ? "" : retVal.toString()));
+        operationContext.clearContext();
     }
 
     @AfterThrowing(value = "within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "e")
     public void afterThrowing( Exception e) throws Throwable {
-        log.info("afterThrowing method:"+e);
-        kafkaOperationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),event -> event.setEventState(EventState.TXN_FAILED));
+        try {
+            log.info("afterThrowing method:"+e);
+            kafkaOperationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),event -> event.setEventState(EventState.TXN_FAILED));
+        } finally {
+            operationContext.clearContext();
+        }
     }
 
 /*    @Around(value = " @annotation(org.springframework.kafka.annotation.KafkaListener))")
