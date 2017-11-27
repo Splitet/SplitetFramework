@@ -33,7 +33,7 @@
         <module>spring-jpa-view</module>
         <!--<module>samples</module>-->
         <!--<module>samples-empty</module>-->
-        <module>kafka-tester</module>
+        <!--<module>kafka-tester</module>-->
         <module>store</module>
     </modules>
 

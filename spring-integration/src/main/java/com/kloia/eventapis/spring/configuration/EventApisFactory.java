@@ -27,6 +27,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 
 import javax.servlet.DispatcherType;
 import java.util.EnumSet;
+import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -43,7 +44,7 @@ public class EventApisFactory {
     }
 
     @Bean
-    CassandraSession cassandraSession(EventApisConfiguration eventApisConfiguration){
+    CassandraSession cassandraSession(EventApisConfiguration eventApisConfiguration) {
         return new CassandraSession(eventApisConfiguration.getStoreConfig());
     }
 
@@ -73,7 +74,7 @@ public class EventApisFactory {
 
     @Bean
     public EventExecutionInterceptor createEventExecutionInterceptor(@Autowired KafkaOperationRepository kafkaOperationRepository,
-                                                                       @Autowired OperationContext operationContext) {
+                                                                     @Autowired OperationContext operationContext) {
         return new EventExecutionInterceptor(kafkaOperationRepository, operationContext);
     }
 
@@ -93,38 +94,30 @@ public class EventApisFactory {
     }
 
     @Bean
-    public ConsumerFactory<String, PublishedEventWrapper> kafkaConsumerFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory) {
-        return new ConsumerFactory<String, PublishedEventWrapper>() {
+    public ConsumerFactory<String, PublishedEventWrapper> kafkaConsumerFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory,
+                                                                               EventApisConfiguration eventApisConfiguration) {
+        return new EventApisConsumerFactory<String, PublishedEventWrapper>(kafkaOperationRepositoryFactory, eventApisConfiguration) {
             @Override
             public Consumer<String, PublishedEventWrapper> createConsumer() {
                 return kafkaOperationRepositoryFactory.createEventConsumer(objectMapper);
-            }
-
-            @Override
-            public boolean isAutoCommit() {
-                return kafkaOperationRepositoryFactory.isAutoCommit();
             }
         };
     }
 
     @Bean
-    public ConsumerFactory<String,Operation> kafkaOperationsFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory) {
-        return new ConsumerFactory<String, Operation>() {
+    public ConsumerFactory<String, Operation> kafkaOperationsFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory,
+                                                                     EventApisConfiguration eventApisConfiguration) {
+        return new EventApisConsumerFactory<String, Operation>(kafkaOperationRepositoryFactory, eventApisConfiguration) {
             @Override
             public Consumer<String, Operation> createConsumer() {
                 return kafkaOperationRepositoryFactory.createOperationConsumer(objectMapper);
-            }
-
-            @Override
-            public boolean isAutoCommit() {
-                return kafkaOperationRepositoryFactory.isAutoCommit();
             }
         };
     }
 
     @Bean({"eventsKafkaListenerContainerFactory", "kafkaListenerContainerFactory"})
     public ConcurrentKafkaListenerContainerFactory<String, PublishedEventWrapper> eventsKafkaListenerContainerFactory(
-            EventApisConfiguration eventApisConfiguration,EventMessageConverter eventMessageConverter, ConsumerFactory<String,PublishedEventWrapper> consumerFactory) {
+            EventApisConfiguration eventApisConfiguration, EventMessageConverter eventMessageConverter, ConsumerFactory<String, PublishedEventWrapper> consumerFactory) {
 
         ConcurrentKafkaListenerContainerFactory<String, PublishedEventWrapper> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
@@ -136,7 +129,7 @@ public class EventApisFactory {
 
     @Bean("operationsKafkaListenerContainerFactory")
     public ConcurrentKafkaListenerContainerFactory<String, Operation> operationsKafkaListenerContainerFactory(
-            EventApisConfiguration eventApisConfiguration,ConsumerFactory<String,Operation> consumerFactory) {
+            EventApisConfiguration eventApisConfiguration, ConsumerFactory<String, Operation> consumerFactory) {
         ConcurrentKafkaListenerContainerFactory<String, Operation> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getOperationConcurrency());
@@ -150,4 +143,34 @@ public class EventApisFactory {
         return new EmptyUserContext();
     }
 
+    private abstract class EventApisConsumerFactory<K, V> implements ConsumerFactory<K, V> {
+        private final KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory;
+        private final EventApisConfiguration eventApisConfiguration;
+
+        public EventApisConsumerFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory, EventApisConfiguration eventApisConfiguration) {
+            this.kafkaOperationRepositoryFactory = kafkaOperationRepositoryFactory;
+            this.eventApisConfiguration = eventApisConfiguration;
+        }
+
+        @Override
+        public Consumer<K, V> createConsumer(String clientIdSuffix) {
+            return createConsumer();
+        }
+
+        @Override
+        public Consumer<K, V> createConsumer(String groupId, String clientIdSuffix) {
+            return createConsumer();
+        }
+
+        @Override
+        public boolean isAutoCommit() {
+            return kafkaOperationRepositoryFactory.isAutoCommit();
+        }
+
+        @Override
+        public Map<String, Object> getConfigurationProperties() {
+            return eventApisConfiguration.getEventBus().buildConsumerProperties();
+
+        }
+    }
 }

@@ -11,6 +11,7 @@ export default Ember.Route.extend({
       nodes.push({
         nId: data.initiatorCommand,
         label: data.initiatorCommand,
+        shape: 'diamond',
         color: '#87604e'
       });
       edges.push({
@@ -42,20 +43,21 @@ export default Ember.Route.extend({
     return operation.sender + '_' + operation.topic;
   },
   handleEvents(nodes, edges, parent) {
-    Object.keys(parent.publishedEvents).forEach((serviceName) => {
-      let operation = parent.publishedEvents[serviceName];
-      nodes.push({
-        nId: this.calculateId(operation),
-        label: operation.sender,
-        color: this.findColor(operation)
+    if (parent.publishedEvents !== null && parent.publishedEvents !== undefined)
+      Object.keys(parent.publishedEvents).forEach((serviceName) => {
+        let operation = parent.publishedEvents[serviceName];
+        nodes.push({
+          nId: this.calculateId(operation),
+          label: operation.sender,
+          color: this.findColor(operation)
+        });
+        edges.push({
+          from: this.calculateId(parent),
+          label: parent.topic,
+          to: this.calculateId(operation)
+        });
+        this.handleEvents(nodes, edges, operation);
       });
-      edges.push({
-        from: this.calculateId(parent),
-        label: parent.topic,
-        to: this.calculateId(operation)
-      });
-      this.handleEvents(nodes, edges, operation);
-    });
   },
   findColor(operation) {
     switch (operation.eventType) {

@@ -10,7 +10,7 @@ import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.sample.dto.event.OrderPaidEvent;
 import com.kloia.sample.dto.event.PaymentSuccessEvent;
-import com.kloia.sample.model.Order;
+import com.kloia.sample.model.Orders;
 import com.kloia.sample.model.OrderState;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +25,10 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class PaymentSuccessEventHandler implements EventHandler<PaymentSuccessEvent> {
     private final EventRepository eventRepository;
-    private final ViewQuery<Order> orderQuery;
+    private final ViewQuery<Orders> orderQuery;
 
     @Autowired
-    public PaymentSuccessEventHandler(EventRepository eventRepository, ViewQuery<Order> orderQuery) {
+    public PaymentSuccessEventHandler(EventRepository eventRepository, ViewQuery<Orders> orderQuery) {
         this.eventRepository = eventRepository;
         this.orderQuery = orderQuery;
     }
@@ -36,7 +36,7 @@ public class PaymentSuccessEventHandler implements EventHandler<PaymentSuccessEv
     @Override
     @KafkaListener(topics = "PaymentSuccessEvent", containerFactory = "eventsKafkaListenerContainerFactory")
     public EventKey execute(PaymentSuccessEvent dto) throws EventStoreException, EventPulisherException, ConcurrentEventException {
-        Order order = orderQuery.queryEntity(dto.getOrderId());
+        Orders order = orderQuery.queryEntity(dto.getOrderId());
 
         if (order.getState() == OrderState.PAYMENT_READY) {
             log.info("Payment is processing : " + dto);
@@ -46,7 +46,7 @@ public class PaymentSuccessEventHandler implements EventHandler<PaymentSuccessEv
     }
 
     @Component
-    public static class OrderPaidSpec extends EntityFunctionSpec<Order, OrderPaidEvent> {
+    public static class OrderPaidSpec extends EntityFunctionSpec<Orders, OrderPaidEvent> {
         public OrderPaidSpec() {
             super((order, event) -> {
                 OrderPaidEvent eventData = event.getEventData();

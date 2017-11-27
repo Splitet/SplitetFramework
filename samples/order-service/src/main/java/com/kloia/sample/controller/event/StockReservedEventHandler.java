@@ -10,7 +10,7 @@ import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.sample.dto.event.PaymentProcessEvent;
 import com.kloia.sample.dto.event.StockReservedEvent;
-import com.kloia.sample.model.Order;
+import com.kloia.sample.model.Orders;
 import com.kloia.sample.model.OrderState;
 import com.kloia.sample.model.PaymentInformation;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +28,10 @@ public class StockReservedEventHandler implements EventHandler< StockReservedEve
     private final static String name = "PROCESS_ORDER";
     private final static String CREATED = "CREATED";
     private final EventRepository eventRepository;
-    private final ViewQuery<Order> orderQuery;
+    private final ViewQuery<Orders> orderQuery;
 
     @Autowired
-    public StockReservedEventHandler(EventRepository eventRepository, ViewQuery<Order> orderQuery) {
+    public StockReservedEventHandler(EventRepository eventRepository, ViewQuery<Orders> orderQuery) {
         this.eventRepository = eventRepository;
         this.orderQuery = orderQuery;
     }
@@ -39,7 +39,7 @@ public class StockReservedEventHandler implements EventHandler< StockReservedEve
     @Override
     @KafkaListener(topics = "StockReservedEvent", containerFactory = "eventsKafkaListenerContainerFactory")
     public EventKey execute(StockReservedEvent dto) throws EventStoreException, EventPulisherException, ConcurrentEventException {
-        Order order = orderQuery.queryEntity(dto.getOrderId());
+        Orders order = orderQuery.queryEntity(dto.getOrderId());
 
         if (order.getState() == OrderState.PROCESSING) {
             PaymentProcessEvent paymentProcessEvent = new PaymentProcessEvent(order.getId(),new PaymentInformation(order.getPaymentAddress(),order.getAmount(),order.getCardInformation()));
@@ -50,7 +50,7 @@ public class StockReservedEventHandler implements EventHandler< StockReservedEve
     }
 
     @Component
-    public static class PaymentProcessSpec extends EntityFunctionSpec<Order, PaymentProcessEvent> {
+    public static class PaymentProcessSpec extends EntityFunctionSpec<Orders, PaymentProcessEvent> {
         public PaymentProcessSpec() {
             super((order, event) -> {
                 PaymentProcessEvent eventData = event.getEventData();

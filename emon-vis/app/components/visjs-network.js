@@ -188,7 +188,7 @@ export default Ember.Component.extend(ContainerMixin, {
       simplifiedNode.shape = 'image';
       simplifiedNode.image = node.get('image');
     } else
-      simplifiedNode.shape = 'circle';
+      simplifiedNode.shape = node.get('shape') || 'circle';
 
 
     nodes.add(simplifiedNode);

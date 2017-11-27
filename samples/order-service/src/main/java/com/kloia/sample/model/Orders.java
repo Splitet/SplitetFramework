@@ -16,8 +16,8 @@ import javax.persistence.Id;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@javax.persistence.Entity(name = "\"ORDER\"")
-public class Order extends JpaEntity {
+@javax.persistence.Entity(name = "ORDERS")
+public class Orders extends JpaEntity {
     private long price;
     private String stockId;
     private int orderAmount ;

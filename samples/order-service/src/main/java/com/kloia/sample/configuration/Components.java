@@ -15,7 +15,7 @@ import com.kloia.eventapis.kafka.IOperationRepository;
 import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
 import com.kloia.eventapis.view.AggregateListener;
 import com.kloia.eventapis.view.EntityFunctionSpec;
-import com.kloia.sample.model.Order;
+import com.kloia.sample.model.Orders;
 import com.kloia.sample.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ public class Components {
     private OperationContext operationContext;
 
     @Bean
-    AggregateListener snapshotRecorder(ViewQuery<Order> orderViewRepository, // View Query with Function Specs
+    AggregateListener snapshotRecorder(ViewQuery<Orders> orderViewRepository, // View Query with Function Specs
                                        EventRepository orderEventRepository, // Event Repository to mark failed events
                                        OrderRepository orderRepository,      // Jpa Repository to record snapshots
                                        Optional<List<RollbackSpec>> rollbackSpecs // Custom Rollback Specs for Event Failures
@@ -49,7 +49,7 @@ public class Components {
     }
 
     @Bean
-    ViewQuery<Order> orderViewRepository(List<EntityFunctionSpec<Order, ?>> functionSpecs,EventApisConfiguration eventApisConfiguration) {
+    ViewQuery<Orders> orderViewRepository(List<EntityFunctionSpec<Orders, ?>> functionSpecs, EventApisConfiguration eventApisConfiguration) {
         return new CassandraViewQuery<>(
                 eventApisConfiguration.getTableNameForEvents("order"),
                 cassandraSession, objectMapper, functionSpecs);

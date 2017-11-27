@@ -41,6 +41,8 @@ public class DoPaymentEventHandler implements EventHandler<PaymentProcessEvent> 
         PaymentSuccessEvent paymentSuccessEvent = new PaymentSuccessEvent();
         BeanUtils.copyProperties(dto.getPaymentInformation(), paymentSuccessEvent);
         paymentSuccessEvent.setOrderId(dto.getSender().getEntityId());
+        if(dto.getPaymentInformation().getAmount() > 1000)
+            throw new RuntimeException("Bla Bla");
 
         return eventRepository.recordAndPublish(paymentSuccessEvent);
 

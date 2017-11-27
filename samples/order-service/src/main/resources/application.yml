@@ -1,7 +1,9 @@
 eventapis:
   storeConfig:
-    contactPoints: localhost:9042
+    contactPoints: test-api:9042
     keyspaceName: test
+    username: test_order
+    password: qwe123
   eventRecords:
     order: orderevents
   eventBus:
@@ -9,21 +11,13 @@ eventapis:
     consumer:
       groupId: ${info.build.artifact}
 
-payment:
-  url: http://localhost:8062
-  process-path: /payments/v1/create
-
-stock:
-  url: http://localhost:8064
-  process-path: /stocks/v1/item-sold
-
 server:
   port: 8160
 
 spring:
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521:xe
-    username: USR_ORDER
+    url: jdbc:oracle:thin:@test-api:1521:xe
+    username: TEST_ORDER
     password: qwe123
     platform: ORACLE
     tomcat:
