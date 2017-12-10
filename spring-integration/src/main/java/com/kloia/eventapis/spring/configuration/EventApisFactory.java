@@ -9,6 +9,7 @@ import com.kloia.eventapis.common.EventExecutionInterceptor;
 import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
 import com.kloia.eventapis.kafka.KafkaOperationRepositoryFactory;
+import com.kloia.eventapis.kafka.KafkaProperties;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.spring.filter.OpContextFilter;
@@ -22,10 +23,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
+import org.springframework.kafka.config.AbstractKafkaListenerContainerFactory;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.KafkaListenerContainerFactory;
+import org.springframework.kafka.config.KafkaListenerEndpoint;
 import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.listener.AbstractMessageListenerContainer;
+import org.springframework.kafka.listener.KafkaMessageListenerContainer;
+import org.springframework.kafka.listener.config.ContainerProperties;
+import org.springframework.kafka.support.TopicPartitionInitialOffset;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.servlet.DispatcherType;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 
@@ -80,7 +91,9 @@ public class EventApisFactory {
 
     @Bean
     public KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory(EventApisConfiguration eventApisConfiguration) {
-        return new KafkaOperationRepositoryFactory(eventApisConfiguration.getEventBus());
+        KafkaProperties eventBus = eventApisConfiguration.getEventBus();
+        KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory = new KafkaOperationRepositoryFactory(eventBus);
+        return kafkaOperationRepositoryFactory;
     }
 
     @Bean
@@ -96,7 +109,7 @@ public class EventApisFactory {
     @Bean
     public ConsumerFactory<String, PublishedEventWrapper> kafkaConsumerFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory,
                                                                                EventApisConfiguration eventApisConfiguration) {
-        return new EventApisConsumerFactory<String, PublishedEventWrapper>(kafkaOperationRepositoryFactory, eventApisConfiguration) {
+        return new EventApisConsumerFactory<String, PublishedEventWrapper>(eventApisConfiguration, true) {
             @Override
             public Consumer<String, PublishedEventWrapper> createConsumer() {
                 return kafkaOperationRepositoryFactory.createEventConsumer(objectMapper);
@@ -107,7 +120,7 @@ public class EventApisFactory {
     @Bean
     public ConsumerFactory<String, Operation> kafkaOperationsFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory,
                                                                      EventApisConfiguration eventApisConfiguration) {
-        return new EventApisConsumerFactory<String, Operation>(kafkaOperationRepositoryFactory, eventApisConfiguration) {
+        return new EventApisConsumerFactory<String, Operation>(eventApisConfiguration, false) {
             @Override
             public Consumer<String, Operation> createConsumer() {
                 return kafkaOperationRepositoryFactory.createOperationConsumer(objectMapper);
@@ -124,17 +137,46 @@ public class EventApisFactory {
         factory.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getEventConcurrency());
         factory.setMessageConverter(eventMessageConverter);
         factory.getContainerProperties().setPollTimeout(3000);
+        factory.getContainerProperties().setAckMode(AbstractMessageListenerContainer.AckMode.RECORD);
         return factory;
     }
 
     @Bean("operationsKafkaListenerContainerFactory")
-    public ConcurrentKafkaListenerContainerFactory<String, Operation> operationsKafkaListenerContainerFactory(
-            EventApisConfiguration eventApisConfiguration, ConsumerFactory<String, Operation> consumerFactory) {
-        ConcurrentKafkaListenerContainerFactory<String, Operation> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory);
-        factory.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getOperationConcurrency());
-        factory.getContainerProperties().setPollTimeout(3000);
-        return factory;
+    public KafkaListenerContainerFactory<KafkaMessageListenerContainer<String, Operation>> operationsKafkaListenerContainerFactory(
+            ConsumerFactory<String, Operation> consumerFactory,
+            PlatformTransactionManager platformTransactionManager) {
+        AbstractKafkaListenerContainerFactory<KafkaMessageListenerContainer<String, Operation>, String, Operation> abstractKafkaListenerContainerFactory
+                = new AbstractKafkaListenerContainerFactory<KafkaMessageListenerContainer<String, Operation>, String, Operation>() {
+            @Override
+            protected KafkaMessageListenerContainer<String, Operation> createContainerInstance(KafkaListenerEndpoint endpoint) {
+                ContainerProperties containerProperties;
+                Collection<TopicPartitionInitialOffset> topicPartitions = endpoint.getTopicPartitions();
+                if (!topicPartitions.isEmpty()) {
+                    containerProperties = new ContainerProperties(
+                            topicPartitions.toArray(new TopicPartitionInitialOffset[topicPartitions.size()]));
+                } else {
+                    Collection<String> topics = endpoint.getTopics();
+                    if (!topics.isEmpty()) {
+                        containerProperties = new ContainerProperties(topics.toArray(new String[topics.size()]));
+                    } else {
+                        containerProperties = new ContainerProperties(endpoint.getTopicPattern());
+                    }
+                }
+                return new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
+            }
+
+            @Override
+            protected void initializeContainer(KafkaMessageListenerContainer<String, Operation> instance) {
+//                super.initializeContainer(instance);
+            }
+        };
+        RetryTemplate retryTemplate = new RetryTemplate();
+        abstractKafkaListenerContainerFactory.setRetryTemplate(retryTemplate);
+        abstractKafkaListenerContainerFactory.getContainerProperties().setPollTimeout(3000L);
+        abstractKafkaListenerContainerFactory.getContainerProperties().setAckOnError(false);
+        abstractKafkaListenerContainerFactory.getContainerProperties().setAckMode(AbstractMessageListenerContainer.AckMode.RECORD);
+        abstractKafkaListenerContainerFactory.getContainerProperties().setTransactionManager(platformTransactionManager);
+        return abstractKafkaListenerContainerFactory;
     }
 
     @Bean
@@ -144,11 +186,11 @@ public class EventApisFactory {
     }
 
     private abstract class EventApisConsumerFactory<K, V> implements ConsumerFactory<K, V> {
-        private final KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory;
         private final EventApisConfiguration eventApisConfiguration;
+        private final boolean autoCommit;
 
-        public EventApisConsumerFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory, EventApisConfiguration eventApisConfiguration) {
-            this.kafkaOperationRepositoryFactory = kafkaOperationRepositoryFactory;
+        public EventApisConsumerFactory(EventApisConfiguration eventApisConfiguration, boolean autoCommit) {
+            this.autoCommit = autoCommit;
             this.eventApisConfiguration = eventApisConfiguration;
         }
 
@@ -164,7 +206,7 @@ public class EventApisFactory {
 
         @Override
         public boolean isAutoCommit() {
-            return kafkaOperationRepositoryFactory.isAutoCommit();
+            return autoCommit;
         }
 
         @Override

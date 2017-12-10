@@ -7,6 +7,6 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface StockRepository extends JpaRepository<Stock, String>, QueryDslPredicateExecutor, SnapshotRepository<Stock> {
+public interface StockRepository extends JpaRepository<Stock, String>, QueryDslPredicateExecutor, SnapshotRepository<Stock, String> {
 
 }

@@ -10,8 +10,6 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 
-import java.util.UUID;
-
 /**
  * Created by zeldalozdemir on 24/04/2017.
  */
@@ -29,22 +27,23 @@ public class EventExecutionInterceptor {
 
     @Before("within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..)) && args(object)")
     public void before(JoinPoint jp, Object object) throws Throwable {
-        operationContext.setCommandContext(jp.getTarget().getClass().getSimpleName());
-        log.info("before method:"+(object == null ? "" : object.toString()));
+        String commandContext = object == null ? jp.getTarget().getClass().getSimpleName() : object.getClass().getSimpleName();
+        operationContext.setCommandContext(commandContext);
+        log.info("before method:" + (object == null ? "" : object.toString()));
     }
 
-    @AfterReturning(value = "within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))",returning="retVal")
-    public void afterReturning( Object retVal) throws Throwable {
+    @AfterReturning(value = "within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", returning = "retVal")
+    public void afterReturning(Object retVal) throws Throwable {
 //        kafkaOperationRepository.updateEvent(operationContext.getContext(),operationContext.clearCommandContext(),event -> event.setEventState(EventState.SUCCEDEED));
-        log.info("AfterReturning:"+ (retVal == null ? "" : retVal.toString()));
+        log.info("AfterReturning:" + (retVal == null ? "" : retVal.toString()));
         operationContext.clearContext();
     }
 
     @AfterThrowing(value = "within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "e")
-    public void afterThrowing( Exception e) throws Throwable {
+    public void afterThrowing(Exception e) throws Throwable {
         try {
-            log.info("afterThrowing method:"+e);
-            kafkaOperationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),event -> event.setEventState(EventState.TXN_FAILED));
+            log.info("afterThrowing method:" + e);
+            kafkaOperationRepository.failOperation(operationContext.getContext(), operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));
         } finally {
             operationContext.clearContext();
         }

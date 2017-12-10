@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
+import com.hazelcast.map.listener.EntryExpiredListener;
 import com.kloia.eventapis.api.store.domain.BaseEvent;
 import com.kloia.eventapis.api.store.domain.EventHandler;
 import com.kloia.eventapis.api.store.domain.Topology;
 import com.kloia.eventapis.common.EventType;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
+import com.kloia.eventapis.pojos.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +21,16 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.kloia.eventapis.api.store.configuration.Components.OPERATIONS_MAP_NAME;
 
 @Service
 @Slf4j
-public class TopologyService implements MessageListener<String, PublishedEventWrapper> {
+public class TopologyService implements MessageListener<String, Serializable> {
     @Autowired
     @Qualifier("hazelcastInstance")
     private HazelcastInstance hazelcastInstance;
@@ -41,28 +45,34 @@ public class TopologyService implements MessageListener<String, PublishedEventWr
     @PostConstruct
     public void init() {
         operationsMap = hazelcastInstance.getMap(OPERATIONS_MAP_NAME);
+        operationsMap.addEntryListener((EntryExpiredListener<String, Topology>) event -> {
+            event.getKey();
+            Topology topology = event.getOldValue();
+            if (!topology.isFinished()) {
+                log.error("Topology Doesn't Finished:" + topology.toString());
+            } else
+                log.info("Topology OK:" + topology.toString());
+
+        }, true);
         this.objectMapper = new ObjectMapper();
         eventReader = objectMapper.readerFor(BaseEvent.class);
     }
 
 
-    @Override
-    public void onMessage(ConsumerRecord<String, PublishedEventWrapper> data) {
+    private void onEventMessage(String topic, String key, PublishedEventWrapper eventWrapper) {
         try {
-            PublishedEventWrapper eventWrapper = data.value();
-            String key = data.key();
-            log.info(key + " - " + data.topic() + " - " + eventWrapper.getSender() + " Data:" + data);
-            if(data.topic().equals("operation-events"))
+            log.info(key + " - " + topic + " - " + eventWrapper.getSender() + " Data:" + eventWrapper.toString());
+            if (topic.equals("operation-events"))
                 return;
             BaseEvent baseEvent = eventReader.readValue(eventWrapper.getEvent());
 
-            List<String> targetList = topicService.getTopicServiceList().get(data.topic());
+            List<String> targetList = topicService.getTopicServiceList().get(topic);
 
-            EventHandler eventHandler = new EventHandler(data.topic(), eventWrapper.getSender(), baseEvent.getEventType(), baseEvent.getSender(), targetList);
+            EventHandler eventHandler = new EventHandler(topic, eventWrapper.getSender(), baseEvent.getEventType(), baseEvent.getSender(), targetList);
             if (baseEvent.getEventType() == EventType.OP_SINGLE) {
-                operationsMap.put(key, new Topology(eventHandler, eventWrapper.getAggregateId()));
+                operationsMap.put(key, new Topology(key, eventHandler, eventWrapper.getAggregateId(), eventWrapper.getOpDate()), 300, TimeUnit.MINUTES);
             } else if (baseEvent.getEventType() == EventType.OP_START) {
-                operationsMap.put(key, new Topology(eventHandler, eventWrapper.getAggregateId()));
+                operationsMap.put(key, new Topology(key, eventHandler, eventWrapper.getAggregateId(), eventWrapper.getOpDate()), 300, TimeUnit.MINUTES);
             } else if (baseEvent.getEventType() == EventType.EVENT) {
                 operationsMap.executeOnKey(key, new TopologyUpdater(eventHandler));
             } else if (baseEvent.getEventType() == EventType.OP_SUCCESS) {
@@ -74,6 +84,24 @@ public class TopologyService implements MessageListener<String, PublishedEventWr
             log.error("Error While Handling Event:" + e.getMessage(), e);
         }
     }
+
+    private void onOperationMessage(String key, Operation operation) {
+        try {
+            log.info(key + " - " + operation.getSender() + " Data:" + operation);
+            operationsMap.executeOnKey(key, new OperationTopologyUpdater(operation));
+        } catch (Exception e) {
+            log.error("Error While Handling Event:" + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void onMessage(ConsumerRecord<String, Serializable> data) {
+        if (data.value() instanceof PublishedEventWrapper)
+            onEventMessage(data.topic(), data.key(), (PublishedEventWrapper) data.value());
+        else if (data.value() instanceof Operation)
+            onOperationMessage(data.key(), (Operation) data.value());
+    }
+
 
     private static class TopologyUpdater extends AbstractEntryProcessor<String, Topology> {
 
@@ -90,13 +118,39 @@ public class TopologyService implements MessageListener<String, PublishedEventWr
                 if (value == null)
                     throw new RuntimeException("There is no Operation Start");
                 boolean b = value.putNextEventHandler(eventHandler);
-                if(!b)
-                    log.warn("We Couldn't attach event:"+eventHandler);
+                if (!b)
+                    log.warn("We Couldn't attach event:" + eventHandler);
                 entry.setValue(value);
                 return value;
             } catch (Exception e) {
-                log.error("We Couldn't attach event:"+e.getMessage());
-                return eventHandler;
+                log.error("We Couldn't attach event:" + e.getMessage());
+                return null;
+            }
+        }
+    }
+
+    private static class OperationTopologyUpdater extends AbstractEntryProcessor<String, Topology> {
+
+        private Operation operation;
+
+        public OperationTopologyUpdater(Operation operation) {
+            this.operation = operation;
+        }
+
+        @Override
+        public Object process(Map.Entry<String, Topology> entry) {
+            try {
+                Topology value = entry.getValue();
+                if (value == null) {
+                    log.warn("There is no Topology with key: " + entry.getKey());
+                    value = new Topology(entry.getKey());
+                }
+                value.putOperation(operation);
+                entry.setValue(value);
+                return value;
+            } catch (Exception e) {
+                log.error("We Couldn't attach Operation:" + e.getMessage());
+                return null;
             }
         }
     }

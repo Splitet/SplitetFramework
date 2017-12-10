@@ -8,6 +8,7 @@ const Router = Ember.Router.extend({
 
 Router.map(function() {
   this.route('topology', { path: '/topology/:opId' });
+  this.route('dashboard');
 });
 
 export default Router;

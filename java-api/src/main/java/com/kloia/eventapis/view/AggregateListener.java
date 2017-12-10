@@ -18,6 +18,7 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 @Slf4j
 public class AggregateListener {
@@ -53,13 +54,15 @@ public class AggregateListener {
                         Map.Entry<Class<PublishedEvent>, RollbackSpec> specEntry = rollbackSpecMap.get(entityEvent.getEventType());
                         if(specEntry != null)
                             specEntry.getValue().rollback(new EntityEventWrapper<>(specEntry.getKey(),objectMapper,entityEvent).getEventData());
-                    } catch (EventStoreException e) {
+                    } catch (Exception e) {
                         log.warn(e.getMessage(),e);
                     }
                 });
-                snapshotRepository.save(viewQuery.queryByOpId(data.key()));
+//                snapshotRepository.save(viewQuery.queryByOpId(data.key())); // We dont need this
             }else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEDEED) {
-                snapshotRepository.save(viewQuery.queryByOpId(data.key()));
+                List list = viewQuery.queryByOpId(data.key(), (Function<String, Object>) o -> snapshotRepository.findOne(o));
+
+                snapshotRepository.save(list);
             }
         } catch (EventStoreException e) {
             log.error("Error while applying operation:"+data.toString()+" Exception:"+e.getMessage(),e);

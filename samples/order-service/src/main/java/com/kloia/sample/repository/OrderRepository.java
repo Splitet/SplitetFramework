@@ -8,6 +8,6 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OrderRepository extends JpaRepository<Orders, String>, QueryDslPredicateExecutor, SnapshotRepository<Orders> {
+public interface OrderRepository extends JpaRepository<Orders, String>, QueryDslPredicateExecutor, SnapshotRepository<Orders, String> {
 
 }

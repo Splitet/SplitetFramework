@@ -31,10 +31,11 @@ import java.util.Random;
 
 
 @Data
-public class KafkaProperties {
+public class KafkaProperties implements Cloneable {
 
     private final Consumer consumer = new Consumer();
     private final Producer producer = new Producer();
+
     /**
      * Comma-delimited list of host:port pairs to use for establishing the initial
      * connection to the Kafka cluster.
@@ -66,7 +67,7 @@ public class KafkaProperties {
         if (this.clientId != null) {
             properties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.clientId);
         } else if (this.consumer.groupId != null)
-            properties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.consumer.groupId +"-"+ new Random().nextInt(1000));
+            properties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.consumer.groupId + "-" + new Random().nextInt(1000));
 
 
         if (!MapUtils.isEmpty(this.properties)) {
@@ -105,9 +106,18 @@ public class KafkaProperties {
         return properties;
     }
 
+    @Override
+    public KafkaProperties clone() {
+        try {
+            return (KafkaProperties) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Data
-    public static class Consumer {
+    public static class Consumer implements Cloneable {
 
         private Integer autoCommitInterval;
 
@@ -196,10 +206,15 @@ public class KafkaProperties {
             return properties;
         }
 
+        @Override
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
+
     }
 
     @Data
-    public static class Producer {
+    public static class Producer implements Cloneable {
         /**
          * Number of acknowledgments the producer requires the leader to have received
          * before considering a request complete.
@@ -268,6 +283,10 @@ public class KafkaProperties {
             return properties;
         }
 
+        @Override
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
     }
 
 }

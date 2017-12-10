@@ -7,4 +7,11 @@ export default Ember.Controller.extend({
     }
   },
   nodeColor: '#FF0000',
+  operation: Ember.inject.service(),
+  hasMessage: Ember.computed.notEmpty('model.statusMessage'),
+  actions: {
+    openTopology(opId) {
+      this.transitionToRoute("topology",opId);
+    }
+  }
 });

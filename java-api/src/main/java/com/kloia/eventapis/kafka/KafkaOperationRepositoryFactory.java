@@ -24,15 +24,19 @@ public class KafkaOperationRepositoryFactory {
     }
 
     public Consumer<String, PublishedEventWrapper> createEventConsumer(ObjectMapper objectMapper) {
-        return new KafkaConsumer<>(kafkaProperties.buildConsumerProperties(),
+        KafkaProperties properties = kafkaProperties.clone();
+        properties.getConsumer().setEnableAutoCommit(true);
+        return new KafkaConsumer<>(properties.buildConsumerProperties(),
                 new StringDeserializer(), new JsonDeserializer<>(PublishedEventWrapper.class,objectMapper));
     }
     public Consumer<String, Operation> createOperationConsumer(ObjectMapper objectMapper) {
-        return new KafkaConsumer<>(kafkaProperties.buildConsumerProperties(),
+        KafkaProperties properties = kafkaProperties.clone();
+        properties.getConsumer().setEnableAutoCommit(false);
+        return new KafkaConsumer<>(properties.buildConsumerProperties(),
                 new StringDeserializer(), new JsonDeserializer<>(Operation.class,objectMapper));
     }
-
+/*
     public boolean isAutoCommit() {
         return Boolean.TRUE.equals(kafkaProperties.getConsumer().getEnableAutoCommit());
-    }
+    }*/
 }

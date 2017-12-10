@@ -65,7 +65,7 @@ public class ProcessOrderCommand implements CommandHandler<Orders, ProcessOrderC
                 order.setPaymentAddress(paymentInformation.getPaymentAddress());
                 order.setAmount(paymentInformation.getAmount());
                 order.setCardInformation(paymentInformation.getCardInformation());
-                order.setState(OrderState.PROCESSING);
+                order.setState(OrderState.RESERVING_STOCK);
                 return order;
             });
         }

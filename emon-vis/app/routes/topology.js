@@ -2,15 +2,14 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
   model(params) {
-    return Ember.$.getJSON('/api/operations/v1/' + params.opId).then(data => {
+    return Ember.$.getJSON('/api/operations/v1/' + params.opId).then((data) => {
       this.set('topology', data);
-      var _self = this;
       let nodes = [];
       let edges = [];
 
       nodes.push({
         nId: data.initiatorCommand,
-        label: data.initiatorCommand,
+        label: "START",
         shape: 'diamond',
         color: '#87604e'
       });
@@ -22,9 +21,9 @@ export default Ember.Route.extend({
       nodes.push({
         nId: this.calculateId(data.head),
         label: data.head.sender,
-        color: '#f8ffd2'
-      });
+        color: this.findColor(data.head.eventType)
 
+      });
 
       this.handleEvents(nodes, edges, data.head);
 
@@ -37,6 +36,10 @@ export default Ember.Route.extend({
         edges: edges
       }
 
+    }, (status) => {
+      return {
+        statusMessage: `Error while fetching operation ${params.opId} status:${status}`
+      }
     })
   },
   calculateId(operation) {
@@ -45,33 +48,77 @@ export default Ember.Route.extend({
   handleEvents(nodes, edges, parent) {
     if (parent.publishedEvents !== null && parent.publishedEvents !== undefined)
       Object.keys(parent.publishedEvents).forEach((serviceName) => {
-        let operation = parent.publishedEvents[serviceName];
-        nodes.push({
-          nId: this.calculateId(operation),
-          label: operation.sender,
-          color: this.findColor(operation)
-        });
-        edges.push({
-          from: this.calculateId(parent),
-          label: parent.topic,
-          to: this.calculateId(operation)
-        });
-        this.handleEvents(nodes, edges, operation);
+        let publishedEvent = parent.publishedEvents[serviceName];
+        if (publishedEvent.type === "none" && publishedEvent.operation) {
+          let operation = publishedEvent.operation;
+          nodes.push({
+            nId: operation.sender + '_' + operation.aggregateId,
+            label: operation.sender,
+            color: this.findColor(operation.transactionState)
+          });
+          edges.push({
+            from: this.calculateId(parent),
+            label: parent.topic,
+            to: operation.sender + '_' + operation.aggregateId,
+          });
+          if (operation.transactionState === "TXN_FAILED") {
+            nodes.push({
+              nId: "FAIL",
+              label: "FAIL",
+              color: this.findColor(operation.transactionState)
+            });
+            edges.push({
+              from: operation.sender + '_' + operation.aggregateId,
+              label: operation.transactionState,
+              to: "FAIL",
+            });
+          }
+
+        } else {
+          nodes.push({
+            nId: this.calculateId(publishedEvent),
+            label: publishedEvent.sender,
+            color: this.findColor(publishedEvent.eventType)
+          });
+          edges.push({
+            from: this.calculateId(parent),
+            label: parent.topic,
+            to: this.calculateId(publishedEvent),
+          });
+          let operation = publishedEvent.operation;
+          if (operation && operation.transactionState === "TXN_FAILED") {
+            nodes.push({
+              nId: "FAIL",
+              label: "FAIL",
+              color: this.findColor(operation.transactionState)
+            });
+            edges.push({
+              from: this.calculateId(publishedEvent),
+              label: publishedEvent.topic,
+              to: "FAIL",
+            });
+          }
+        }
+
+
+        this.handleEvents(nodes, edges, publishedEvent);
       });
   },
-  findColor(operation) {
-    switch (operation.eventType) {
+  findColor(eventType) {
+    switch (eventType) {
       case "OP_START":
-        return '#ff641e';
+        return '#f8ffd2';
       case "EVENT":
         return '#f8ffd2';
       case "OP_SUCCESS":
         return '#03ff2f';
       case "OP_FAIL":
+        return '#ff9d09';
+      case "TXN_SUCCESS":
+        return '#089d0a';
+      case "TXN_FAILED":
         return '#ff1109';
     }
-
-
   },
 
 });

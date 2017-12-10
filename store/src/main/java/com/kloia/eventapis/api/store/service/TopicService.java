@@ -1,10 +1,13 @@
 package com.kloia.eventapis.api.store.service;
 
 import com.kloia.eventapis.api.store.configuration.StoreConfiguration;
+import com.kloia.eventapis.pojos.Operation;
 import kafka.admin.ConsumerGroupCommand;
 import kafka.utils.ZkUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import scala.Option;
@@ -66,7 +69,7 @@ public class TopicService implements Runnable {
         groupId = storeConfiguration.getEventBus().getConsumer().getGroupId();
 
         run(); // first run
-        Executors.newSingleThreadScheduledExecutor().schedule(this, 30, TimeUnit.SECONDS);
+        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(this, 10,10, TimeUnit.SECONDS);
     }
 
     @Override
@@ -74,7 +77,7 @@ public class TopicService implements Runnable {
         List<String> groupList = JavaConversions.seqAsJavaList(consumerGroupService.listGroups());
         Map<String, List<String>> serviceList = new HashMap<>();
         Map<String, List<String>> topicServiceList = new HashMap<>();
-        JavaConversions.seqAsJavaList(zkUtils.getAllTopics()).stream().filter(s -> !s.startsWith("__") && !s.equals("operation-events")).forEach(s -> topicServiceList.put(s, new ArrayList<>()));
+        JavaConversions.seqAsJavaList(zkUtils.getAllTopics()).stream().filter(s -> !s.startsWith("__") && !s.equals(Operation.OPERATION_EVENTS)).forEach(s -> topicServiceList.put(s, new ArrayList<>()));
 
         groupList.forEach(consumer -> {
             if (!consumer.equals(groupId) & !consumer.endsWith("capability")) // filter out group id
@@ -83,16 +86,15 @@ public class TopicService implements Runnable {
                     Tuple2<Option<String>, Option<Seq<ConsumerGroupCommand.PartitionAssignmentState>>> describeGroup = consumerGroupService.collectGroupAssignment(consumer);
                     JavaConversions.seqAsJavaList(describeGroup._2.get()).forEach(partitionAssignmentState -> {
                                 String topic = partitionAssignmentState.topic().getOrElse(() -> null);
-                                if (topic != null && !topic.startsWith("__") && !topic.equals("operation-events")) {
+                                if (topic != null && !topic.startsWith("__") && !topic.equals(Operation.OPERATION_EVENTS)) {
                                     serviceTopics.add(topic);
                                     topicServiceList.compute(topic, (service, services) -> {
                                         if (services == null)
                                             services = new ArrayList<>();
                                         services.add(consumer);
                                         return services;
-
                                     });
-                                    log.info("\t Consumes: " + partitionAssignmentState.topic() + " - " + partitionAssignmentState.offset() + " all: " + partitionAssignmentState.toString());
+                                    log.debug("\t Consumes: " + partitionAssignmentState.topic() + " - " + partitionAssignmentState.offset() + " all: " + partitionAssignmentState.toString());
                                     if (Long.compare(getLong(partitionAssignmentState.offset()), getLong(partitionAssignmentState.logEndOffset())) != 0)
                                         log.info("\t Missing: " + partitionAssignmentState.topic() + " - " + partitionAssignmentState.offset() + "/" + partitionAssignmentState.logEndOffset());
                                 }

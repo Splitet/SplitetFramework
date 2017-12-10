@@ -59,10 +59,10 @@ public class KafkaOperationRepository implements IOperationRepository {
     @Override
     public void failOperation(String opId, String eventId, SerializableConsumer<Event> action) {
         Operation operation = new Operation();
-        operation.setTransactionState(TransactionState.TXN_FAILED);
         operation.setSender(senderGroupId);
         operation.setAggregateId(eventId);
-        operationsKafka.send(new ProducerRecord<>("operation-events", opId, operation));
+        operation.setTransactionState(TransactionState.TXN_FAILED);
+        operationsKafka.send(new ProducerRecord<>(Operation.OPERATION_EVENTS, opId, operation));
     }
     @Override
     public void successOperation(String opId, String eventId, SerializableConsumer<Event> action) {
@@ -70,7 +70,7 @@ public class KafkaOperationRepository implements IOperationRepository {
         operation.setSender(senderGroupId);
         operation.setAggregateId(eventId);
         operation.setTransactionState(TransactionState.TXN_SUCCEDEED);
-        operationsKafka.send(new ProducerRecord<>("operation-events", opId, operation));
+        operationsKafka.send(new ProducerRecord<>(Operation.OPERATION_EVENTS, opId, operation));
     }
 
     public void publishEvent(String name, PublishedEventWrapper event) {

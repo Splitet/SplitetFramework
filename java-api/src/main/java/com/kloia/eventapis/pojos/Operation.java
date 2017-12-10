@@ -13,6 +13,7 @@ import java.util.UUID;
 @Data
 public class Operation implements /*Externalizable,Binarylizable,*/  Serializable {
     private static final long serialVersionUID = -2003849346218727591L;
+    public static final String OPERATION_EVENTS = "operation-events";
     private List<Event> events;
 
     private TransactionState transactionState;

@@ -8,6 +8,7 @@ import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.exception.EventPulisherException;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.EntityFunctionSpec;
+import com.kloia.sample.dto.event.PaymentFailedEvent;
 import com.kloia.sample.dto.event.PaymentProcessEvent;
 import com.kloia.sample.dto.event.PaymentSuccessEvent;
 import com.kloia.sample.model.Payment;
@@ -26,13 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class DoPaymentEventHandler implements EventHandler<PaymentProcessEvent> {
     private final EventRepository eventRepository;
-    private final ViewQuery<Payment> paymentQuery;
 
 
     @Autowired
     public DoPaymentEventHandler(EventRepository eventRepository, ViewQuery<Payment> paymentQuery) {
         this.eventRepository = eventRepository;
-        this.paymentQuery = paymentQuery;
     }
 
     @KafkaListener(topics = "PaymentProcessEvent", containerFactory = "eventsKafkaListenerContainerFactory")
@@ -41,8 +40,14 @@ public class DoPaymentEventHandler implements EventHandler<PaymentProcessEvent> 
         PaymentSuccessEvent paymentSuccessEvent = new PaymentSuccessEvent();
         BeanUtils.copyProperties(dto.getPaymentInformation(), paymentSuccessEvent);
         paymentSuccessEvent.setOrderId(dto.getSender().getEntityId());
-        if(dto.getPaymentInformation().getAmount() > 1000)
+        if(dto.getPaymentInformation().getAmount() > 2000)
             throw new RuntimeException("Bla Bla");
+        if(dto.getPaymentInformation().getAmount() > 1000) {
+            PaymentFailedEvent paymentFailedEvent = new PaymentFailedEvent();
+            BeanUtils.copyProperties(dto.getPaymentInformation(), paymentFailedEvent);
+            paymentFailedEvent.setOrderId(dto.getSender().getEntityId());
+            return eventRepository.recordAndPublish(paymentFailedEvent);
+        }
 
         return eventRepository.recordAndPublish(paymentSuccessEvent);
 

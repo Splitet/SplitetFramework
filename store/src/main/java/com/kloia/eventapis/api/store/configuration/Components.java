@@ -5,12 +5,17 @@ import com.hazelcast.config.DiscoveryConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.MapConfig;
+import com.hazelcast.config.MapIndexConfig;
 import com.hazelcast.config.NetworkConfig;
+import com.hazelcast.config.PredicateConfig;
+import com.hazelcast.config.QueryCacheConfig;
+import com.hazelcast.query.PagingPredicate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +35,17 @@ public class Components {
         //manCenterCfg.setEnabled(true).setUrl("http://localhost:8080/mancenter");
         MapConfig mapConfig = new MapConfig();
         mapConfig.setTimeToLiveSeconds(TIME_TO_LIVE_SECONDS);
+        mapConfig.setMapIndexConfigs(
+                Arrays.asList(
+                        new MapIndexConfig("opDate",true),
+                        new MapIndexConfig("operationState",true)
+                )
+        );
+//        QueryCacheConfig queryCacheConfig = new QueryCacheConfig("Latest-Operations");
+//        PredicateConfig predicateConfig = new PredicateConfig();
+//        predicateConfig.setImplementation(new PagingPredicate())
+//        queryCacheConfig.setPredicateConfig(predicateConfig);
+//        mapConfig.addQueryCacheConfig(queryCacheConfig);
         Map<String, MapConfig> mapConfigs = new HashMap<>();
         mapConfigs.put(OPERATIONS_MAP_NAME, mapConfig);
 //        mapConfigs.put("events-resources", mapConfig);

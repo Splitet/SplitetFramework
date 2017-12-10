@@ -1,14 +1,17 @@
 package com.kloia.eventapis.api.store.domain;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.kloia.eventapis.pojos.Operation;
+import com.kloia.eventapis.pojos.TransactionState;
 import lombok.Data;
 
 @Data
 @JsonTypeName("none")
 public class NoneHandler implements IEventHandler {
-    public static final NoneHandler noneHandler = new NoneHandler();
 
-    private NoneHandler() {
+    private Operation operation;
+
+    NoneHandler() {
     }
 
     @Override
@@ -19,5 +22,20 @@ public class NoneHandler implements IEventHandler {
     @Override
     public void incrementNumberOfVisit() {
 
+    }
+
+    @Override
+    public boolean isFinished() {
+        return operation != null && operation.getTransactionState() == TransactionState.TXN_FAILED;
+    }
+
+    @Override
+    public boolean attachOperation(Operation operation) {
+        return false;
+    }
+
+    @Override
+    public void setOperation(Operation operation) {
+        this.operation = operation;
     }
 }

@@ -41,7 +41,7 @@ public class StockReservedEventHandler implements EventHandler< StockReservedEve
     public EventKey execute(StockReservedEvent dto) throws EventStoreException, EventPulisherException, ConcurrentEventException {
         Orders order = orderQuery.queryEntity(dto.getOrderId());
 
-        if (order.getState() == OrderState.PROCESSING) {
+        if (order.getState() == OrderState.RESERVING_STOCK) {
             PaymentProcessEvent paymentProcessEvent = new PaymentProcessEvent(order.getId(),new PaymentInformation(order.getPaymentAddress(),order.getAmount(),order.getCardInformation()));
             log.info("Payment is processing : " + dto);
             return eventRepository.recordAndPublish(order,paymentProcessEvent);
