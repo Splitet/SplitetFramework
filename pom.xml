@@ -34,7 +34,7 @@
         <!--<module>samples</module>-->
         <!--<module>samples-empty</module>-->
         <!--<module>kafka-tester</module>-->
-        <!--<module>store</module>-->
+        <module>emon</module>
     </modules>
 
     <dependencyManagement>

@@ -10,7 +10,9 @@
         <version>0.4.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>operation-store</artifactId>
+    <artifactId>emon</artifactId>
+
+    <name>Eventapis Store and Monitoring</name>
 
     <properties>
         <spring.version>1.5.7.RELEASE</spring.version>
