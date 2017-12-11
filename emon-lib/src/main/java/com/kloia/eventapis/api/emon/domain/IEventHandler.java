@@ -1,9 +1,8 @@
-package com.kloia.eventapis.api.store.domain;
+package com.kloia.eventapis.api.emon.domain;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.kloia.eventapis.pojos.Operation;
-import lombok.Data;
 
 import java.io.Serializable;
 

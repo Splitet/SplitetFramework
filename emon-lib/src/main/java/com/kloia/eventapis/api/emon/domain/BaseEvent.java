@@ -1,4 +1,4 @@
-package com.kloia.eventapis.api.store.domain;
+package com.kloia.eventapis.api.emon.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.kloia.eventapis.common.EventType;

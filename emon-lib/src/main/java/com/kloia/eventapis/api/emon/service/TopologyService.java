@@ -1,4 +1,4 @@
-package com.kloia.eventapis.api.store.service;
+package com.kloia.eventapis.api.emon.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -6,9 +6,10 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
 import com.hazelcast.map.listener.EntryExpiredListener;
-import com.kloia.eventapis.api.store.domain.BaseEvent;
-import com.kloia.eventapis.api.store.domain.EventHandler;
-import com.kloia.eventapis.api.store.domain.Topology;
+import com.kloia.eventapis.api.emon.configuration.Components;
+import com.kloia.eventapis.api.emon.domain.BaseEvent;
+import com.kloia.eventapis.api.emon.domain.EventHandler;
+import com.kloia.eventapis.api.emon.domain.Topology;
 import com.kloia.eventapis.common.EventType;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.Operation;
@@ -26,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.kloia.eventapis.api.store.configuration.Components.OPERATIONS_MAP_NAME;
-
 @Service
 @Slf4j
 public class TopologyService implements MessageListener<String, Serializable> {
@@ -44,7 +43,7 @@ public class TopologyService implements MessageListener<String, Serializable> {
 
     @PostConstruct
     public void init() {
-        operationsMap = hazelcastInstance.getMap(OPERATIONS_MAP_NAME);
+        operationsMap = hazelcastInstance.getMap(Components.OPERATIONS_MAP_NAME);
         operationsMap.addEntryListener((EntryExpiredListener<String, Topology>) event -> {
             event.getKey();
             Topology topology = event.getOldValue();
@@ -61,7 +60,7 @@ public class TopologyService implements MessageListener<String, Serializable> {
 
     private void onEventMessage(String topic, String key, PublishedEventWrapper eventWrapper) {
         try {
-            log.info(key + " - " + topic + " - " + eventWrapper.getSender() + " Data:" + eventWrapper.toString());
+            log.info(topic + " - " + eventWrapper.getSender() + " - " + key + " - " + eventWrapper.toString());
             if (topic.equals("operation-events"))
                 return;
             BaseEvent baseEvent = eventReader.readValue(eventWrapper.getEvent());

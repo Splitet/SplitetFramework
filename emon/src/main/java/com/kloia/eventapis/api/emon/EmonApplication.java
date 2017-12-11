@@ -1,4 +1,4 @@
-package com.kloia.eventapis.api.store;
+package com.kloia.eventapis.api.emon;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -12,11 +12,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SpringBootApplication
 //@ComponentScan(basePackages = {"com.kloia.eventapis.api.store","com.kloia.eventbus"})
 
-public class OperationStore {
+public class EmonApplication {
 
 
     public static void main(String[] args) {
-        ConfigurableApplicationContext context = SpringApplication.run(OperationStore.class, args);
+        ConfigurableApplicationContext context = SpringApplication.run(EmonApplication.class, args);
 
     }
 

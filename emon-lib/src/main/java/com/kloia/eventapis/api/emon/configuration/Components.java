@@ -1,4 +1,4 @@
-package com.kloia.eventapis.api.store.configuration;
+package com.kloia.eventapis.api.emon.configuration;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.DiscoveryConfig;

@@ -1,4 +1,4 @@
-package com.kloia.eventapis.api.store.configuration;
+package com.kloia.eventapis.api.emon.configuration;
 
 import com.kloia.eventapis.kafka.KafkaProperties;
 import lombok.Data;

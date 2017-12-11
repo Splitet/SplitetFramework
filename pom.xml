@@ -18,7 +18,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <cassandra-driver.version>3.3.0</cassandra-driver.version>
+        <cassandra-driver.version>3.3.2</cassandra-driver.version>
         <jackson-annotations.version>2.8.9</jackson-annotations.version>
         <slf4j-api.version>1.7.25</slf4j-api.version>
         <mockito-all.version>1.9.5</mockito-all.version>
@@ -35,6 +35,7 @@
         <!--<module>samples-empty</module>-->
         <!--<module>kafka-tester</module>-->
         <module>emon</module>
+        <module>emon-lib</module>
     </modules>
 
     <dependencyManagement>

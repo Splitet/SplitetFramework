@@ -1,14 +1,11 @@
-package com.kloia.eventapis.api.store.service;
+package com.kloia.eventapis.api.emon.service;
 
-import com.kloia.eventapis.api.store.configuration.StoreConfiguration;
+import com.kloia.eventapis.api.emon.configuration.StoreConfiguration;
 import com.kloia.eventapis.pojos.Operation;
 import kafka.admin.ConsumerGroupCommand;
 import kafka.utils.ZkUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.KafkaAdminClient;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import scala.Option;
 import scala.Tuple2;

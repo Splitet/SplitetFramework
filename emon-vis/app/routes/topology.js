@@ -86,17 +86,30 @@ export default Ember.Route.extend({
             to: this.calculateId(publishedEvent),
           });
           let operation = publishedEvent.operation;
-          if (operation && operation.transactionState === "TXN_FAILED") {
-            nodes.push({
-              nId: "FAIL",
-              label: "FAIL",
-              color: this.findColor(operation.transactionState)
-            });
-            edges.push({
-              from: this.calculateId(publishedEvent),
-              label: publishedEvent.topic,
-              to: "FAIL",
-            });
+          if (operation) {
+            if (operation.transactionState === "TXN_FAILED") {
+              nodes.push({
+                nId: "FAIL",
+                label: "FAIL",
+                color: this.findColor(operation.transactionState)
+              });
+              edges.push({
+                from: this.calculateId(publishedEvent),
+                label: publishedEvent.topic,
+                to: "FAIL",
+              });
+            }else if (operation.transactionState === "TXN_SUCCEDEED"){
+              nodes.push({
+                nId: "SUCCESS",
+                label: "SUCCESS",
+                color: this.findColor(operation.transactionState)
+              });
+              edges.push({
+                from: this.calculateId(publishedEvent),
+                label: publishedEvent.topic,
+                to: "SUCCESS",
+              });
+            }
           }
         }
 
@@ -111,10 +124,10 @@ export default Ember.Route.extend({
       case "EVENT":
         return '#f8ffd2';
       case "OP_SUCCESS":
-        return '#03ff2f';
+        return '#f8ffd2';
       case "OP_FAIL":
         return '#ff9d09';
-      case "TXN_SUCCESS":
+      case "TXN_SUCCEDEED":
         return '#089d0a';
       case "TXN_FAILED":
         return '#ff1109';

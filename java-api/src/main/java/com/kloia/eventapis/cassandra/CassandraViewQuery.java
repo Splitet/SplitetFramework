@@ -13,7 +13,6 @@ import com.kloia.eventapis.view.Entity;
 import com.kloia.eventapis.view.EntityEventWrapper;
 import com.kloia.eventapis.view.EntityFunction;
 import com.kloia.eventapis.view.EntityFunctionSpec;
-import com.kloia.eventapis.view.SnapshotRepository;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -170,7 +169,7 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
     }
 
     @Override
-    public List<E> queryByOpId(String opId, Function<String,E> findOne) throws EventStoreException {
+    public List<E> queryByOpId(String opId, Function<String, E> findOne) throws EventStoreException {
         Select select = QueryBuilder.select(CassandraEventRecorder.ENTITY_ID, CassandraEventRecorder.VERSION).from(tableName);
         select.where(QueryBuilder.eq(CassandraEventRecorder.OP_ID, opId));
         List<Row> entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
@@ -181,10 +180,10 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
             int version = entityEvent.getInt(CassandraEventRecorder.VERSION);
             E snapshot = findOne.apply(entityId);
             E newEntity = null;
-            if (snapshot.getVersion() < version) {
-                newEntity = queryEntity(entityId, version, snapshot);
-            } else if (snapshot.getVersion() > version) {
+            if (snapshot == null || snapshot.getVersion() > version) {
                 newEntity = queryEntity(entityId);
+            } else if (snapshot.getVersion() < version) {
+                newEntity = queryEntity(entityId, version, snapshot);
             } else {
                 log.debug("Up-to-date Snapshot:" + snapshot);
             }

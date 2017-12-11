@@ -1,9 +1,9 @@
-package com.kloia.eventapis.api.store.controller;
+package com.kloia.eventapis.api.emon.controller;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.PagingPredicate;
-import com.kloia.eventapis.api.store.domain.Topology;
+import com.kloia.eventapis.api.emon.domain.Topology;
 import com.kloia.eventapis.exception.EventStoreException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +22,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.Set;
 
-import static com.kloia.eventapis.api.store.configuration.Components.OPERATIONS_MAP_NAME;
+import static com.kloia.eventapis.api.emon.configuration.Components.OPERATIONS_MAP_NAME;
 
 /**
  * Created by zeldalozdemir on 22/01/2017.

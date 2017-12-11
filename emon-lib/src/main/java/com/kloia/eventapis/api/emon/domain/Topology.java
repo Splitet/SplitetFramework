@@ -1,4 +1,4 @@
-package com.kloia.eventapis.api.store.domain;
+package com.kloia.eventapis.api.emon.domain;
 
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;

@@ -1,6 +1,6 @@
-package com.kloia.eventapis.api.store.service;
+package com.kloia.eventapis.api.emon.service;
 
-import com.kloia.eventapis.api.store.configuration.StoreConfiguration;
+import com.kloia.eventapis.api.emon.configuration.StoreConfiguration;
 import com.kloia.eventapis.kafka.JsonDeserializer;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.Operation;

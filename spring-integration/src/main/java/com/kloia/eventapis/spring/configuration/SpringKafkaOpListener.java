@@ -34,8 +34,6 @@ public class SpringKafkaOpListener {
         for (AggregateListener snapshotRecorder : aggregateListeners) {
             snapshotRecorder.listenOperations(record);
         }
-        if (value != null)
-            throw new RuntimeException("Bla bla");
     }
     public void recover(Exception e) throws Exception {
         log.error("Operation Handle is failed");
