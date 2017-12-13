@@ -38,7 +38,7 @@ public class CommandExecutionInterceptor {
     @AfterReturning(value = "within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))",returning="retVal")
     public void afterReturning( Object retVal) throws Throwable {
         log.info("AfterReturning:"+ (retVal == null ? "" : retVal.toString()));
-        operationContext.clearContext();
+        operationContext.clearCommandContext();
     }
 
     @AfterThrowing(value = "within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", throwing = "e")
@@ -47,7 +47,7 @@ public class CommandExecutionInterceptor {
             log.info("afterThrowing method:"+e);
             kafkaOperationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),event -> event.setEventState(EventState.TXN_FAILED));
         } finally {
-            operationContext.clearContext();
+            operationContext.clearCommandContext();
         }
     }
 
