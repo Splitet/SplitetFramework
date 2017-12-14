@@ -66,6 +66,7 @@ public class Components {
         config.setNetworkConfig(networkConfig);
         GroupConfig groupConfig = new GroupConfig();
         groupConfig.setName("op-center");
+        groupConfig.setName("ops123center");
         config.setGroupConfig(groupConfig);
         config.setInstanceName("op-center");
         config.setMapConfigs(mapConfigs);

@@ -1,5 +1,6 @@
 package com.kloia.eventapis.api.emon.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
@@ -7,21 +8,12 @@ import lombok.Data;
 
 @Data
 @JsonTypeName("none")
-public class NoneHandler implements IEventHandler {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class NoneHandled implements IHandledEvent {
 
     private Operation operation;
 
-    NoneHandler() {
-    }
-
-    @Override
-    public boolean attachHandler(EventHandler eventHandler) {
-        return false;
-    }
-
-    @Override
-    public void incrementNumberOfVisit() {
-
+    NoneHandled() {
     }
 
     @Override

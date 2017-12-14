@@ -1,6 +1,7 @@
 package com.kloia.eventapis.api.emon.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventType;
@@ -19,47 +20,48 @@ import java.util.stream.Collectors;
 @Data
 @Slf4j
 @JsonTypeName("event")
-public class EventHandler implements IEventHandler {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ProducedEvent implements IProducedEvent {
 
     private final String topic;
     private final String sender;
     private final EventType eventType;
     private final EventKey eventKey;
+    private String aggregateId;
     private int numberOfVisit = 1;
     private Operation operation;
-    private Map<String, IEventHandler> publishedEvents;
+    private Map<String, IHandledEvent> listeningServices;
 
-    public EventHandler(String topic, String sender, EventType eventType, EventKey eventKey, List<String> targetList) {
+    public ProducedEvent(String topic, String sender, String aggregateId, EventType eventType, EventKey eventKey, List<String> targetList) {
         this.topic = topic;
         this.sender = sender;
+        this.aggregateId = aggregateId;
         this.eventType = eventType;
         this.eventKey = eventKey;
         if (targetList != null)
-            publishedEvents = targetList.stream().collect(Collectors.toMap(Function.identity(), s -> new NoneHandler()));
+            listeningServices = targetList.stream().collect(Collectors.toMap(Function.identity(), s -> new NoneHandled()));
         else
-            publishedEvents = new HashMap<>();
+            listeningServices = new HashMap<>();
     }
 
     @Override
-    public boolean attachHandler(EventHandler eventHandler) {
-        IEventHandler result = publishedEvents.computeIfPresent(eventHandler.getSender(), (s, iEventHandler) -> {
-            if (iEventHandler instanceof NoneHandler) {
-                log.info("Attaching Event into: " + this + " New Event:" + eventHandler);
-                eventHandler.setOperation(((NoneHandler) iEventHandler).getOperation()); // if any
-                return eventHandler;
+    public boolean attachHandler(ProducedEvent producedEvent) {
+        if (Objects.equals(topic, producedEvent.getAggregateId())) {
+            IHandledEvent existingEvent = listeningServices.get(producedEvent.getSender());
+            if (existingEvent instanceof NoneHandled) {
+                log.info("Attaching Event into: " + this + " New Event:" + producedEvent);
+                producedEvent.setOperation(((NoneHandled) existingEvent).getOperation()); // if any
+                listeningServices.put(producedEvent.getSender(), new HandledEvent(producedEvent, producedEvent.getSender(), topic));
             } else {
-                EventHandler oldEventHandler = (EventHandler) iEventHandler;
-                if (oldEventHandler.getTopic().equals(eventHandler.getTopic())) {
-                    log.info("Duplicate Event Handle for:" + eventHandler);
-                    eventHandler.incrementNumberOfVisit();
-                    log.info("Attaching Event into: " + this + " New Event:" + eventHandler);
-                    return eventHandler;
-                } else {
-                    return iEventHandler;
-                }
+                HandledEvent oldEventHandler = (HandledEvent) existingEvent;
+                oldEventHandler.attachProducedEvent(producedEvent);
             }
-        });
-        return result == eventHandler || publishedEvents.values().stream().anyMatch(iEventHandler -> iEventHandler.attachHandler(eventHandler));
+            return true;
+        } else
+            return listeningServices.values().stream()
+                    .filter(handledEvent -> handledEvent instanceof HandledEvent)
+                    .flatMap(handledEvent -> ((HandledEvent) handledEvent).getProducedEvents().stream())
+                    .anyMatch(event -> event.attachHandler(producedEvent));
     }
 
     @Override
@@ -70,21 +72,12 @@ public class EventHandler implements IEventHandler {
     @Override
     @JsonIgnore
     public boolean isFinished() {
-        return operation != null
-                && operation.getTransactionState() == TransactionState.TXN_FAILED
-                || publishedEvents.isEmpty()
-                || publishedEvents.values().stream().allMatch(IEventHandler::isFinished);
+        return listeningServices.isEmpty()
+                || listeningServices.values().stream().allMatch(IHandledEvent::isFinished);
     }
 
     @Override
     public boolean attachOperation(Operation operation) {
-        if (Objects.equals(operation.getSender(), getSender())
-                && Objects.equals(operation.getAggregateId(), topic)
-                && operation.getTransactionState() == TransactionState.TXN_SUCCEDEED) {
-            this.operation = operation;
-            return true;
-        }
-
         if (Objects.equals(operation.getSender(), getSender())
                 && Objects.equals(operation.getAggregateId(), topic)
                 && getEventType() == EventType.OP_FAIL
@@ -92,8 +85,17 @@ public class EventHandler implements IEventHandler {
             this.operation = operation;
             return true;
         }
+
+        if (Objects.equals(operation.getSender(), getSender())
+                && Objects.equals(operation.getAggregateId(), topic)
+                && (getEventType() == EventType.OP_SUCCESS || getEventType() == EventType.OP_SINGLE)
+                && operation.getTransactionState() == TransactionState.TXN_SUCCEDEED) {
+            this.operation = operation;
+            return true;
+        }
+
         if (Objects.equals(operation.getAggregateId(), topic)) {
-            if (publishedEvents.entrySet().stream().anyMatch(
+            if (listeningServices.entrySet().stream().anyMatch(
                     keyValue -> {
                         if (Objects.equals(operation.getSender(), keyValue.getKey())) {
                             keyValue.getValue().setOperation(operation);
@@ -105,7 +107,7 @@ public class EventHandler implements IEventHandler {
             }
         }
 
-        return publishedEvents.values().stream().anyMatch(iEventHandler -> iEventHandler.attachOperation(operation));
+        return listeningServices.values().stream().anyMatch(iEventHandler -> iEventHandler.attachOperation(operation));
 
 /*        if (Objects.equals(operation.getSender(), getSender()) && Objects.equals(operation.getAggregateId(), topic)) {
             if (operation.getTransactionState() == TransactionState.TXN_FAILED && eventType != EventType.EVENT) {
@@ -117,7 +119,7 @@ public class EventHandler implements IEventHandler {
             transactionState = operation.getTransactionState();
             return true;
         } else
-            return publishedEvents.values().stream().anyMatch(iEventHandler -> iEventHandler.attachOperation(operation));*/
+            return listeningServices.values().stream().anyMatch(iEventHandler -> iEventHandler.attachOperation(operation));*/
 
     }
 

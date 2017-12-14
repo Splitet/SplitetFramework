@@ -10,12 +10,11 @@ import java.io.Serializable;
         include=JsonTypeInfo.As.PROPERTY,
         property="type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value=EventHandler.class, name="event"),
-        @JsonSubTypes.Type(value=NoneHandler.class, name="none"),
+        @JsonSubTypes.Type(value=ProducedEvent.class, name="event"),
 })
-public interface IEventHandler extends Serializable {
+public interface IProducedEvent extends Serializable {
 
-    boolean attachHandler(EventHandler eventHandler);
+    boolean attachHandler(ProducedEvent eventHandler);
 
     void incrementNumberOfVisit();
 

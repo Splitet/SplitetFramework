@@ -58,7 +58,9 @@ public class EventListenService {
         DefaultKafkaConsumerFactory<String, PublishedEventWrapper> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProperties, new StringDeserializer(), new JsonDeserializer<>(PublishedEventWrapper.class));
 
-        ContainerProperties containerProperties = new ContainerProperties(topicService.queryTopicListAsArr());
+        String[] topics = topicService.queryTopicListAsArr();
+        log.info("Starting to Listen Events:"+String.join(",",topics));
+        ContainerProperties containerProperties = new ContainerProperties(topics);
         containerProperties.setMessageListener(topologyService);
         messageListenerContainer = new ConcurrentMessageListenerContainer<>(consumerFactory,
                 containerProperties);
