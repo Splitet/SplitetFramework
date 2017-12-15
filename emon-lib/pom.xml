@@ -156,6 +156,16 @@
     </dependencies>
 
 
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-kloia-eventapis</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/kloia/eventapis</url>
+        </repository>
+    </repositories>
     <build>
         <plugins>
         </plugins>
