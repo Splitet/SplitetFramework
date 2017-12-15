@@ -7,10 +7,11 @@
     <parent>
         <groupId>com.kloia.eventapis</groupId>
         <artifactId>eventapis-parent</artifactId>
-        <version>0.4.0</version>
+        <version>0.4.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>emon-lib</artifactId>
+    <version>0.4.0</version>
 
     <name>Eventapis Store and Monitoring Core</name>
 
