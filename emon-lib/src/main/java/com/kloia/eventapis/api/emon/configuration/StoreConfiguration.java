@@ -13,5 +13,5 @@ import org.springframework.stereotype.Component;
 @Data
 public class StoreConfiguration {
     private KafkaProperties eventBus;
-
+    private String eventTopicRegex = ".*Event";
 }

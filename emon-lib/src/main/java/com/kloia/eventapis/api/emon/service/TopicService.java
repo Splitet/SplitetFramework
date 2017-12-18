@@ -17,9 +17,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -33,6 +33,8 @@ public class TopicService implements Runnable {
     private String groupId;
     private ConsumerGroupCommand.KafkaConsumerGroupService consumerGroupService;
     private ZkUtils zkUtils;
+    private Pattern eventTopicRegex;
+
 
     public TopicService(StoreConfiguration storeConfiguration) {
         this.storeConfiguration = storeConfiguration;
@@ -46,7 +48,7 @@ public class TopicService implements Runnable {
             return Long.valueOf(s.get().toString());
     }
 
-    public String[] queryTopicListAsArr() throws ExecutionException, InterruptedException {
+    public String[] queryTopicListAsArr() throws InterruptedException {
 //        Map<String, Object> producerProperties = storeConfiguration.getEventBus().buildProducerProperties();
 //        KafkaAdminClient adminClient = (KafkaAdminClient) AdminClient.create(producerProperties);
 //
@@ -58,6 +60,8 @@ public class TopicService implements Runnable {
     public void init() {
         String bootstrapServers = String.join(",", storeConfiguration.getEventBus().getBootstrapServers());
         String zookeeperServers = String.join(",", storeConfiguration.getEventBus().getZookeeperServers());
+        eventTopicRegex = Pattern.compile(storeConfiguration.getEventTopicRegex());
+
 
         consumerGroupService = new ConsumerGroupCommand.KafkaConsumerGroupService(
                 new ConsumerGroupCommand.ConsumerGroupCommandOptions(new String[]{"--zookeeper", zookeeperServers, "--bootstrap-server", bootstrapServers, "--group", "empty"}));
@@ -66,7 +70,7 @@ public class TopicService implements Runnable {
         groupId = storeConfiguration.getEventBus().getConsumer().getGroupId();
 
         run(); // first run
-        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(this, 10,10, TimeUnit.SECONDS);
+        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(this, 10, 3600, TimeUnit.SECONDS);
     }
 
     @Override
@@ -74,7 +78,7 @@ public class TopicService implements Runnable {
         List<String> groupList = JavaConversions.seqAsJavaList(consumerGroupService.listGroups());
         Map<String, List<String>> serviceList = new HashMap<>();
         Map<String, List<String>> topicServiceList = new HashMap<>();
-        JavaConversions.seqAsJavaList(zkUtils.getAllTopics()).stream().filter(s -> !s.startsWith("__") && !s.equals(Operation.OPERATION_EVENTS)).forEach(s -> topicServiceList.put(s, new ArrayList<>()));
+        JavaConversions.seqAsJavaList(zkUtils.getAllTopics()).stream().filter(s -> eventTopicRegex.matcher(s).matches()).forEach(s -> topicServiceList.put(s, new ArrayList<>()));
 
         groupList.forEach(consumer -> {
             if (!consumer.equals(groupId) & !consumer.endsWith("capability")) // filter out group id
@@ -83,7 +87,7 @@ public class TopicService implements Runnable {
                     Tuple2<Option<String>, Option<Seq<ConsumerGroupCommand.PartitionAssignmentState>>> describeGroup = consumerGroupService.collectGroupAssignment(consumer);
                     JavaConversions.seqAsJavaList(describeGroup._2.get()).forEach(partitionAssignmentState -> {
                                 String topic = partitionAssignmentState.topic().getOrElse(() -> null);
-                                if (topic != null && !topic.startsWith("__") && !topic.equals(Operation.OPERATION_EVENTS)) {
+                                if (topic != null && eventTopicRegex.matcher(topic).matches()) {
                                     serviceTopics.add(topic);
                                     topicServiceList.compute(topic, (service, services) -> {
                                         if (services == null)
