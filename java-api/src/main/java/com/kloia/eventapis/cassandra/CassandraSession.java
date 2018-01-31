@@ -149,6 +149,11 @@ public class CassandraSession {
         return getSession().prepare(statement);
     }
 
+    public void destroy() {
+        getSession().close();
+        getSession().getCluster().close();
+    }
+
 
 
 

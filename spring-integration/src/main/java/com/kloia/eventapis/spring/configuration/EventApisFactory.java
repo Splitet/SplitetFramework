@@ -35,6 +35,7 @@ import org.springframework.kafka.support.TopicPartitionInitialOffset;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.annotation.PreDestroy;
 import javax.servlet.DispatcherType;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -58,6 +59,14 @@ public class EventApisFactory {
     CassandraSession cassandraSession(EventApisConfiguration eventApisConfiguration) {
         return new CassandraSession(eventApisConfiguration.getStoreConfig());
     }
+    @Autowired
+    private CassandraSession cassandraSession;
+
+    @PreDestroy
+    public void destroy(){
+        cassandraSession.destroy();
+    }
+
 
     @Bean
     public FilterRegistrationBean createOpContextFilter(@Autowired OperationContext operationContext) {
