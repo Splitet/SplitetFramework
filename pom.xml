@@ -5,7 +5,7 @@
 
     <groupId>com.kloia.eventapis</groupId>
     <artifactId>eventapis-parent</artifactId>
-    <version>0.4.1-SNAPSHOT</version>
+    <version>0.4.1</version>
     <packaging>pom</packaging>
 
     <name>eventapis-parent</name>
