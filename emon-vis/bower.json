@@ -1,0 +1,6 @@
+{
+  "name": "emon-vis",
+  "dependencies": {
+    "vis": "^4.20.1"
+  }
+}

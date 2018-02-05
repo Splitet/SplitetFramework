@@ -1,7 +1,9 @@
 eventapis:
   storeConfig:
-    contactPoints: localhost:9042
+    contactPoints: test-api:9042
     keyspaceName: test
+    username: test_order
+    password: qwe123
   eventRecords:
     payment: paymentevents
   eventBus:
@@ -12,8 +14,8 @@ eventapis:
 
 spring:
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521:xe
-    username: USR_ORDER
+    url: jdbc:oracle:thin:@test-api:1521:xe
+    username: TEST_ORDER
     password: qwe123
     platform: ORACLE
     tomcat:

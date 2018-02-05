@@ -27,10 +27,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 
 @Data
-public class KafkaProperties {
+public class KafkaProperties implements Cloneable {
+
+    private final Consumer consumer = new Consumer();
+    private final Producer producer = new Producer();
 
     /**
      * Comma-delimited list of host:port pairs to use for establishing the initial
@@ -40,18 +44,19 @@ public class KafkaProperties {
             Collections.singletonList("localhost:9092"));
 
     /**
+     * Comma-delimited list of host:port pairs to use for establishing the initial
+     * connection to the Kafka cluster.
+     */
+    private List<String> zookeeperServers = new ArrayList<String>(
+            Collections.singletonList("localhost:2181"));
+    /**
      * Id to pass to the server when making requests; used for server-side logging.
      */
     private String clientId;
-
     /**
      * Additional properties used to configure the client.
      */
     private Map<String, String> properties = new HashMap<String, String>();
-
-    private final Consumer consumer = new Consumer();
-
-    private final Producer producer = new Producer();
 
     private Map<String, Object> buildCommonProperties() {
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -61,7 +66,10 @@ public class KafkaProperties {
         }
         if (this.clientId != null) {
             properties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.clientId);
-        }
+        } else if (this.consumer.groupId != null)
+            properties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.consumer.groupId + "-" + new Random().nextInt(1000));
+
+
         if (!MapUtils.isEmpty(this.properties)) {
             properties.putAll(this.properties);
         }
@@ -98,9 +106,18 @@ public class KafkaProperties {
         return properties;
     }
 
+    @Override
+    public KafkaProperties clone() {
+        try {
+            return (KafkaProperties) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Data
-    public static class Consumer {
+    public static class Consumer implements Cloneable {
 
         private Integer autoCommitInterval;
 
@@ -189,10 +206,15 @@ public class KafkaProperties {
             return properties;
         }
 
+        @Override
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
+
     }
 
     @Data
-    public static class Producer {
+    public static class Producer implements Cloneable {
         /**
          * Number of acknowledgments the producer requires the leader to have received
          * before considering a request complete.
@@ -261,6 +283,10 @@ public class KafkaProperties {
             return properties;
         }
 
+        @Override
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
     }
 
 }

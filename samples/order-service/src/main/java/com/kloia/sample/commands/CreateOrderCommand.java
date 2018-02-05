@@ -6,7 +6,7 @@ import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.sample.dto.command.CreateOrderCommandDto;
 import com.kloia.sample.dto.event.OrderCreatedEvent;
-import com.kloia.sample.model.Order;
+import com.kloia.sample.model.Orders;
 import com.kloia.sample.model.OrderState;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -24,7 +24,7 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-public class CreateOrderCommand implements CommandHandler<Order, CreateOrderCommandDto> {
+public class CreateOrderCommand implements CommandHandler<Orders, CreateOrderCommandDto> {
     private final EventRepository eventRepository;
 
     @Autowired
@@ -43,7 +43,7 @@ public class CreateOrderCommand implements CommandHandler<Order, CreateOrderComm
     }
 
     @Component
-    public static class CreateOrderSpec extends EntityFunctionSpec<Order, OrderCreatedEvent> {
+    public static class CreateOrderSpec extends EntityFunctionSpec<Orders, OrderCreatedEvent> {
         public CreateOrderSpec() {
             super((order, event) -> {
                 OrderCreatedEvent createOrderCommandDto = event.getEventData();

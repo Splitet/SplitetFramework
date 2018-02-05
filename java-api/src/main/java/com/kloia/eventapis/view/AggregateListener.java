@@ -20,14 +20,14 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-public class AggregateListener {
-    ViewQuery viewQuery;
-    EventRepository eventRepository;
-    SnapshotRepository snapshotRepository;
+public class AggregateListener<T extends Entity> {
+    private final Map<String, Map.Entry<Class<PublishedEvent>, RollbackSpec>> rollbackSpecMap;
+    private ViewQuery<T> viewQuery;
+    private EventRepository eventRepository;
+    private SnapshotRepository<T, String> snapshotRepository;
     private ObjectMapper objectMapper;
-    private final Map<String, Map.Entry<Class<PublishedEvent>,RollbackSpec>> rollbackSpecMap;
 
-    public AggregateListener(ViewQuery viewQuery, EventRepository eventRepository, SnapshotRepository snapshotRepository, List<RollbackSpec> rollbackSpecs, ObjectMapper objectMapper) {
+    public AggregateListener(ViewQuery<T> viewQuery, EventRepository eventRepository, SnapshotRepository<T, String> snapshotRepository, List<RollbackSpec> rollbackSpecs, ObjectMapper objectMapper) {
         this.viewQuery = viewQuery;
         this.eventRepository = eventRepository;
         this.snapshotRepository = snapshotRepository;
@@ -51,18 +51,22 @@ public class AggregateListener {
                 entityEvents.forEach(entityEvent -> {
                     try {
                         Map.Entry<Class<PublishedEvent>, RollbackSpec> specEntry = rollbackSpecMap.get(entityEvent.getEventType());
-                        if(specEntry != null)
-                            specEntry.getValue().rollback(new EntityEventWrapper<>(specEntry.getKey(),objectMapper,entityEvent).getEventData());
-                    } catch (EventStoreException e) {
-                        log.warn(e.getMessage(),e);
+                        if (specEntry != null)
+                            specEntry.getValue().rollback(new EntityEventWrapper<>(specEntry.getKey(), objectMapper, entityEvent).getEventData());
+                    } catch (Exception e) {
+                        log.warn(e.getMessage(), e);
                     }
                 });
-                snapshotRepository.save(viewQuery.queryByOpId(data.key()));
-            }else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEDEED) {
+//                List<T> list = viewQuery.queryByOpId(data.key(), o -> snapshotRepository.findOne(o));
+//                snapshotRepository.save(list);
+                snapshotRepository.save(viewQuery.queryByOpId(data.key())); // We may not need this
+            } else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEDEED) {
+//                List<T> list = viewQuery.queryByOpId(data.key(), o -> snapshotRepository.findOne(o));
+//                snapshotRepository.save(list);
                 snapshotRepository.save(viewQuery.queryByOpId(data.key()));
             }
         } catch (EventStoreException e) {
-            log.error("Error while applying operation:"+data.toString()+" Exception:"+e.getMessage(),e);
+            log.error("Error while applying operation:" + data.toString() + " Exception:" + e.getMessage(), e);
         }
     }
 }

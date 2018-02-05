@@ -4,9 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.IUserContext;
-import com.kloia.eventapis.api.IdCreationStrategy;
 import com.kloia.eventapis.api.Views;
-import com.kloia.eventapis.api.impl.UUIDCreationStrategy;
 import com.kloia.eventapis.cassandra.ConcurrencyResolver;
 import com.kloia.eventapis.cassandra.ConcurrentEventException;
 import com.kloia.eventapis.cassandra.DefaultConcurrencyResolver;
@@ -22,6 +20,7 @@ import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.EventState;
 import com.kloia.eventapis.view.Entity;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -86,7 +85,8 @@ public class CompositeRepositoryImpl implements EventRepository {
     private <P extends PublishedEvent, T extends Exception> EventKey recordAndPublishInternal(
             P publishedEvent, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
     ) throws EventStoreException, T {
-        EventKey eventKey = eventRecorder.recordEntityEvent(publishedEvent, previousEventKey, concurrencyResolverFactory);
+        long opDate = System.currentTimeMillis();
+        EventKey eventKey = eventRecorder.recordEntityEvent(publishedEvent, opDate, previousEventKey, concurrencyResolverFactory);
         publishedEvent.setSender(eventKey);
         String event;
         try {
@@ -95,7 +95,7 @@ public class CompositeRepositoryImpl implements EventRepository {
             throw new EventStoreException(e.getMessage(), e);
         }
 
-        PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContext(), event);
+        PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContext(), operationContext.getCommandContext(), event, opDate);
         publishedEventWrapper.setUserContext(userContext.getUserContext());
         operationRepository.publishEvent(publishedEvent.getClass().getSimpleName(), publishedEventWrapper);
         checkOperationFinalStates(publishedEvent);

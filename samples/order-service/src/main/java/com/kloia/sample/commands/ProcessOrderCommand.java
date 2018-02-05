@@ -9,7 +9,7 @@ import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.sample.dto.command.ProcessOrderCommandDto;
 import com.kloia.sample.dto.event.ReserveStockEvent;
-import com.kloia.sample.model.Order;
+import com.kloia.sample.model.Orders;
 import com.kloia.sample.model.OrderState;
 import com.kloia.sample.model.PaymentInformation;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +28,12 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-public class ProcessOrderCommand implements CommandHandler<Order, ProcessOrderCommandDto> {
+public class ProcessOrderCommand implements CommandHandler<Orders, ProcessOrderCommandDto> {
     private final EventRepository eventRepository;
-    private final ViewQuery<Order> orderQuery;
+    private final ViewQuery<Orders> orderQuery;
 
     @Autowired
-    public ProcessOrderCommand(EventRepository eventRepository, ViewQuery<Order> orderQuery) {
+    public ProcessOrderCommand(EventRepository eventRepository, ViewQuery<Orders> orderQuery) {
         this.eventRepository = eventRepository;
         this.orderQuery = orderQuery;
     }
@@ -46,7 +46,7 @@ public class ProcessOrderCommand implements CommandHandler<Order, ProcessOrderCo
 
     @Override
     public EventKey execute(@RequestBody ProcessOrderCommandDto dto) throws Exception {
-        Order order = orderQuery.queryEntity(dto.getOrderId());
+        Orders order = orderQuery.queryEntity(dto.getOrderId());
 
         if (order.getState() == OrderState.INITIAL) {
             ReserveStockEvent reserveStockEvent = new ReserveStockEvent(order.getStockId(), order.getOrderAmount(), dto.getPaymentInformation());
@@ -57,7 +57,7 @@ public class ProcessOrderCommand implements CommandHandler<Order, ProcessOrderCo
     }
 
     @Component
-    public static class ProcessOrderSpec extends EntityFunctionSpec<Order, ReserveStockEvent> {
+    public static class ProcessOrderSpec extends EntityFunctionSpec<Orders, ReserveStockEvent> {
         public ProcessOrderSpec() {
             super((order, event) -> {
                 ReserveStockEvent eventData = event.getEventData();
@@ -65,7 +65,7 @@ public class ProcessOrderCommand implements CommandHandler<Order, ProcessOrderCo
                 order.setPaymentAddress(paymentInformation.getPaymentAddress());
                 order.setAmount(paymentInformation.getAmount());
                 order.setCardInformation(paymentInformation.getCardInformation());
-                order.setState(OrderState.PROCESSING);
+                order.setState(OrderState.RESERVING_STOCK);
                 return order;
             });
         }

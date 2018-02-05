@@ -8,6 +8,6 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PaymentRepository extends JpaRepository<Payment, String>, QueryDslPredicateExecutor, SnapshotRepository<Payment> {
+public interface PaymentRepository extends JpaRepository<Payment, String>, QueryDslPredicateExecutor, SnapshotRepository<Payment, String> {
 
 }

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -20,10 +21,20 @@ public class PublishedEventWrapper implements Serializable {
 
     @JsonIgnore
     private String event;
+    private String opId;
+    private String sender;
+    private String aggregateId;
+    private long opDate;
+    private Map<String, String> userContext;
 
-    @JsonSetter
-    public void setEvent(ObjectNode event) {
-        this.event = event.toString();
+    public PublishedEventWrapper() {
+    }
+
+    public PublishedEventWrapper(String opId, String aggregateId, String eventData,long opDate) {
+        this.opId = opId;
+        this.aggregateId = aggregateId;
+        this.event = eventData;
+        this.opDate = opDate;
     }
 
     @JsonGetter
@@ -33,21 +44,12 @@ public class PublishedEventWrapper implements Serializable {
     }
 
     @JsonSetter
+    public void setEvent(ObjectNode event) {
+        this.event = event.toString();
+    }
+
+    @JsonSetter
     public void setEventData(String eventData) {
-        this.event = eventData;
-    }
-
-    private String opId;
-    
-    private String sender;
-
-    private Map<String,String> userContext;
-
-    public PublishedEventWrapper() {
-    }
-
-    public PublishedEventWrapper(String opId, String eventData) {
-        this.opId = opId;
         this.event = eventData;
     }
 

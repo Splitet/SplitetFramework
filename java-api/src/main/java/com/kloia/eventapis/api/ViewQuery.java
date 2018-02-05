@@ -7,6 +7,7 @@ import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.Entity;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Created by zeldalozdemir on 23/02/2017.
@@ -21,6 +22,8 @@ public interface ViewQuery<T extends Entity> {
     T queryEntity(EventKey eventKey) throws EventStoreException;
 
     List<T> queryByOpId(String opId) throws EventStoreException;
+
+    List<T> queryByOpId(String key, Function<String,T> findOne) throws EventStoreException;
 
 /*    List<T> queryByField(List<Clause> clauses) throws EventStoreException;
 

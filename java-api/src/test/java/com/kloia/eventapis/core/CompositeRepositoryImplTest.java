@@ -30,23 +30,24 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 
 /**
  * Created by orhanburak.bozan on 19/08/2017.
@@ -54,30 +55,22 @@ import static org.hamcrest.Matchers.equalTo;
 @RunWith(MockitoJUnitRunner.class)
 public class CompositeRepositoryImplTest {
 
-    @InjectMocks
-    private CompositeRepositoryImpl compositeRepository;
-
-    @Mock
-    private EventRecorder eventRecorder;
-
-    @Mock
-    private OperationContext operationContext;
-
-    @Mock
-    private ObjectMapper objectMapper;
-
-    @Mock
-    private IOperationRepository operationRepository;
-
-    @Mock
-    private IUserContext userContext;
-
-    @Mock
-    private IdCreationStrategy idCreationStrategy = new UUIDCreationStrategy();
-
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
-
+    @InjectMocks
+    private CompositeRepositoryImpl compositeRepository;
+    @Mock
+    private EventRecorder eventRecorder;
+    @Mock
+    private OperationContext operationContext;
+    @Mock
+    private ObjectMapper objectMapper;
+    @Mock
+    private IOperationRepository operationRepository;
+    @Mock
+    private IUserContext userContext;
+    @Mock
+    private IdCreationStrategy idCreationStrategy = new UUIDCreationStrategy();
     @Captor
     private ArgumentCaptor<Function<EntityEvent, ConcurrencyResolver<ConcurrentEventException>>> concurrencyResolverFactoryCaptor;
 
@@ -139,7 +132,7 @@ public class CompositeRepositoryImplTest {
     }
 
     private void mockCommon() throws EventStoreException, ConcurrentEventException, JsonProcessingException {
-        when(eventRecorder.recordEntityEvent(eq(intermediateEvent), previousEventKeyCaptor.capture(), concurrencyResolverFactoryCaptor.capture())).thenReturn(eventKey);
+        when(eventRecorder.recordEntityEvent(eq(intermediateEvent), anyLong(), previousEventKeyCaptor.capture(), concurrencyResolverFactoryCaptor.capture())).thenReturn(eventKey);
         when(objectWriter.writeValueAsString(intermediateEvent)).thenReturn(intermediateEventJson);
     }
 
@@ -240,7 +233,7 @@ public class CompositeRepositoryImplTest {
 
     @Test
     public void shouldSuccessOperationWithSuccessEvent() throws ConcurrentEventException, EventStoreException, JsonProcessingException {
-        when(eventRecorder.recordEntityEvent(eq(successEvent), previousEventKeyCaptor.capture(), concurrencyResolverFactoryCaptor.capture())).thenReturn(eventKey);
+        when(eventRecorder.recordEntityEvent(eq(successEvent), anyLong(), previousEventKeyCaptor.capture(), concurrencyResolverFactoryCaptor.capture())).thenReturn(eventKey);
         when(objectWriter.writeValueAsString(successEvent)).thenReturn(successEventJson);
 
         compositeRepository.recordAndPublish(successEvent);
@@ -255,7 +248,7 @@ public class CompositeRepositoryImplTest {
 
     @Test
     public void shouldFailOperationWithFailEvent() throws ConcurrentEventException, EventStoreException, JsonProcessingException {
-        when(eventRecorder.recordEntityEvent(eq(failEvent), previousEventKeyCaptor.capture(), concurrencyResolverFactoryCaptor.capture())).thenReturn(eventKey);
+        when(eventRecorder.recordEntityEvent(eq(failEvent), anyLong(), previousEventKeyCaptor.capture(), concurrencyResolverFactoryCaptor.capture())).thenReturn(eventKey);
         when(objectWriter.writeValueAsString(failEvent)).thenReturn(failEventJson);
 
         compositeRepository.recordAndPublish(failEvent);
