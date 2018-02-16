@@ -81,7 +81,7 @@ public class TopicService implements Runnable {
         JavaConversions.seqAsJavaList(zkUtils.getAllTopics()).stream().filter(s -> eventTopicRegex.matcher(s).matches()).forEach(s -> topicServiceList.put(s, new ArrayList<>()));
 
         groupList.forEach(consumer -> {
-            if (!consumer.equals(groupId) & !consumer.endsWith("capability")) // filter out group id
+            if (!consumer.equals(groupId) && !consumer.endsWith("capability")) // filter out group id
                 try {
                     List<String> serviceTopics = serviceList.compute(consumer, (s, strings) -> strings != null ? strings : new ArrayList<>());
                     Tuple2<Option<String>, Option<Seq<ConsumerGroupCommand.PartitionAssignmentState>>> describeGroup = consumerGroupService.collectGroupAssignment(consumer);

@@ -28,7 +28,7 @@ public class EventMessageConverter extends MessagingMessageConverter {
     }
 
     @Override
-    protected Object extractAndConvertValue(ConsumerRecord<?, ?> record, Type type) {
+    public Object extractAndConvertValue(ConsumerRecord<?, ?> record, Type type) {
         Object value = record.value();
         if (value instanceof PublishedEventWrapper)
             try {

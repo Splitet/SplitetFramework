@@ -155,30 +155,7 @@ public class EventApisFactory {
             ConsumerFactory<String, Operation> consumerFactory,
             PlatformTransactionManager platformTransactionManager) {
         AbstractKafkaListenerContainerFactory<KafkaMessageListenerContainer<String, Operation>, String, Operation> abstractKafkaListenerContainerFactory
-                = new AbstractKafkaListenerContainerFactory<KafkaMessageListenerContainer<String, Operation>, String, Operation>() {
-            @Override
-            protected KafkaMessageListenerContainer<String, Operation> createContainerInstance(KafkaListenerEndpoint endpoint) {
-                ContainerProperties containerProperties;
-                Collection<TopicPartitionInitialOffset> topicPartitions = endpoint.getTopicPartitions();
-                if (!topicPartitions.isEmpty()) {
-                    containerProperties = new ContainerProperties(
-                            topicPartitions.toArray(new TopicPartitionInitialOffset[topicPartitions.size()]));
-                } else {
-                    Collection<String> topics = endpoint.getTopics();
-                    if (!topics.isEmpty()) {
-                        containerProperties = new ContainerProperties(topics.toArray(new String[topics.size()]));
-                    } else {
-                        containerProperties = new ContainerProperties(endpoint.getTopicPattern());
-                    }
-                }
-                return new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
-            }
-
-            @Override
-            protected void initializeContainer(KafkaMessageListenerContainer<String, Operation> instance) {
-//                super.initializeContainer(instance);
-            }
-        };
+                = new EventApisKafkaListenerContainerFactory(consumerFactory);
         RetryTemplate retryTemplate = new RetryTemplate();
         abstractKafkaListenerContainerFactory.setRetryTemplate(retryTemplate);
         abstractKafkaListenerContainerFactory.getContainerProperties().setPollTimeout(3000L);
@@ -194,7 +171,38 @@ public class EventApisFactory {
         return new EmptyUserContext();
     }
 
-    private abstract class EventApisConsumerFactory<K, V> implements ConsumerFactory<K, V> {
+    public static class EventApisKafkaListenerContainerFactory extends AbstractKafkaListenerContainerFactory<KafkaMessageListenerContainer<String, Operation>, String, Operation> {
+        private final ConsumerFactory<String, Operation> consumerFactory;
+
+        public EventApisKafkaListenerContainerFactory(ConsumerFactory<String, Operation> consumerFactory) {
+            this.consumerFactory = consumerFactory;
+        }
+
+        @Override
+        protected KafkaMessageListenerContainer<String, Operation> createContainerInstance(KafkaListenerEndpoint endpoint) {
+            ContainerProperties containerProperties;
+            Collection<TopicPartitionInitialOffset> topicPartitions = endpoint.getTopicPartitions();
+            if (!topicPartitions.isEmpty()) {
+                containerProperties = new ContainerProperties(
+                        topicPartitions.toArray(new TopicPartitionInitialOffset[topicPartitions.size()]));
+            } else {
+                Collection<String> topics = endpoint.getTopics();
+                if (!topics.isEmpty()) {
+                    containerProperties = new ContainerProperties(topics.toArray(new String[topics.size()]));
+                } else {
+                    containerProperties = new ContainerProperties(endpoint.getTopicPattern());
+                }
+            }
+            return new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
+        }
+
+        @Override
+        protected void initializeContainer(KafkaMessageListenerContainer<String, Operation> instance) {
+//                super.initializeContainer(instance);
+        }
+    }
+
+    public static abstract class EventApisConsumerFactory<K, V> implements ConsumerFactory<K, V> {
         private final EventApisConfiguration eventApisConfiguration;
         private final boolean autoCommit;
 
