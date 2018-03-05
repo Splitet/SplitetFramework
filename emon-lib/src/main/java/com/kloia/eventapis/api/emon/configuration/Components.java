@@ -43,7 +43,7 @@ public class Components {
         );
 //        QueryCacheConfig queryCacheConfig = new QueryCacheConfig("Latest-Operations");
 //        PredicateConfig predicateConfig = new PredicateConfig();
-//        predicateConfig.setImplementation(new PagingPredicate())
+//        predicateConfig.setImplementation(new PagingPredicate())a
 //        queryCacheConfig.setPredicateConfig(predicateConfig);
 //        mapConfig.addQueryCacheConfig(queryCacheConfig);
         Map<String, MapConfig> mapConfigs = new HashMap<>();
@@ -58,12 +58,13 @@ public class Components {
         config.setProperty("hazelcast.io.thread.count","1");
         config.setProperty("hazelcast.logging.type", "slf4j");
         */
-        NetworkConfig networkConfig = new NetworkConfig();
-        JoinConfig join = new JoinConfig();
-        DiscoveryConfig discoveryConfig = new DiscoveryConfig();
-        join.setDiscoveryConfig(discoveryConfig);
-        networkConfig.setJoin(join);
-        config.setNetworkConfig(networkConfig);
+//        NetworkConfig networkConfig = new NetworkConfig();
+//        JoinConfig join = new JoinConfig();
+//        DiscoveryConfig discoveryConfig = new DiscoveryConfig();
+//        join.setDiscoveryConfig(discoveryConfig);
+//        networkConfig.setJoin(join);
+//        config.setNetworkConfig(networkConfig);
+//        config.getNetworkConfig().
         GroupConfig groupConfig = new GroupConfig();
         groupConfig.setName("op-center");
         groupConfig.setName("ops123center");

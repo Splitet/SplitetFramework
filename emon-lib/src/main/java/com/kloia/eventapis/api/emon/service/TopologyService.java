@@ -10,6 +10,7 @@ import com.kloia.eventapis.api.emon.configuration.Components;
 import com.kloia.eventapis.api.emon.domain.BaseEvent;
 import com.kloia.eventapis.api.emon.domain.ProducedEvent;
 import com.kloia.eventapis.api.emon.domain.Topology;
+import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventType;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.Operation;
@@ -69,7 +70,7 @@ public class TopologyService implements MessageListener<String, Serializable> {
             operationsMap.executeOnKey(key, new EventTopologyUpdater(
                     eventWrapper.getOpId(), eventWrapper.getSender(),
                     eventWrapper.getAggregateId(), eventWrapper.getOpDate(),
-                    baseEvent, targetList, topic));
+                    baseEvent.getEventType(),baseEvent.getSender(), targetList, topic));
 
         } catch (IOException e) {
             log.error("Error While Handling Event:" + e.getMessage(), e);
@@ -100,22 +101,25 @@ public class TopologyService implements MessageListener<String, Serializable> {
         private String sender;
         private String aggregateId;
         private long opDate;
+        private EventType eventType;
+        private EventKey senderEventKey;
 
-        private BaseEvent baseEvent;
         private List<String> targetList;
         private String topic;
 
         public EventTopologyUpdater(String opId, String sender,
                                     String aggregateId, long opDate,
-                                    BaseEvent baseEvent,
+                                    EventType eventType,
+                                    EventKey senderEventKey,
                                     List<String> targetList,
                                     String topic) {
             this.opId = opId;
             this.sender = sender;
             this.aggregateId = aggregateId;
             this.opDate = opDate;
+            this.eventType = eventType;
+            this.senderEventKey = senderEventKey;
 
-            this.baseEvent = baseEvent;
             this.targetList = targetList;
             this.topic = topic;
         }
@@ -127,14 +131,14 @@ public class TopologyService implements MessageListener<String, Serializable> {
                 if (topology == null) {
                     topology = new Topology(opId);
                 }
-                if (baseEvent.getEventType() == EventType.OP_START || baseEvent.getEventType() == EventType.OP_SINGLE) {
+                if (eventType == EventType.OP_START || eventType == EventType.OP_SINGLE) {
                     topology.setInitiatorCommand(aggregateId);
                     topology.setInitiatorService(sender);
                     topology.setOpDate(opDate);
                 }
 
                 ProducedEvent producedEvent = new ProducedEvent(topic, sender,
-                        aggregateId, baseEvent.getEventType(), baseEvent.getSender(), targetList);
+                        aggregateId, eventType, senderEventKey, targetList);
                 boolean b = topology.attachProducedEvent(producedEvent);
                 if (!b)
                     log.warn("We Couldn't attach event:" + producedEvent);
