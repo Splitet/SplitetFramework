@@ -8,5 +8,4 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BaseEvent extends PublishedEvent {
-    private EventType  eventType;
 }

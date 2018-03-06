@@ -1,8 +1,6 @@
 package com.kloia.eventapis.common;
 
 
-import com.fasterxml.jackson.annotation.JsonView;
-import com.kloia.eventapis.api.Views;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,10 +11,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class PublishedEvent{
+public abstract class PublishedEvent extends PublishableEvent {
 
-    @JsonView(Views.PublishedOnly.class)
-    EventKey sender;
+    private EventType eventType;
 
-    public abstract EventType getEventType();
+    public final EventType getEventType() {
+        return eventType;
+    }
 }

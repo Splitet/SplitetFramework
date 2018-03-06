@@ -15,6 +15,7 @@ import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.common.EventType;
 import com.kloia.eventapis.common.OperationContext;
+import com.kloia.eventapis.common.PublishableEvent;
 import com.kloia.eventapis.common.PublishedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.kafka.IOperationRepository;
@@ -83,9 +84,9 @@ public class CompositeRepositoryImplTest {
     @Mock
     private EventKey eventKey;
 
-    private PublishedEvent successEvent;
-    private PublishedEvent failEvent;
-    private PublishedEvent intermediateEvent;
+    private PublishableEvent successEvent;
+    private PublishableEvent failEvent;
+    private PublishableEvent intermediateEvent;
     private String intermediateEventJson;
     private String successEventJson;
     private String failEventJson;
@@ -93,19 +94,19 @@ public class CompositeRepositoryImplTest {
 
     @Before
     public void setUp() throws ConcurrentEventException, EventStoreException, JsonProcessingException {
-        successEvent = new PublishedEvent() {
+        successEvent = new PublishableEvent() {
             @Override
             public EventType getEventType() {
                 return EventType.OP_SUCCESS;
             }
         };
-        failEvent = new PublishedEvent() {
+        failEvent = new PublishableEvent() {
             @Override
             public EventType getEventType() {
                 return EventType.OP_FAIL;
             }
         };
-        intermediateEvent = new PublishedEvent() {
+        intermediateEvent = new PublishableEvent() {
             @Override
             public EventType getEventType() {
                 return EventType.EVENT;

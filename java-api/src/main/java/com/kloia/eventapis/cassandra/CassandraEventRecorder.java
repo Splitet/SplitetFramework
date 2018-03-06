@@ -16,7 +16,7 @@ import com.kloia.eventapis.api.impl.UUIDCreationStrategy;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.common.OperationContext;
-import com.kloia.eventapis.common.PublishedEvent;
+import com.kloia.eventapis.common.PublishableEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.pojos.EventState;
 import com.kloia.eventapis.view.Entity;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * Created by zeldalozdemir on 12/02/2017.
  */
 @Slf4j
-public class CassandraEventRecorder<E extends Entity> implements EventRecorder {
+public class CassandraEventRecorder implements EventRecorder {
 
     public static final String OP_ID = "opId";
     public static final String ENTITY_ID = "entityId";
@@ -74,7 +74,7 @@ public class CassandraEventRecorder<E extends Entity> implements EventRecorder {
 //    private Function<E, ConcurrencyResolver> concurrencyResolverFactory;
 
     @Override
-    public <T extends Exception> EventKey recordEntityEvent(PublishedEvent event, long opDate, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
+    public <T extends Exception> EventKey recordEntityEvent(PublishableEvent event, long opDate, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
             throws EventStoreException, T {
 
         ConcurrencyResolver<T> concurrencyResolver = null;
@@ -113,7 +113,7 @@ public class CassandraEventRecorder<E extends Entity> implements EventRecorder {
                 select.where(QueryBuilder.eq(ENTITY_ID, entityEvent.getEventKey().getEntityId()));
                 ResultSet execute = cassandraSession.execute(select);
                 int lastVersion = execute.one().getInt(0);
-                entityEvent.setEventKey(concurrencyResolver.calculateNext(entityEvent.getEventKey()));
+                entityEvent.setEventKey(concurrencyResolver.calculateNext(entityEvent.getEventKey(),lastVersion));
             }
 
         }

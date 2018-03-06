@@ -7,6 +7,7 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.common.EventKey;
+import com.kloia.eventapis.common.PublishableEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.pojos.EventState;
 import com.kloia.eventapis.view.Entity;
@@ -30,12 +31,9 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
 
     private String tableName;
     private CassandraSession cassandraSession;
-    //    private CassandraTemplate cassandraOperations;
     private Map<String, EntityFunctionSpec<E, ?>> functionMap = new HashMap<>();
     private ObjectMapper objectMapper;
     private Class<E> entityType;
-    /*    @Getter
-    private List<String> indexedFields;*/
 
     public CassandraViewQuery(String tableName, CassandraSession cassandraSession, ObjectMapper objectMapper, List<EntityFunctionSpec<E, ?>> commandSpecs) {
         this.tableName = tableName;
@@ -48,11 +46,6 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
         EventKey eventKey = new EventKey(entityEventData.getString(CassandraEventRecorder.ENTITY_ID), entityEventData.getInt(CassandraEventRecorder.VERSION));
         String opId = entityEventData.getString(CassandraEventRecorder.OP_ID);
         String eventData = entityEventData.getString(CassandraEventRecorder.EVENT_DATA);
-//            ObjectNode jsonNode = (ObjectNode) objectMapper.readTree(eventData);
-/*            for (String indexedField : indexedFields) {
-                if (entityEventData.getColumnDefinitions().contains(indexedField))
-                    jsonNode.put(indexedField, entityEventData.getString(indexedField));
-            }*/
         return new EntityEvent(eventKey, opId,
                 entityEventData.getTimestamp(CassandraEventRecorder.OP_DATE),
                 entityEventData.getString(CassandraEventRecorder.EVENT_TYPE),
@@ -196,24 +189,28 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
         return new ArrayList<>(resultList.values());
     }
 
+    @Override
+    public EntityEvent queryEvent(String entityId, int version) throws EventStoreException {
+        Select select = QueryBuilder.select().from(tableName);
+        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
+        select.where(QueryBuilder.eq(CassandraEventRecorder.VERSION, version));
+        Row one = cassandraSession.execute(select, PagingIterable::one);
+        return one == null ? null : convertToEntityEvent(one);
+    }
 
-
-/*    private List<E> queryEntities(List<String> entityEvents) throws EventStoreException {
-        Map<String, E> resultList = new HashMap<>();
-        for (String entityId : entityEvents) {
-            if (!resultList.containsKey(entityId)) {
-                E value = queryEntity(entityId);
-                if (value != null)
-                    resultList.put(entityId, value);
-            }
-        }
-        return new ArrayList<>(resultList.values());
-    }*/
-
+    @Override
+    public <T extends PublishableEvent> T queryEventData(String entityId, int version) throws EventStoreException {
+        EntityEvent e = queryEvent(entityId, version);
+        EntityFunctionSpec<E, ?> functionSpec = functionMap.get(e.getEventType());
+        return new EntityEventWrapper<>((Class<T>) functionSpec.getQueryType(), objectMapper, e).getEventData();
+    }
 
     private void addCommandSpecs(List<EntityFunctionSpec<E, ?>> commandSpec) {
         for (EntityFunctionSpec<E, ?> functionSpec : commandSpec) {
-            functionMap.put(functionSpec.getQueryType().getSimpleName(), functionSpec);
+            String simpleName = functionSpec.getQueryType().getSimpleName();
+            if (functionMap.containsKey(simpleName))
+                throw new IllegalArgumentException("Multiple Function Spec for:" + simpleName + " 1-" + functionSpec.getClass() + " 2-" + functionMap.get(simpleName).getClass());
+            functionMap.put(simpleName, functionSpec);
         }
         entityType = commandSpec.iterator().next().getEntityType();
     }

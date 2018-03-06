@@ -7,6 +7,6 @@ public interface ConcurrencyResolver<T extends Exception> {
 
     void tryMore() throws T;
 
-    EventKey calculateNext(EventKey failedEventKey) throws T, EventStoreException;
+    EventKey calculateNext(EventKey failedEventKey, int lastVersion) throws T, EventStoreException;
 
 }

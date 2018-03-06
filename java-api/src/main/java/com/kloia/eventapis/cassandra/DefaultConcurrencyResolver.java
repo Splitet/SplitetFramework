@@ -10,7 +10,7 @@ public class DefaultConcurrencyResolver implements ConcurrencyResolver<Concurren
     }
 
     @Override
-    public EventKey calculateNext(EventKey entityEvent) throws EventStoreException, ConcurrentEventException {
+    public EventKey calculateNext(EventKey entityEvent, int lastVersion) throws EventStoreException, ConcurrentEventException {
         throw new ConcurrentEventException("Concurrent Events for:"+entityEvent);
     }
 }
