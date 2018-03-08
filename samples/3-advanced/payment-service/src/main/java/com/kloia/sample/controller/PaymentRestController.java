@@ -22,7 +22,7 @@ import java.io.IOException;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/payment/v1/")
+@RequestMapping(value = "/payment/")
 @EnableFeignClients
 public class PaymentRestController {
 

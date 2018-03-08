@@ -68,9 +68,7 @@ public class TopologyService implements MessageListener<String, Serializable> {
             List<String> targetList = topicService.getTopicServiceList().get(topic);
 
             operationsMap.executeOnKey(key, new EventTopologyUpdater(
-                    eventWrapper.getOpId(), eventWrapper.getSender(),
-                    eventWrapper.getAggregateId(), eventWrapper.getOpDate(),
-                    baseEvent.getEventType(),baseEvent.getSender(), targetList, topic));
+                    eventWrapper, baseEvent.getEventType(), baseEvent.getSender(), targetList, topic));
 
         } catch (IOException e) {
             log.error("Error While Handling Event:" + e.getMessage(), e);
@@ -97,26 +95,19 @@ public class TopologyService implements MessageListener<String, Serializable> {
     private static class EventTopologyUpdater extends AbstractEntryProcessor<String, Topology> {
 
 
-        private String opId;
-        private String sender;
-        private String aggregateId;
-        private long opDate;
         private EventType eventType;
         private EventKey senderEventKey;
 
         private List<String> targetList;
         private String topic;
+        private PublishedEventWrapper eventWrapper;
 
-        public EventTopologyUpdater(String opId, String sender,
-                                    String aggregateId, long opDate,
+        public EventTopologyUpdater(PublishedEventWrapper eventWrapper,
                                     EventType eventType,
                                     EventKey senderEventKey,
                                     List<String> targetList,
                                     String topic) {
-            this.opId = opId;
-            this.sender = sender;
-            this.aggregateId = aggregateId;
-            this.opDate = opDate;
+            this.eventWrapper = eventWrapper;
             this.eventType = eventType;
             this.senderEventKey = senderEventKey;
 
@@ -129,16 +120,16 @@ public class TopologyService implements MessageListener<String, Serializable> {
             try {
                 Topology topology = entry.getValue();
                 if (topology == null) {
-                    topology = new Topology(opId);
+                    topology = new Topology(eventWrapper.getOpId(), eventWrapper.getParentOpId());
                 }
                 if (eventType == EventType.OP_START || eventType == EventType.OP_SINGLE) {
-                    topology.setInitiatorCommand(aggregateId);
-                    topology.setInitiatorService(sender);
-                    topology.setOpDate(opDate);
+                    topology.setInitiatorCommand(eventWrapper.getAggregateId());
+                    topology.setInitiatorService(eventWrapper.getSender());
+                    topology.setOpDate(eventWrapper.getOpDate());
                 }
 
-                ProducedEvent producedEvent = new ProducedEvent(topic, sender,
-                        aggregateId, eventType, senderEventKey, targetList);
+                ProducedEvent producedEvent = new ProducedEvent(topic, eventWrapper.getSender(),
+                        eventWrapper.getAggregateId(), eventType, senderEventKey, targetList);
                 boolean b = topology.attachProducedEvent(producedEvent);
                 if (!b)
                     log.warn("We Couldn't attach event:" + producedEvent);
@@ -166,7 +157,7 @@ public class TopologyService implements MessageListener<String, Serializable> {
                 Topology value = entry.getValue();
                 if (value == null) {
                     log.warn("There is no Topology with key: " + entry.getKey());
-                    value = new Topology(entry.getKey());
+                    value = new Topology(entry.getKey(), operation.getParentId());
                 }
                 value.attachOperation(operation);
                 entry.setValue(value);

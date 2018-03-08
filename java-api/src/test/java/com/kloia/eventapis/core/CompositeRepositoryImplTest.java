@@ -11,6 +11,7 @@ import com.kloia.eventapis.cassandra.ConcurrencyResolver;
 import com.kloia.eventapis.cassandra.ConcurrentEventException;
 import com.kloia.eventapis.cassandra.DefaultConcurrencyResolver;
 import com.kloia.eventapis.cassandra.EntityEvent;
+import com.kloia.eventapis.common.Context;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.common.EventType;
@@ -120,7 +121,7 @@ public class CompositeRepositoryImplTest {
 
         when(objectMapper.writerWithView(Views.PublishedOnly.class)).thenReturn(objectWriter);
         when(userContext.getUserContext()).thenReturn(userContextMap);
-        when(operationContext.getContext()).thenReturn(OperationContext.OP_ID);
+        when(operationContext.getContextOpId()).thenReturn(OperationContext.OP_ID);
         when(operationContext.getCommandContext()).thenReturn("eventId");
     }
 
@@ -239,7 +240,7 @@ public class CompositeRepositoryImplTest {
         compositeRepository.recordAndPublish(successEvent);
 
         ArgumentCaptor<SerializableConsumer> serializableConsumerCaptor = ArgumentCaptor.forClass(SerializableConsumer.class);
-        verify(operationRepository).successOperation(eq("opId"), eq(""), serializableConsumerCaptor.capture());
+        verify(operationRepository).successOperation(eq (new Context("opId")), eq(""), serializableConsumerCaptor.capture());
 
         Event event = new Event();
         serializableConsumerCaptor.getValue().accept(event);
@@ -254,7 +255,7 @@ public class CompositeRepositoryImplTest {
         compositeRepository.recordAndPublish(failEvent);
 
         ArgumentCaptor<SerializableConsumer> serializableConsumerCaptor = ArgumentCaptor.forClass(SerializableConsumer.class);
-        verify(operationRepository).failOperation(eq("opId"), eq(""), serializableConsumerCaptor.capture());
+        verify(operationRepository).failOperation(eq(new Context("opId")), eq(""), serializableConsumerCaptor.capture());
 
         Event event = new Event();
         serializableConsumerCaptor.getValue().accept(event);

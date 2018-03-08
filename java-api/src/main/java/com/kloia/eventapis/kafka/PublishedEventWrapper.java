@@ -22,6 +22,7 @@ public class PublishedEventWrapper implements Serializable {
     @JsonIgnore
     private String event;
     private String opId;
+    private String parentOpId;
     private String sender;
     private String aggregateId;
     private long opDate;

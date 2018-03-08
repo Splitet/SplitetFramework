@@ -19,6 +19,7 @@ public class Operation implements /*Externalizable,Binarylizable,*/  Serializabl
     private TransactionState transactionState;
     private String aggregateId;
     private String sender;
+    private String parentId;
 //    private static transient ObjectMapper objectMapper = new ObjectMapper();
 
 

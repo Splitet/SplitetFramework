@@ -94,8 +94,9 @@ public class CompositeRepositoryImpl implements EventRepository {
             throw new EventStoreException(e.getMessage(), e);
         }
 
-        PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContext(), operationContext.getCommandContext(), event, opDate);
+        PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContextOpId(), operationContext.getCommandContext(), event, opDate);
         publishedEventWrapper.setUserContext(userContext.getUserContext());
+        publishedEventWrapper.setParentOpId(operationContext.getContextParentOpId());
         operationRepository.publishEvent(publishedEvent.getClass().getSimpleName(), publishedEventWrapper);
         checkOperationFinalStates(publishedEvent);
         return publishedEvent.getSender();

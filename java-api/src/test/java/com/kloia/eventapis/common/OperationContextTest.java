@@ -7,10 +7,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.when;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -28,17 +26,17 @@ public class OperationContextTest {
         operationContext.generateContext();
         operationContext.switchContext("newOpId");
 
-        String actual = operationContext.getContext();
+        String actual = operationContext.getContextOpId();
 
         assertThat(actual, equalTo("newOpId"));
     }
 
     @Test
     public void shouldGetContext() {
-        String context = operationContext.getContext();
+        String context = operationContext.getContextOpId();
 
         for (int i = 0; i < 10; i++) {
-            String contextAgain = operationContext.getContext();
+            String contextAgain = operationContext.getContextOpId();
             assertThat(contextAgain, equalTo(context));
         }
     }
@@ -89,7 +87,7 @@ public class OperationContextTest {
     public void shouldGenerateContext() {
         String context = operationContext.generateContext();
 
-        String actual = operationContext.getContext();
+        String actual = operationContext.getContextOpId();
 
         assertThat(actual, equalTo(context));
     }

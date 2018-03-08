@@ -25,7 +25,7 @@ import java.io.IOException;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/stock/v1/")
+@RequestMapping(value = "/stock/")
 @EnableFeignClients
 public class StockRestController {
 

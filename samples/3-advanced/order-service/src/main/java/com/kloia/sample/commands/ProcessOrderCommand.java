@@ -38,7 +38,7 @@ public class ProcessOrderCommand implements CommandHandler<ProcessOrderCommandDt
         this.orderQuery = orderQuery;
     }
 
-    @RequestMapping(value = "/order/v1/{orderId}/process", method = RequestMethod.POST)
+    @RequestMapping(value = "/order/{orderId}/process", method = RequestMethod.POST)
     public EventKey process(@PathVariable("orderId") String orderId, @RequestBody @Valid ProcessOrderCommandDto dto) throws Exception {
         dto.setOrderId(orderId);
         return this.execute(dto);

@@ -91,7 +91,7 @@ public class CassandraEventRecorder implements EventRecorder {
             eventKey = new EventKey(idCreationStrategy.nextId(), 0);
 
 
-        EntityEvent entityEvent = new EntityEvent(eventKey, operationContext.getContext(), new Date(opDate), event.getClass().getSimpleName(), EventState.CREATED, userContext.getAuditInfo(), eventData);
+        EntityEvent entityEvent = new EntityEvent(eventKey, operationContext.getContextOpId(), new Date(opDate), event.getClass().getSimpleName(), EventState.CREATED, userContext.getAuditInfo(), eventData);
 
         while (true) {
             Insert insert = createInsertQuery(entityEvent);

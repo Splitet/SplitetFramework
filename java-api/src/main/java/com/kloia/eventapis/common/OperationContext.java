@@ -2,8 +2,6 @@ package com.kloia.eventapis.common;
 
 
 import com.kloia.eventapis.exception.EventContextException;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 
@@ -33,13 +31,6 @@ public class OperationContext {
         MDC.put(OP_ID, opId);
     }
 
-    public void switchContext(String opId, String parentOpId) {
-        Context context = getOrCreateContext();
-        context.setOpId(opId);
-        context.setParentOpId(parentOpId);
-        MDC.put(OP_ID, opId);
-    }
-
     private void switchContext(String opId, String parentOpId, boolean preGenerated) {
         Context context = getOrCreateContext();
         context.setOpId(opId);
@@ -48,8 +39,16 @@ public class OperationContext {
         MDC.put(OP_ID, opId);
     }
 
-    public String getContext() {
+    public String getContextOpId() {
         return operationContext.get().isEmpty() ? null : operationContext.get().peek().getOpId();
+    }
+
+    public String getContextParentOpId() {
+        return operationContext.get().isEmpty() ? null : operationContext.get().peek().getParentOpId();
+    }
+
+    public Context getContext() {
+        return operationContext.get().isEmpty() ? null : operationContext.get().peek();
     }
 
     public String getCommandContext() {
@@ -85,45 +84,40 @@ public class OperationContext {
     public String generateContext(@Nullable String parentOpId, boolean preGenerated) {
         if (operationContext.get().size() > 1)
             throw new IllegalStateException("There is Already Parent Context: " + operationContext.get().toString());
-        UUID uuid = UUID.randomUUID();
-        String opId = uuid.toString();
+        String opId = generateOpId();
         switchContext(opId, parentOpId, preGenerated);
         return opId;
     }
 
-    public String pushNewContext() {
+    private String generateOpId() {
         UUID uuid = UUID.randomUUID();
-        String opId = uuid.toString();
+        return uuid.toString();
+    }
+
+    public String pushNewContext() {
         if (!operationContext.get().isEmpty()) {
             Context peek = operationContext.get().peek();
-            if (peek.isPreGenerated())
+            if (peek.isPreGenerated()) {
                 peek.setPreGenerated(false);
-            else {
+                return peek.getOpId();
+            } else {
+                String opId = generateOpId();
                 String parentOpId = StringUtils.isEmpty(peek.getParentOpId()) ? peek.getOpId() + PARENT_OP_ID_DELIMITER + peek.getParentOpId() : peek.getOpId();
-                switchContext(opId, parentOpId);
+                return pushContext(opId, parentOpId).getOpId();
             }
         } else
-            switchContext(opId);
-        return opId;
+            return pushContext(generateOpId()).getOpId();
     }
 
-    @Data
-    @NoArgsConstructor
-    public static class Context {
-        private String opId;
-        private String parentOpId;
-        private String commandContext;
-        private boolean preGenerated = false;
-
-        public Context(String opId) {
-            this.opId = opId;
-        }
-
-        public boolean isEmpty() {
-            return opId == null;
-        }
-
+    private Context pushContext(String opId) {
+        return pushContext(opId, null);
     }
 
+    private Context pushContext(String opId, String parentOpId) {
+        Context context = operationContext.get().push(new Context(opId));
+        context.setParentOpId(parentOpId);
+        MDC.put(OP_ID, opId);
+        return context;
+    }
 
 }

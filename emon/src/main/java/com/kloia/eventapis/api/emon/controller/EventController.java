@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
@@ -31,7 +32,7 @@ import static com.kloia.eventapis.api.emon.configuration.Components.OPERATIONS_M
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/operations/v1/")
+@RequestMapping(value = "/operations")
 public class EventController {
 
 
@@ -60,11 +61,11 @@ public class EventController {
     ) throws IOException, EventStoreException {
         try {
             Collection<Topology> values = operationsMap.values(
-                    new PagingPredicate<>((Comparator<Map.Entry<String, Topology>>) (o1, o2) -> -1 * Long.compare(o1.getValue().getOpDate(), o2.getValue().getOpDate()),
+                    new PagingPredicate<>((Comparator<Map.Entry<String, Topology>> & Serializable) (o1, o2) -> -1 * Long.compare(o1.getValue().getOpDate(), o2.getValue().getOpDate()),
                             pageable.getPageSize()));
             return new ResponseEntity<>(values, HttpStatus.OK);
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
             return ResponseEntity.status(500).build();
         }
     }

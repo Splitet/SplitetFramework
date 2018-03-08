@@ -16,6 +16,7 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Topology implements Serializable {
 
+    private String parentOpId;
     private String opId;
     private String initiatorService;
     private String initiatorCommand;
@@ -26,12 +27,14 @@ public class Topology implements Serializable {
     private Set<ProducedEvent> unassignedEvents = new HashSet<>();
     private Set<ProducedEvent> producedEvents = new HashSet<>();
 
-    public Topology(String opId) {
+    public Topology(String opId, String parentOpId) {
         this.opId = opId;
+        this.parentOpId = parentOpId;
     }
 
-    public Topology(String opId, ProducedEvent head, String initiatorCommand, long opDate) {
+    public Topology(String opId, String parentOpId, ProducedEvent head, String initiatorCommand, long opDate) {
         this.opId = opId;
+        this.parentOpId = parentOpId;
         this.producedEvents.add(head);
         this.initiatorService = head.getSender();
         this.initiatorCommand = initiatorCommand;
@@ -75,7 +78,7 @@ public class Topology implements Serializable {
             if (result)
                 operationState = operation.getTransactionState();
             else {
-                log.warn("We Couldn't attach, Adding to UnAssigned Operation Event:" + operation);
+                log.warn("We Couldn't attach, " + opId + " Adding to UnAssigned Operation Event:" + operation);
                 unassignedOperations.add(operation);
             }
         }

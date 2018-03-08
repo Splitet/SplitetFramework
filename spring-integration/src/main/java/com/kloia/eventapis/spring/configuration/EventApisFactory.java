@@ -80,7 +80,7 @@ public class EventApisFactory {
     @Scope("prototype")
     public RequestInterceptor opIdInterceptor(@Autowired OperationContext operationContext) {
         return template -> {
-            String key = operationContext.getContext();
+            String key = operationContext.getContextOpId();
             if (key != null) {
                 template.header(OperationContext.OP_ID_HEADER, key);
 //                template.header(OperationContext.OP_ID, key); // legacy

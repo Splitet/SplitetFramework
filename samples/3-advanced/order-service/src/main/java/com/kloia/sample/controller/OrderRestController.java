@@ -21,7 +21,7 @@ import java.io.IOException;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/order/v1/")
+@RequestMapping(value = "/order/")
 public class OrderRestController {
 
     @Autowired

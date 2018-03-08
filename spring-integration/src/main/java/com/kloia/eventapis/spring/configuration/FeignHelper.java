@@ -43,7 +43,7 @@ public class FeignHelper {
     @Scope("prototype")
     public RequestInterceptor opIdInterceptor() {
         return (template) -> {
-            String key = this.operationContext.getContext();
+            String key = this.operationContext.getContextOpId();
             if (key != null) {
                 template.header(OperationContext.OP_ID_HEADER, key);
 //                template.header(OperationContext.OP_ID, key); // legacy
