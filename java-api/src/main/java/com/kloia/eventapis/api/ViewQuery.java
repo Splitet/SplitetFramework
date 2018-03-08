@@ -3,7 +3,7 @@ package com.kloia.eventapis.api;
 
 import com.kloia.eventapis.cassandra.EntityEvent;
 import com.kloia.eventapis.common.EventKey;
-import com.kloia.eventapis.common.PublishableEvent;
+import com.kloia.eventapis.common.PublishedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.Entity;
 
@@ -28,7 +28,7 @@ public interface ViewQuery<E extends Entity> {
 
     EntityEvent queryEvent(String entityId, int version) throws EventStoreException;
 
-    <T extends PublishableEvent> T queryEventData(String entityId, int version) throws EventStoreException;
+    <T extends PublishedEvent> T queryEventData(String entityId, int version) throws EventStoreException;
 
 /*    List<T> queryByField(List<Clause> clauses) throws EventStoreException;
 

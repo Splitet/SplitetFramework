@@ -27,7 +27,7 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-public class CancelOrderCommand implements CommandHandler<Orders, ProcessOrderCommandDto> {
+public class CancelOrderCommand implements CommandHandler<ProcessOrderCommandDto> {
     private final EventRepository eventRepository;
     private final ViewQuery<Orders> orderQuery;
 
@@ -69,7 +69,7 @@ public class CancelOrderCommand implements CommandHandler<Orders, ProcessOrderCo
     public static class WaitingStockReleaseRollback implements RollbackSpec<WaitingStockReleaseEvent> {
         @Override
         public void rollback(WaitingStockReleaseEvent event) {
-            log.warn("WaitingStockReleaseEvent for :" + event);
+            log.warn("Rollback WaitingStockReleaseEvent for :" + event);
         }
     }
 }

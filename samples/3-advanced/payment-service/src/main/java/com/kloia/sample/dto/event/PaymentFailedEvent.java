@@ -3,7 +3,7 @@ package com.kloia.sample.dto.event;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.kloia.eventapis.api.Views;
 import com.kloia.eventapis.common.EventType;
-import com.kloia.eventapis.common.PublishableEvent;
+import com.kloia.eventapis.common.PublishedEvent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaymentFailedEvent extends PublishableEvent {
+public class PaymentFailedEvent extends PublishedEvent {
     private String orderId;
     private String paymentAddress;
     private float amount;

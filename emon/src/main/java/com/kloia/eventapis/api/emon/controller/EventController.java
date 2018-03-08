@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.PagingPredicate;
 import com.kloia.eventapis.api.emon.domain.Topology;
+import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.exception.EventStoreException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ public class EventController {
     }
 
     @RequestMapping(value = "/{opId}", method = RequestMethod.GET)
-    public ResponseEntity<?> getOperation(@PathVariable("opId") String opId) throws IOException, EventStoreException {
+    public ResponseEntity<?> getOperation(@PathVariable(OperationContext.OP_ID) String opId) throws IOException, EventStoreException {
         Topology topology = operationsMap.get(opId);
         if (topology == null)
             return ResponseEntity.notFound().build();

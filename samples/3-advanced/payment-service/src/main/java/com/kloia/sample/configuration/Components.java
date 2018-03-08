@@ -40,13 +40,13 @@ public class Components {
     private OperationContext operationContext;
 
     @Bean
-    AggregateListener snapshotRecorder(ViewQuery<Payment> paymentViewRepository, EventRepository paymentEventRepository, PaymentRepository paymentRepository,
+    AggregateListener snapshotRecorder(ViewQuery<Payment> paymentViewQuery, EventRepository paymentEventRepository, PaymentRepository paymentRepository,
                                        Optional<List<RollbackSpec>> rollbackSpecs) {
-        return new AggregateListener(paymentViewRepository, paymentEventRepository, paymentRepository, rollbackSpecs.orElseGet(ArrayList::new), objectMapper);
+        return new AggregateListener(paymentViewQuery, paymentEventRepository, paymentRepository, rollbackSpecs.orElseGet(ArrayList::new), objectMapper);
     }
 
     @Bean
-    ViewQuery<Payment> paymentViewRepository(List<EntityFunctionSpec<Payment, ?>> functionSpecs, EventApisConfiguration eventApisConfiguration) {
+    ViewQuery<Payment> paymentViewQuery(List<EntityFunctionSpec<Payment, ?>> functionSpecs, EventApisConfiguration eventApisConfiguration) {
         return new CassandraViewQuery<>(
                 eventApisConfiguration.getTableNameForEvents("payment"),
                 cassandraSession, objectMapper, functionSpecs);

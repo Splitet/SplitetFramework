@@ -38,3 +38,4 @@ spring:
       ddl-auto: create
     show-sql: true
 
+payment-client-url: http://localhost:8164

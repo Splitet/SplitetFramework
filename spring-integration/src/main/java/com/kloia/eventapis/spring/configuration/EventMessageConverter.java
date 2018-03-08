@@ -33,8 +33,8 @@ public class EventMessageConverter extends MessagingMessageConverter {
         if (value instanceof PublishedEventWrapper)
             try {
                 PublishedEventWrapper eventWrapper = (PublishedEventWrapper) value;
-                userContext.extractUserContext(eventWrapper.getUserContext());
                 operationContext.switchContext(eventWrapper.getOpId());
+                userContext.extractUserContext(eventWrapper.getUserContext());
                 return objectMapper.readValue(eventWrapper.getEvent(), TypeFactory.rawClass(type));
             } catch (IOException e) {
                 throw new SerializationException(e);

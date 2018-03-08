@@ -49,6 +49,8 @@ public class EventApisFactory {
 
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    private CassandraSession cassandraSession;
 
     @Bean
     public OperationContext createOperationContext() {
@@ -59,11 +61,9 @@ public class EventApisFactory {
     CassandraSession cassandraSession(EventApisConfiguration eventApisConfiguration) {
         return new CassandraSession(eventApisConfiguration.getStoreConfig());
     }
-    @Autowired
-    private CassandraSession cassandraSession;
 
     @PreDestroy
-    public void destroy(){
+    public void destroy() {
         cassandraSession.destroy();
     }
 
@@ -81,8 +81,10 @@ public class EventApisFactory {
     public RequestInterceptor opIdInterceptor(@Autowired OperationContext operationContext) {
         return template -> {
             String key = operationContext.getContext();
-            if (key != null)
-                template.header("opId", key.toString());
+            if (key != null) {
+                template.header(OperationContext.OP_ID_HEADER, key);
+//                template.header(OperationContext.OP_ID, key); // legacy
+            }
         };
     }
 

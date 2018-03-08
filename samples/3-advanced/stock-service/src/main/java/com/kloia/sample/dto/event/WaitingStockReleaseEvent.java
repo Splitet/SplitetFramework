@@ -1,6 +1,6 @@
 package com.kloia.sample.dto.event;
 
-import com.kloia.eventapis.common.PublishedEvent;
+import com.kloia.eventapis.common.ReceivedEvent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class WaitingStockReleaseEvent extends PublishedEvent {
+public class WaitingStockReleaseEvent extends ReceivedEvent {
     private String stockId;
     private int reservedStockVersion;
 }

@@ -24,7 +24,7 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-public class CreateOrderCommand implements CommandHandler<Orders, CreateOrderCommandDto> {
+public class CreateOrderCommand implements CommandHandler<CreateOrderCommandDto> {
     private final EventRepository eventRepository;
 
     @Autowired
@@ -38,8 +38,7 @@ public class CreateOrderCommand implements CommandHandler<Orders, CreateOrderCom
         OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
         BeanUtils.copyProperties(dto, orderCreatedEvent);
 
-        EventKey eventKey = eventRepository.recordAndPublish(orderCreatedEvent);
-        return eventKey;
+        return eventRepository.recordAndPublish(orderCreatedEvent);
     }
 
     @Component

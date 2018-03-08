@@ -15,7 +15,6 @@ import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.common.EventType;
 import com.kloia.eventapis.common.OperationContext;
-import com.kloia.eventapis.common.PublishableEvent;
 import com.kloia.eventapis.common.PublishedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.kafka.IOperationRepository;
@@ -84,9 +83,9 @@ public class CompositeRepositoryImplTest {
     @Mock
     private EventKey eventKey;
 
-    private PublishableEvent successEvent;
-    private PublishableEvent failEvent;
-    private PublishableEvent intermediateEvent;
+    private PublishedEvent successEvent;
+    private PublishedEvent failEvent;
+    private PublishedEvent intermediateEvent;
     private String intermediateEventJson;
     private String successEventJson;
     private String failEventJson;
@@ -94,19 +93,19 @@ public class CompositeRepositoryImplTest {
 
     @Before
     public void setUp() throws ConcurrentEventException, EventStoreException, JsonProcessingException {
-        successEvent = new PublishableEvent() {
+        successEvent = new PublishedEvent() {
             @Override
             public EventType getEventType() {
                 return EventType.OP_SUCCESS;
             }
         };
-        failEvent = new PublishableEvent() {
+        failEvent = new PublishedEvent() {
             @Override
             public EventType getEventType() {
                 return EventType.OP_FAIL;
             }
         };
-        intermediateEvent = new PublishableEvent() {
+        intermediateEvent = new PublishedEvent() {
             @Override
             public EventType getEventType() {
                 return EventType.EVENT;
@@ -121,7 +120,7 @@ public class CompositeRepositoryImplTest {
 
         when(objectMapper.writerWithView(Views.PublishedOnly.class)).thenReturn(objectWriter);
         when(userContext.getUserContext()).thenReturn(userContextMap);
-        when(operationContext.getContext()).thenReturn("opId");
+        when(operationContext.getContext()).thenReturn(OperationContext.OP_ID);
         when(operationContext.getCommandContext()).thenReturn("eventId");
     }
 

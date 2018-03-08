@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-public class CreateStockCommandHandler implements CommandHandler<Stock, CreateStockCommandDto> {
+public class CreateStockCommandHandler implements CommandHandler<CreateStockCommandDto> {
     private final static String name = "CREATE_STOCK";
     private final static String CREATED = "CREATED";
     private final EventRepository eventRepository;

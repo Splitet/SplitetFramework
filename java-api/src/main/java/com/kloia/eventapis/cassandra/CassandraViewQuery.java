@@ -7,7 +7,7 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.common.EventKey;
-import com.kloia.eventapis.common.PublishableEvent;
+import com.kloia.eventapis.common.PublishedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.pojos.EventState;
 import com.kloia.eventapis.view.Entity;
@@ -199,7 +199,7 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
     }
 
     @Override
-    public <T extends PublishableEvent> T queryEventData(String entityId, int version) throws EventStoreException {
+    public <T extends PublishedEvent> T queryEventData(String entityId, int version) throws EventStoreException {
         EntityEvent e = queryEvent(entityId, version);
         EntityFunctionSpec<E, ?> functionSpec = functionMap.get(e.getEventType());
         return new EntityEventWrapper<>((Class<T>) functionSpec.getQueryType(), objectMapper, e).getEventData();

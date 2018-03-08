@@ -10,8 +10,6 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 
-import java.util.UUID;
-
 /**
  * Created by zeldalozdemir on 24/04/2017.
  */
@@ -29,23 +27,22 @@ public class CommandExecutionInterceptor {
 
     @Before("within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..)) && args(object,..)")
     public void before(JoinPoint jp, Object object) throws Throwable {
-        if(operationContext.getContext()==null)
-            operationContext.generateContext();
+        operationContext.pushNewContext(); // Ability to generate new Context
         operationContext.setCommandContext(jp.getTarget().getClass().getSimpleName());
-        log.info("before method:"+(object == null ? "" : object.toString()));
+        log.debug("before method:" + (object == null ? "" : object.toString()));
     }
 
-    @AfterReturning(value = "within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))",returning="retVal")
-    public void afterReturning( Object retVal) throws Throwable {
-        log.info("AfterReturning:"+ (retVal == null ? "" : retVal.toString()));
+    @AfterReturning(value = "within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", returning = "retVal")
+    public void afterReturning(Object retVal) {
+        log.debug("AfterReturning:" + (retVal == null ? "" : retVal.toString()));
         operationContext.clearCommandContext();
     }
 
     @AfterThrowing(value = "within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", throwing = "e")
-    public void afterThrowing( Exception e) throws Throwable {
+    public void afterThrowing(Exception e) {
         try {
-            log.info("afterThrowing method:"+e);
-            kafkaOperationRepository.failOperation(operationContext.getContext(),operationContext.getCommandContext(),event -> event.setEventState(EventState.TXN_FAILED));
+            log.info("afterThrowing Command: " + e);
+            kafkaOperationRepository.failOperation(operationContext.getContext(), operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));
         } finally {
             operationContext.clearCommandContext();
         }

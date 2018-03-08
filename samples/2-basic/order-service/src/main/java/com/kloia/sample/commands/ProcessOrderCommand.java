@@ -28,7 +28,7 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-public class ProcessOrderCommand implements CommandHandler<Orders, ProcessOrderCommandDto> {
+public class ProcessOrderCommand implements CommandHandler<ProcessOrderCommandDto> {
     private final EventRepository eventRepository;
     private final ViewQuery<Orders> orderQuery;
 

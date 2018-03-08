@@ -28,7 +28,7 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-public class ProcessOrderCommand implements CommandHandler<Orders, ProcessOrderCommandDto> {
+public class ProcessOrderCommand implements CommandHandler<ProcessOrderCommandDto> {
     private final EventRepository eventRepository;
     private final ViewQuery<Orders> orderQuery;
 
@@ -39,7 +39,7 @@ public class ProcessOrderCommand implements CommandHandler<Orders, ProcessOrderC
     }
 
     @RequestMapping(value = "/order/v1/{orderId}/process", method = RequestMethod.POST)
-    public EventKey execute(@PathVariable("orderId") String orderId, @RequestBody @Valid ProcessOrderCommandDto dto) throws Exception {
+    public EventKey process(@PathVariable("orderId") String orderId, @RequestBody @Valid ProcessOrderCommandDto dto) throws Exception {
         dto.setOrderId(orderId);
         return this.execute(dto);
     }

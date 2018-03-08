@@ -2,6 +2,7 @@ package com.kloia.sample;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
  */
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.kloia.sample", "com.kloia.eventapis"})
+@EnableFeignClients
 public class TestOrderServiceMain {
 
     public static void main(String[] args) {

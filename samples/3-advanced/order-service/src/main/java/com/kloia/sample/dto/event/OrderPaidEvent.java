@@ -1,7 +1,7 @@
 package com.kloia.sample.dto.event;
 
 import com.kloia.eventapis.common.EventType;
-import com.kloia.eventapis.common.PublishableEvent;
+import com.kloia.eventapis.common.PublishedEvent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderPaidEvent extends PublishableEvent {
+public class OrderPaidEvent extends PublishedEvent {
     private String paymentId;
 
     @Override

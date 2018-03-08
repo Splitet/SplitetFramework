@@ -16,10 +16,9 @@ import com.kloia.eventapis.api.impl.UUIDCreationStrategy;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.common.OperationContext;
-import com.kloia.eventapis.common.PublishableEvent;
+import com.kloia.eventapis.common.PublishedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.pojos.EventState;
-import com.kloia.eventapis.view.Entity;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
@@ -34,7 +33,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CassandraEventRecorder implements EventRecorder {
 
-    public static final String OP_ID = "opId";
+    public static final String OP_ID = OperationContext.OP_ID;
     public static final String ENTITY_ID = "entityId";
     public static final String VERSION = "version";
     public static final String OP_DATE = "opDate";
@@ -74,7 +73,7 @@ public class CassandraEventRecorder implements EventRecorder {
 //    private Function<E, ConcurrencyResolver> concurrencyResolverFactory;
 
     @Override
-    public <T extends Exception> EventKey recordEntityEvent(PublishableEvent event, long opDate, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
+    public <T extends Exception> EventKey recordEntityEvent(PublishedEvent event, long opDate, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
             throws EventStoreException, T {
 
         ConcurrencyResolver<T> concurrencyResolver = null;

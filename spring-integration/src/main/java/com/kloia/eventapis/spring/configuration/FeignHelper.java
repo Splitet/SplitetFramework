@@ -45,7 +45,8 @@ public class FeignHelper {
         return (template) -> {
             String key = this.operationContext.getContext();
             if (key != null) {
-                template.header("opId", key);
+                template.header(OperationContext.OP_ID_HEADER, key);
+//                template.header(OperationContext.OP_ID, key); // legacy
             }
 
         };

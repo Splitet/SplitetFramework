@@ -29,20 +29,19 @@ public class EventExecutionInterceptor {
     public void before(JoinPoint jp, Object object) throws Throwable {
         String commandContext = object == null ? jp.getTarget().getClass().getSimpleName() : object.getClass().getSimpleName();
         operationContext.setCommandContext(commandContext);
-        log.info("before method:" + (object == null ? "" : object.toString()));
+        log.debug("before method:" + (object == null ? "" : object.toString()));
     }
 
     @AfterReturning(value = "within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", returning = "retVal")
     public void afterReturning(Object retVal) throws Throwable {
-//        kafkaOperationRepository.updateEvent(operationContext.getContext(),operationContext.clearCommandContext(),event -> event.setEventState(EventState.SUCCEDEED));
-        log.info("AfterReturning:" + (retVal == null ? "" : retVal.toString()));
+        log.debug("AfterReturning:" + (retVal == null ? "" : retVal.toString()));
         operationContext.clearCommandContext();
     }
 
     @AfterThrowing(value = "within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "e")
     public void afterThrowing(Exception e) throws Throwable {
         try {
-            log.info("afterThrowing method:" + e);
+            log.debug("afterThrowing EventHandler method:" + e.getMessage());
             kafkaOperationRepository.failOperation(operationContext.getContext(), operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));
         } finally {
             operationContext.clearCommandContext();

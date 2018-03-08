@@ -40,7 +40,7 @@ public class PaymentSuccessEventHandler implements EventHandler<PaymentSuccessEv
 
         if (order.getState() == OrderState.PAYMENT_READY) {
             log.info("Payment is processing : " + dto);
-            return eventRepository.recordAndPublish(order.getEventKey(), new OrderPaidEvent(dto.getPaymentId()));
+            return eventRepository.recordAndPublish(order.getEventKey(), new OrderPaidEvent(dto.getSender().getEntityId()));
         } else
             throw new EventStoreException("Order state is not valid for this Operation: " + dto);
     }

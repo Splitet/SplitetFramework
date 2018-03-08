@@ -1,6 +1,5 @@
-package com.kloia.sample.dto.event;
+package com.kloia.sample.dto.command;
 
-import com.kloia.eventapis.common.ReceivedEvent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaymentSuccessEvent extends ReceivedEvent {
+public class ReturnPaymentCommandDto {
     private String orderId;
     private String paymentId;
 }
