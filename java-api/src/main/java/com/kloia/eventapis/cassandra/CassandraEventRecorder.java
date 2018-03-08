@@ -42,6 +42,7 @@ public class CassandraEventRecorder implements EventRecorder {
     public static final String AUDIT_INFO = "auditinfo";
     public static final String EVENT_DATA = "eventData";
     private String tableName;
+    private String tableNameByOps;
     private CassandraSession cassandraSession;
     private OperationContext operationContext;
     private IUserContext userContext;
@@ -51,6 +52,7 @@ public class CassandraEventRecorder implements EventRecorder {
 
     public CassandraEventRecorder(String tableName, CassandraSession cassandraSession, OperationContext operationContext, IUserContext userContext, ObjectMapper objectMapper) {
         this.tableName = tableName;
+        this.tableNameByOps = tableName + "_byOps";
         this.cassandraSession = cassandraSession;
         this.operationContext = operationContext;
         this.userContext = userContext;
@@ -112,7 +114,7 @@ public class CassandraEventRecorder implements EventRecorder {
                 select.where(QueryBuilder.eq(ENTITY_ID, entityEvent.getEventKey().getEntityId()));
                 ResultSet execute = cassandraSession.execute(select);
                 int lastVersion = execute.one().getInt(0);
-                entityEvent.setEventKey(concurrencyResolver.calculateNext(entityEvent.getEventKey(),lastVersion));
+                entityEvent.setEventKey(concurrencyResolver.calculateNext(entityEvent.getEventKey(), lastVersion));
             }
 
         }
@@ -135,7 +137,7 @@ public class CassandraEventRecorder implements EventRecorder {
 
     @Override
     public List<EntityEvent> markFail(String key) {
-        Select select = QueryBuilder.select().from(tableName);
+        Select select = QueryBuilder.select().from(tableNameByOps);
         select.where(QueryBuilder.eq(OP_ID, key));
         List<Row> entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
 

@@ -11,6 +11,8 @@ CREATE TABLE test.OrderEvents (
   PRIMARY KEY (entityId, version)
 );
 
-
-CREATE INDEX OrderEvents_opId
-  ON test.OrderEvents (opId);
+CREATE MATERIALIZED VIEW test.orderevents_byOps AS
+  SELECT opId, entityId, version, eventType, opDate, status, auditinfo, eventData
+  FROM test.orderevents
+  WHERE opId IS NOT NULL AND entityId IS NOT NULL AND version IS NOT NULL
+  PRIMARY KEY (opid, entityId, version);

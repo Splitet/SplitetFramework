@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
 
     private String tableName;
+    private String tableNameByOps;
     private CassandraSession cassandraSession;
     private Map<String, EntityFunctionSpec<E, ?>> functionMap = new HashMap<>();
     private ObjectMapper objectMapper;
@@ -37,6 +38,7 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
 
     public CassandraViewQuery(String tableName, CassandraSession cassandraSession, ObjectMapper objectMapper, List<EntityFunctionSpec<E, ?>> commandSpecs) {
         this.tableName = tableName;
+        this.tableNameByOps = tableName + "_byOps";
         this.cassandraSession = cassandraSession;
         this.objectMapper = objectMapper;
         addCommandSpecs(commandSpecs);
@@ -136,7 +138,7 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
 
     @Override
     public List<E> queryByOpId(String opId) throws EventStoreException {
-        Select select = QueryBuilder.select(CassandraEventRecorder.ENTITY_ID).from(tableName);
+        Select select = QueryBuilder.select(CassandraEventRecorder.ENTITY_ID).from(tableNameByOps);
         select.where(QueryBuilder.eq(CassandraEventRecorder.OP_ID, opId));
         List<Row> entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
 
@@ -163,7 +165,7 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
 
     @Override
     public List<E> queryByOpId(String opId, Function<String, E> findOne) throws EventStoreException {
-        Select select = QueryBuilder.select(CassandraEventRecorder.ENTITY_ID, CassandraEventRecorder.VERSION).from(tableName);
+        Select select = QueryBuilder.select(CassandraEventRecorder.ENTITY_ID, CassandraEventRecorder.VERSION).from(tableNameByOps);
         select.where(QueryBuilder.eq(CassandraEventRecorder.OP_ID, opId));
         List<Row> entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
         Map<String, E> resultList = new HashMap<>();

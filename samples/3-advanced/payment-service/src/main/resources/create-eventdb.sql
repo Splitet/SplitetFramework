@@ -12,5 +12,8 @@ CREATE TABLE test.PaymentEvents (
 );
 
 
-CREATE INDEX PaymentEvents_opId
-  ON test.PaymentEvents (opId);
+CREATE MATERIALIZED VIEW test.PaymentEvents_byOps AS
+  SELECT opId, entityId, version, eventType, opDate, status, auditinfo, eventData
+  FROM test.PaymentEvents
+  WHERE opId IS NOT NULL AND entityId IS NOT NULL AND version IS NOT NULL
+  PRIMARY KEY (opid, entityId, version);
