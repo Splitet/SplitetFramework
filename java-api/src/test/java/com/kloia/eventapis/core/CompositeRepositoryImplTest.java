@@ -121,6 +121,7 @@ public class CompositeRepositoryImplTest {
 
         when(objectMapper.writerWithView(Views.PublishedOnly.class)).thenReturn(objectWriter);
         when(userContext.getUserContext()).thenReturn(userContextMap);
+        when(operationContext.getContext()).thenReturn(new Context("opId"));
         when(operationContext.getContextOpId()).thenReturn(OperationContext.OP_ID);
         when(operationContext.getCommandContext()).thenReturn("eventId");
     }
