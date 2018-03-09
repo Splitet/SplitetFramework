@@ -102,18 +102,24 @@ public class OperationContext {
         if (!operationContext.get().isEmpty()) {
             peek = operationContext.get().peek();
             if (peek.isPreGenerated()) {
+                peek.setCommandTimeout(commandTimeout);
+                peek.setStartTime(System.currentTimeMillis());
                 peek.setGenerated();
             } else {
                 String opId = generateOpId();
                 String parentOpId = StringUtils.isEmpty(peek.getParentOpId()) ? peek.getOpId() + PARENT_OP_ID_DELIMITER + peek.getParentOpId() : peek.getOpId();
                 peek = pushContext(opId);
+                peek.setCommandTimeout(commandTimeout);
+                peek.setStartTime(System.currentTimeMillis());
                 peek.setParentOpId(parentOpId);
             }
-        } else
+        } else {
             peek = pushContext(generateOpId());
+            peek.setCommandTimeout(commandTimeout);
+            peek.setStartTime(System.currentTimeMillis());
+        }
 
-        peek.setCommandTimeout(commandTimeout);
-        peek.setStartTime(System.currentTimeMillis());
+
         return peek.getOpId();
     }
 

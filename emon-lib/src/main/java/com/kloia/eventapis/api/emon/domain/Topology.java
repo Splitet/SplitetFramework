@@ -28,12 +28,15 @@ public class Topology implements Serializable {
     private Set<ProducedEvent> unassignedEvents = new HashSet<>();
     private Set<ProducedEvent> producedEvents = new HashSet<>();
 
+    public Topology() {
+    }
+
     public Topology(String opId, String parentOpId) {
         this.opId = opId;
         this.parentOpId = parentOpId;
     }
 
-    public Topology(String opId, String parentOpId, ProducedEvent head, String initiatorCommand, long opDate) {
+    public Topology(String opId, String parentOpId, ProducedEvent head, String initiatorCommand) {
         this.opId = opId;
         this.parentOpId = parentOpId;
         this.producedEvents.add(head);
