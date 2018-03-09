@@ -1,6 +1,7 @@
 package com.kloia.eventapis.common;
 
 
+import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +28,12 @@ public class CommandExecutionInterceptor {
 
     @Before("within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..)) && args(object,..)")
     public void before(JoinPoint jp, Object object) throws Throwable {
-        operationContext.pushNewContext(); // Ability to generate new Context
-        operationContext.setCommandContext(jp.getTarget().getClass().getSimpleName());
+        Object target = jp.getTarget();
+        if (!(target instanceof CommandHandler))
+            throw new IllegalArgumentException("Point is not Instance of CommandHandler");
+        long commandTimeout = ((CommandHandler) target).getCommandTimeout();
+        operationContext.startNewContext(commandTimeout); // Ability to generate new Context
+        operationContext.setCommandContext(target.getClass().getSimpleName());
         log.debug("before method:" + (object == null ? "" : object.toString()));
     }
 
@@ -42,7 +47,7 @@ public class CommandExecutionInterceptor {
     public void afterThrowing(Exception e) {
         try {
             log.info("afterThrowing Command: " + e);
-            kafkaOperationRepository.failOperation(operationContext.getContext(), operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));
+            kafkaOperationRepository.failOperation(operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));
         } finally {
             operationContext.clearCommandContext();
         }

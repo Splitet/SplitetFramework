@@ -1,6 +1,8 @@
 package com.kloia.eventapis.kafka;
 
+import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.common.Context;
+import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.pojos.Event;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
@@ -15,12 +17,18 @@ import java.util.UUID;
  */
 @Slf4j
 public class KafkaOperationRepository implements IOperationRepository {
+    private OperationContext operationContext;
+    private IUserContext userContext;
     private KafkaProducer<String, Operation> operationsKafka;
     private KafkaProducer<String, PublishedEventWrapper> eventsKafka;
     private String senderGroupId;
 
-    public KafkaOperationRepository(KafkaProducer<String, Operation> operationsKafka,
-                                    KafkaProducer<String, PublishedEventWrapper> eventsKafka, String senderGroupId) {
+    public KafkaOperationRepository(OperationContext operationContext,
+                                    IUserContext userContext, KafkaProducer<String, Operation> operationsKafka,
+                                    KafkaProducer<String, PublishedEventWrapper> eventsKafka,
+                                    String senderGroupId) {
+        this.operationContext = operationContext;
+        this.userContext = userContext;
         this.operationsKafka = operationsKafka;
         this.eventsKafka = eventsKafka;
         this.senderGroupId = senderGroupId;
@@ -37,30 +45,34 @@ public class KafkaOperationRepository implements IOperationRepository {
     }*/
 
     @Override
-    public void failOperation(Context context, String eventId, SerializableConsumer<Event> action) {
+    public void failOperation(String eventId, SerializableConsumer<Event> action) {
         Operation operation = new Operation();
         operation.setSender(senderGroupId);
-        operation.setParentId(context.getParentOpId());
+        operation.setParentId(operationContext.getContext().getParentOpId());
         operation.setAggregateId(eventId);
         operation.setTransactionState(TransactionState.TXN_FAILED);
         log.debug("Publishing Operation:" + operation.toString());
-        operationsKafka.send(new ProducerRecord<>(Operation.OPERATION_EVENTS, context.getOpId(), operation));
+        operationsKafka.send(new ProducerRecord<>(Operation.OPERATION_EVENTS, operationContext.getContext().getOpId(), operation));
     }
 
     @Override
-    public void successOperation(Context context, String eventId, SerializableConsumer<Event> action) {
+    public void successOperation(String eventId, SerializableConsumer<Event> action) {
         Operation operation = new Operation();
         operation.setSender(senderGroupId);
-        operation.setParentId(context.getParentOpId());
+        operation.setParentId(operationContext.getContext().getParentOpId());
         operation.setAggregateId(eventId);
         operation.setTransactionState(TransactionState.TXN_SUCCEDEED);
         log.debug("Publishing Operation:" + operation.toString());
-        operationsKafka.send(new ProducerRecord<>(Operation.OPERATION_EVENTS, context.getOpId(), operation));
+        operationsKafka.send(new ProducerRecord<>(Operation.OPERATION_EVENTS, operationContext.getContext().getOpId(), operation));
     }
 
-    public void publishEvent(String name, PublishedEventWrapper event) {
-        event.setSender(senderGroupId);
-        log.debug("Publishing Topic:" + name + " Event:" + event.toString());
-        eventsKafka.send(new ProducerRecord<>(name, event.getOpId(), event));
+    @Override
+    public void publishEvent(String topic, String event, long opDate) {
+        PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContext(), event, opDate);
+        publishedEventWrapper.setUserContext(userContext.getUserContext());
+        publishedEventWrapper.setSender(senderGroupId);
+        log.debug("Publishing Topic:" + topic + " Event:" + publishedEventWrapper.toString());
+        eventsKafka.send(new ProducerRecord<>(topic, publishedEventWrapper.getContext().getOpId(), publishedEventWrapper));
     }
+
 }

@@ -43,7 +43,6 @@ import java.util.function.Function;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -63,13 +62,10 @@ public class CompositeRepositoryImplTest {
     @Mock
     private EventRecorder eventRecorder;
     @Mock
-    private OperationContext operationContext;
-    @Mock
     private ObjectMapper objectMapper;
     @Mock
     private IOperationRepository operationRepository;
-    @Mock
-    private IUserContext userContext;
+
     @Mock
     private IdCreationStrategy idCreationStrategy = new UUIDCreationStrategy();
     @Captor
@@ -94,36 +90,21 @@ public class CompositeRepositoryImplTest {
 
     @Before
     public void setUp() throws ConcurrentEventException, EventStoreException, JsonProcessingException {
-        successEvent = new PublishedEvent() {
-            @Override
-            public EventType getEventType() {
-                return EventType.OP_SUCCESS;
-            }
-        };
-        failEvent = new PublishedEvent() {
-            @Override
-            public EventType getEventType() {
-                return EventType.OP_FAIL;
-            }
-        };
-        intermediateEvent = new PublishedEvent() {
-            @Override
-            public EventType getEventType() {
-                return EventType.EVENT;
-            }
-        };
+        successEvent = new SuccessEvent();
+        failEvent = new FailEvent();
+        intermediateEvent = new IntermediateEvent();
 
-        intermediateEventJson = "{}";
-        successEventJson = "{success}";
-        failEventJson = "{fail}";
+        intermediateEventJson = "{IntermediateEvent}";
+        successEventJson = "{SuccessEvent}";
+        failEventJson = "{FailEvent}";
 
         userContextMap = new HashMap<>();
 
         when(objectMapper.writerWithView(Views.PublishedOnly.class)).thenReturn(objectWriter);
-        when(userContext.getUserContext()).thenReturn(userContextMap);
-        when(operationContext.getContext()).thenReturn(new Context("opId"));
-        when(operationContext.getContextOpId()).thenReturn(OperationContext.OP_ID);
-        when(operationContext.getCommandContext()).thenReturn("eventId");
+//        when(userContext.getUserContext()).thenReturn(userContextMap);
+//        when(operationContext.getContext()).thenReturn(new Context("opId"));
+//        when(operationContext.getContextOpId()).thenReturn(OperationContext.OP_ID);
+//        when(operationContext.getCommandContext()).thenReturn("eventId");
     }
 
     @Test
@@ -133,28 +114,26 @@ public class CompositeRepositoryImplTest {
         verify(eventRecorder).markFail("opId");
     }
 
-    private void mockCommon() throws EventStoreException, ConcurrentEventException, JsonProcessingException {
-        when(eventRecorder.recordEntityEvent(eq(intermediateEvent), anyLong(), previousEventKeyCaptor.capture(), concurrencyResolverFactoryCaptor.capture())).thenReturn(eventKey);
-        when(objectWriter.writeValueAsString(intermediateEvent)).thenReturn(intermediateEventJson);
+    private void mockCommon(PublishedEvent event) throws EventStoreException, ConcurrentEventException, JsonProcessingException {
+        when(eventRecorder.recordEntityEvent(eq(event), anyLong(), previousEventKeyCaptor.capture(), concurrencyResolverFactoryCaptor.capture())).thenReturn(eventKey);
+        when(objectWriter.writeValueAsString(event)).thenReturn("{" + event.getClass().getSimpleName() + "}");
     }
 
-    private void assertCommon() {
-        ArgumentCaptor<PublishedEventWrapper> publishedEventWrapperArgumentCaptor = ArgumentCaptor.forClass(PublishedEventWrapper.class);
-        verify(operationRepository).publishEvent(anyString(), publishedEventWrapperArgumentCaptor.capture());
+    private void assertCommon(PublishedEvent event) {
+        verify(operationRepository).publishEvent(eq(event.getClass().getSimpleName()), eq("{" + event.getClass().getSimpleName() + "}"), anyLong());
 
-        PublishedEventWrapper publishedEventWrapper = publishedEventWrapperArgumentCaptor.getValue();
-        assertThat(publishedEventWrapper.getUserContext(), equalTo(userContextMap));
-        assertThat(publishedEventWrapper.getOpId(), equalTo("opId"));
-        assertThat(publishedEventWrapper.getEvent(), equalTo(intermediateEventJson));
+//        assertThat(publishedEventWrapper.getUserContext(), equalTo(userContextMap));
+//        assertThat(publishedEventWrapper.getContext().getOpId(), equalTo("opId"));
+//        assertThat(publishedEventWrapper.getEvent(), equalTo("{" + event.getClass().getSimpleName() + "}"));
     }
 
     @Test
     public void shouldRecordAndPublishWithPublishedEvent() throws ConcurrentEventException, EventStoreException, JsonProcessingException {
-        mockCommon();
+        mockCommon(intermediateEvent);
 
         EventKey actual = compositeRepository.recordAndPublish(intermediateEvent);
 
-        assertCommon();
+        assertCommon(intermediateEvent);
 
         assertThat(actual, equalTo(eventKey));
         assertThat(previousEventKeyCaptor.getValue(), equalTo(Optional.empty()));
@@ -163,7 +142,7 @@ public class CompositeRepositoryImplTest {
 
     @Test
     public void shouldRecordAndPublishWithPreviousEventAndPublishedEvent() throws JsonProcessingException, EventStoreException, ConcurrentEventException {
-        mockCommon();
+        mockCommon(intermediateEvent);
 
         Entity previousEntity = mock(Entity.class);
         EventKey previousEntityEventKey = new EventKey();
@@ -171,7 +150,7 @@ public class CompositeRepositoryImplTest {
 
         EventKey actual = compositeRepository.recordAndPublish(previousEntity, intermediateEvent);
 
-        assertCommon();
+        assertCommon(intermediateEvent);
 
         assertThat(actual, equalTo(eventKey));
         assertThat(previousEventKeyCaptor.getValue().isPresent(), equalTo(true));
@@ -181,13 +160,13 @@ public class CompositeRepositoryImplTest {
 
     @Test
     public void shouldRecordAndPublishWithPreviousEventKeyAndPublishedEvent() throws JsonProcessingException, EventStoreException, ConcurrentEventException {
-        mockCommon();
+        mockCommon(intermediateEvent);
 
         EventKey previousEntityEventKey = new EventKey();
 
         EventKey actual = compositeRepository.recordAndPublish(previousEntityEventKey, intermediateEvent);
 
-        assertCommon();
+        assertCommon(intermediateEvent);
 
         assertThat(actual, equalTo(eventKey));
         assertThat(previousEventKeyCaptor.getValue().isPresent(), equalTo(true));
@@ -197,7 +176,7 @@ public class CompositeRepositoryImplTest {
 
     @Test
     public void shouldRecordAndPublishWithPreviousEventAndPublishedEventAndConcurrencyResolverFactory() throws JsonProcessingException, EventStoreException, ConcurrentEventException {
-        mockCommon();
+        mockCommon(intermediateEvent);
 
         Entity previousEntity = mock(Entity.class);
         EventKey previousEntityEventKey = new EventKey();
@@ -207,7 +186,7 @@ public class CompositeRepositoryImplTest {
 
         EventKey actual = compositeRepository.recordAndPublish(previousEntity, intermediateEvent, factory);
 
-        assertCommon();
+        assertCommon(intermediateEvent);
 
         assertThat(actual, equalTo(eventKey));
         assertThat(previousEventKeyCaptor.getValue().isPresent(), equalTo(true));
@@ -217,7 +196,7 @@ public class CompositeRepositoryImplTest {
 
     @Test
     public void shouldRecordAndPublishWithPreviousEventKeyAndPublishedEventAndConcurrencyResolverFactory() throws JsonProcessingException, EventStoreException, ConcurrentEventException {
-        mockCommon();
+        mockCommon(intermediateEvent);
 
         EventKey previousEntityEventKey = new EventKey();
         ConcurrencyResolver concurrencyResolver = mock(ConcurrencyResolver.class);
@@ -225,7 +204,7 @@ public class CompositeRepositoryImplTest {
 
         EventKey actual = compositeRepository.recordAndPublish(previousEntityEventKey, intermediateEvent, factory);
 
-        assertCommon();
+        assertCommon(intermediateEvent);
 
         assertThat(actual, equalTo(eventKey));
         assertThat(previousEventKeyCaptor.getValue().isPresent(), equalTo(true));
@@ -241,7 +220,7 @@ public class CompositeRepositoryImplTest {
         compositeRepository.recordAndPublish(successEvent);
 
         ArgumentCaptor<SerializableConsumer> serializableConsumerCaptor = ArgumentCaptor.forClass(SerializableConsumer.class);
-        verify(operationRepository).successOperation(eq (new Context("opId")), eq(""), serializableConsumerCaptor.capture());
+        verify(operationRepository).successOperation(eq("SuccessEvent"), serializableConsumerCaptor.capture());
 
         Event event = new Event();
         serializableConsumerCaptor.getValue().accept(event);
@@ -256,7 +235,7 @@ public class CompositeRepositoryImplTest {
         compositeRepository.recordAndPublish(failEvent);
 
         ArgumentCaptor<SerializableConsumer> serializableConsumerCaptor = ArgumentCaptor.forClass(SerializableConsumer.class);
-        verify(operationRepository).failOperation(eq(new Context("opId")), eq(""), serializableConsumerCaptor.capture());
+        verify(operationRepository).failOperation(eq("FailEvent"), serializableConsumerCaptor.capture());
 
         Event event = new Event();
         serializableConsumerCaptor.getValue().accept(event);
@@ -270,5 +249,26 @@ public class CompositeRepositoryImplTest {
         doThrow(JsonProcessingException.class).when(objectWriter).writeValueAsString(intermediateEvent);
 
         compositeRepository.recordAndPublish(intermediateEvent);
+    }
+
+    private static class IntermediateEvent extends PublishedEvent {
+        @Override
+        public EventType getEventType() {
+            return EventType.EVENT;
+        }
+    }
+
+    private static class FailEvent extends PublishedEvent {
+        @Override
+        public EventType getEventType() {
+            return EventType.OP_FAIL;
+        }
+    }
+
+    private static class SuccessEvent extends PublishedEvent {
+        @Override
+        public EventType getEventType() {
+            return EventType.OP_SUCCESS;
+        }
     }
 }

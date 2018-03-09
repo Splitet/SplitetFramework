@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.kloia.eventapis.common.Context;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -21,19 +21,19 @@ public class PublishedEventWrapper implements Serializable {
 
     @JsonIgnore
     private String event;
-    private String opId;
-    private String parentOpId;
+    private Context context;
+    //    private String opId;
+//    private String parentOpId;
     private String sender;
-    private String aggregateId;
+    //    private String aggregateId;
     private long opDate;
     private Map<String, String> userContext;
 
     public PublishedEventWrapper() {
     }
 
-    public PublishedEventWrapper(String opId, String aggregateId, String eventData,long opDate) {
-        this.opId = opId;
-        this.aggregateId = aggregateId;
+    public PublishedEventWrapper(Context context, String eventData, long opDate) {
+        this.context = context;
         this.event = eventData;
         this.opDate = opDate;
     }

@@ -59,8 +59,8 @@ public class Components {
     }
 
     @Bean
-    EventRepository stockEventRepository(EventRecorder stockEventRecorder, IOperationRepository operationRepository, IUserContext userContext) {
-        return new CompositeRepositoryImpl(stockEventRecorder, operationContext, new ObjectMapper(), operationRepository, userContext);
+    EventRepository stockEventRepository(EventRecorder stockEventRecorder, IOperationRepository operationRepository) {
+        return new CompositeRepositoryImpl(stockEventRecorder, new ObjectMapper(), operationRepository);
     }
 
 /*    @Bean

@@ -13,8 +13,6 @@ import java.util.UUID;
 public class OperationContext {
 
     public static final String OP_ID = "opId";
-    public static final String OP_ID_HEADER = "X-opId";
-    public static final String PARENT_OP_ID_HEADER = "X-parent-opId";
     public static final char PARENT_OP_ID_DELIMITER = ',';
 
     private ThreadLocal<Stack<Context>> operationContext = ThreadLocal.withInitial(Stack::new);
@@ -29,6 +27,11 @@ public class OperationContext {
     public void switchContext(String opId) {
         getOrCreateContext().setOpId(opId);
         MDC.put(OP_ID, opId);
+    }
+
+    public void switchContext(Context context) {
+        operationContext.get().push(context);
+        MDC.put(OP_ID, context.getOpId());
     }
 
     private void switchContext(String opId, String parentOpId, boolean preGenerated) {
@@ -94,28 +97,29 @@ public class OperationContext {
         return uuid.toString();
     }
 
-    public String pushNewContext() {
+    public String startNewContext(long commandTimeout) {
+        Context peek;
         if (!operationContext.get().isEmpty()) {
-            Context peek = operationContext.get().peek();
+            peek = operationContext.get().peek();
             if (peek.isPreGenerated()) {
-                peek.setPreGenerated(false);
-                return peek.getOpId();
+                peek.setGenerated();
             } else {
                 String opId = generateOpId();
                 String parentOpId = StringUtils.isEmpty(peek.getParentOpId()) ? peek.getOpId() + PARENT_OP_ID_DELIMITER + peek.getParentOpId() : peek.getOpId();
-                return pushContext(opId, parentOpId).getOpId();
+                peek = pushContext(opId);
+                peek.setParentOpId(parentOpId);
             }
         } else
-            return pushContext(generateOpId()).getOpId();
+            peek = pushContext(generateOpId());
+
+        peek.setCommandTimeout(commandTimeout);
+        peek.setStartTime(System.currentTimeMillis());
+        return peek.getOpId();
     }
+
 
     private Context pushContext(String opId) {
-        return pushContext(opId, null);
-    }
-
-    private Context pushContext(String opId, String parentOpId) {
         Context context = operationContext.get().push(new Context(opId));
-        context.setParentOpId(parentOpId);
         MDC.put(OP_ID, opId);
         return context;
     }

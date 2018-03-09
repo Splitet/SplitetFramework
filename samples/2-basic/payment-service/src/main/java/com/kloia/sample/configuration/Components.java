@@ -58,8 +58,8 @@ public class Components {
     }
 
     @Bean
-    EventRepository paymentEventRepository(EventRecorder paymentEventRecorder, IOperationRepository operationRepository, IUserContext userContext) {
-        return new CompositeRepositoryImpl(paymentEventRecorder, operationContext, new ObjectMapper(), operationRepository, userContext);
+    EventRepository paymentEventRepository(EventRecorder paymentEventRecorder, IOperationRepository operationRepository) {
+        return new CompositeRepositoryImpl(paymentEventRecorder, new ObjectMapper(), operationRepository);
     }
 
 }

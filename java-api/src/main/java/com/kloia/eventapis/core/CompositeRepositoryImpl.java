@@ -30,19 +30,15 @@ import java.util.function.Function;
 public class CompositeRepositoryImpl implements EventRepository {
 
     private EventRecorder eventRecorder;
-    private OperationContext operationContext;
     private ObjectMapper objectMapper;
     private IOperationRepository operationRepository;
-    private IUserContext userContext;
 
 
-    public CompositeRepositoryImpl(EventRecorder eventRecorder, OperationContext operationContext, ObjectMapper objectMapper,
-                                   IOperationRepository operationRepository, IUserContext userContext) {
+    public CompositeRepositoryImpl(EventRecorder eventRecorder, ObjectMapper objectMapper,
+                                   IOperationRepository operationRepository) {
         this.eventRecorder = eventRecorder;
-        this.operationContext = operationContext;
         this.objectMapper = objectMapper;
         this.operationRepository = operationRepository;
-        this.userContext = userContext;
     }
 
 
@@ -94,19 +90,16 @@ public class CompositeRepositoryImpl implements EventRepository {
             throw new EventStoreException(e.getMessage(), e);
         }
 
-        PublishedEventWrapper publishedEventWrapper = new PublishedEventWrapper(operationContext.getContextOpId(), operationContext.getCommandContext(), event, opDate);
-        publishedEventWrapper.setUserContext(userContext.getUserContext());
-        publishedEventWrapper.setParentOpId(operationContext.getContextParentOpId());
-        operationRepository.publishEvent(publishedEvent.getClass().getSimpleName(), publishedEventWrapper);
+        operationRepository.publishEvent(publishedEvent.getClass().getSimpleName(), event, opDate);
         checkOperationFinalStates(publishedEvent);
         return publishedEvent.getSender();
     }
 
     private <P extends PublishedEvent> void checkOperationFinalStates(P publishedEvent) {
         if (publishedEvent.getEventType() == EventType.OP_SUCCESS || publishedEvent.getEventType() == EventType.OP_SINGLE) {
-            operationRepository.successOperation(operationContext.getContext(), publishedEvent.getClass().getSimpleName(), successEvent -> successEvent.setEventState(EventState.TXN_SUCCEDEED));
+            operationRepository.successOperation( publishedEvent.getClass().getSimpleName(), successEvent -> successEvent.setEventState(EventState.TXN_SUCCEDEED));
         } else if (publishedEvent.getEventType() == EventType.OP_FAIL) {
-            operationRepository.failOperation(operationContext.getContext(), publishedEvent.getClass().getSimpleName(), failEvent -> failEvent.setEventState(EventState.TXN_FAILED));
+            operationRepository.failOperation( publishedEvent.getClass().getSimpleName(), failEvent -> failEvent.setEventState(EventState.TXN_FAILED));
         }
     }
 }

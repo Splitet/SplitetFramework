@@ -72,6 +72,7 @@ public class EventApisFactory {
     public FilterRegistrationBean createOpContextFilter(@Autowired OperationContext operationContext) {
         FilterRegistrationBean registration = new FilterRegistrationBean();
         registration.setFilter(new OpContextFilter(operationContext));
+//        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
         registration.setDispatcherTypes(EnumSet.allOf(DispatcherType.class));
         return registration;
     }
@@ -82,7 +83,7 @@ public class EventApisFactory {
         return template -> {
             String key = operationContext.getContextOpId();
             if (key != null) {
-                template.header(OperationContext.OP_ID_HEADER, key);
+                template.header(OpContextFilter.OP_ID_HEADER, key);
 //                template.header(OperationContext.OP_ID, key); // legacy
             }
         };
@@ -101,10 +102,11 @@ public class EventApisFactory {
     }
 
     @Bean
-    public KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory(EventApisConfiguration eventApisConfiguration) {
+    public KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory(EventApisConfiguration eventApisConfiguration,
+                                                                           @Autowired OperationContext operationContext,
+                                                                           IUserContext userContext) {
         KafkaProperties eventBus = eventApisConfiguration.getEventBus();
-        KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory = new KafkaOperationRepositoryFactory(eventBus);
-        return kafkaOperationRepositoryFactory;
+        return new KafkaOperationRepositoryFactory(eventBus, userContext, operationContext);
     }
 
     @Bean

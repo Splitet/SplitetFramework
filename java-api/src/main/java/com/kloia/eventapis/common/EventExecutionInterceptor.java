@@ -42,7 +42,7 @@ public class EventExecutionInterceptor {
     public void afterThrowing(Exception e) throws Throwable {
         try {
             log.debug("afterThrowing EventHandler method:" + e.getMessage());
-            kafkaOperationRepository.failOperation(operationContext.getContext(), operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));
+            kafkaOperationRepository.failOperation(operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));
         } finally {
             operationContext.clearCommandContext();
         }

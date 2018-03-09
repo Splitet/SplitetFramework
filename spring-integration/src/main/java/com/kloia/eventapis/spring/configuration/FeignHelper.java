@@ -2,6 +2,7 @@ package com.kloia.eventapis.spring.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.common.OperationContext;
+import com.kloia.eventapis.spring.filter.OpContextFilter;
 import feign.Feign;
 import feign.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +46,7 @@ public class FeignHelper {
         return (template) -> {
             String key = this.operationContext.getContextOpId();
             if (key != null) {
-                template.header(OperationContext.OP_ID_HEADER, key);
+                template.header(OpContextFilter.OP_ID_HEADER, key);
 //                template.header(OperationContext.OP_ID, key); // legacy
             }
 

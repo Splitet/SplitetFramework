@@ -120,16 +120,17 @@ public class TopologyService implements MessageListener<String, Serializable> {
             try {
                 Topology topology = entry.getValue();
                 if (topology == null) {
-                    topology = new Topology(eventWrapper.getOpId(), eventWrapper.getParentOpId());
+                    topology = new Topology(eventWrapper.getContext().getOpId(), eventWrapper.getContext().getParentOpId());
                 }
                 if (eventType == EventType.OP_START || eventType == EventType.OP_SINGLE) {
-                    topology.setInitiatorCommand(eventWrapper.getAggregateId());
+                    topology.setInitiatorCommand(eventWrapper.getContext().getCommandContext());
                     topology.setInitiatorService(eventWrapper.getSender());
-                    topology.setOpDate(eventWrapper.getOpDate());
+                    topology.setCommandTimeout(eventWrapper.getContext().getCommandTimeout());
+                    topology.setStartTime(eventWrapper.getContext().getStartTime());
                 }
 
                 ProducedEvent producedEvent = new ProducedEvent(topic, eventWrapper.getSender(),
-                        eventWrapper.getAggregateId(), eventType, senderEventKey, targetList);
+                        eventWrapper.getContext().getCommandContext(), eventType, senderEventKey, targetList, eventWrapper.getOpDate());
                 boolean b = topology.attachProducedEvent(producedEvent);
                 if (!b)
                     log.warn("We Couldn't attach event:" + producedEvent);

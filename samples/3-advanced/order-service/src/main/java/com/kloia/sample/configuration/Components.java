@@ -61,8 +61,8 @@ public class Components {
     }
 
     @Bean
-    EventRepository orderEventRepository(EventRecorder orderEventRecorder, IOperationRepository operationRepository, IUserContext userContext) {
-        return new CompositeRepositoryImpl(orderEventRecorder, operationContext, new ObjectMapper(), operationRepository, userContext);
+    EventRepository orderEventRepository(EventRecorder orderEventRecorder, IOperationRepository operationRepository) {
+        return new CompositeRepositoryImpl(orderEventRecorder, new ObjectMapper(), operationRepository);
     }
 
 

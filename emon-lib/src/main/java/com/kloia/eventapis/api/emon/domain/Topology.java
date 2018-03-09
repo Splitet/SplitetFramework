@@ -20,7 +20,8 @@ public class Topology implements Serializable {
     private String opId;
     private String initiatorService;
     private String initiatorCommand;
-    private long opDate;
+    private long commandTimeout;
+    private long startTime;
     private Operation operation;
     private TransactionState operationState = TransactionState.RUNNING;
     private Set<Operation> unassignedOperations = new HashSet<>();
@@ -38,7 +39,6 @@ public class Topology implements Serializable {
         this.producedEvents.add(head);
         this.initiatorService = head.getSender();
         this.initiatorCommand = initiatorCommand;
-        this.opDate = opDate;
     }
 
     public boolean attachProducedEvent(ProducedEvent producedEvent) {

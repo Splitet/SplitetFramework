@@ -61,7 +61,7 @@ public class EventController {
     ) throws IOException, EventStoreException {
         try {
             Collection<Topology> values = operationsMap.values(
-                    new PagingPredicate<>((Comparator<Map.Entry<String, Topology>> & Serializable) (o1, o2) -> -1 * Long.compare(o1.getValue().getOpDate(), o2.getValue().getOpDate()),
+                    new PagingPredicate<>((Comparator<Map.Entry<String, Topology>> & Serializable) (o1, o2) -> -1 * Long.compare(o1.getValue().getStartTime(), o2.getValue().getStartTime()),
                             pageable.getPageSize()));
             return new ResponseEntity<>(values, HttpStatus.OK);
         } catch (Exception e) {

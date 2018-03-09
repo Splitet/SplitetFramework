@@ -29,15 +29,17 @@ public class ProducedEvent implements IProducedEvent {
     private final EventKey eventKey;
     private String aggregateId;
     private int numberOfVisit = 1;
+    private long opDate;
     private Operation operation;
     private Map<String, IHandledEvent> listeningServices;
 
-    public ProducedEvent(String topic, String sender, String aggregateId, EventType eventType, EventKey eventKey, List<String> targetList) {
+    public ProducedEvent(String topic, String sender, String aggregateId, EventType eventType, EventKey eventKey, List<String> targetList, long opDate) {
         this.topic = topic;
         this.sender = sender;
         this.aggregateId = aggregateId;
         this.eventType = eventType;
         this.eventKey = eventKey;
+        this.opDate = opDate;
         if (targetList != null)
             listeningServices = targetList.stream().collect(Collectors.toMap(Function.identity(), s -> new NoneHandled()));
         else
