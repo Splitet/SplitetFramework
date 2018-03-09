@@ -109,9 +109,9 @@ public class OperationContext {
                 String opId = generateOpId();
                 String parentOpId = StringUtils.isEmpty(peek.getParentOpId()) ? peek.getOpId() + PARENT_OP_ID_DELIMITER + peek.getParentOpId() : peek.getOpId();
                 peek = pushContext(opId);
+                peek.setParentOpId(parentOpId);
                 peek.setCommandTimeout(commandTimeout);
                 peek.setStartTime(System.currentTimeMillis());
-                peek.setParentOpId(parentOpId);
             }
         } else {
             peek = pushContext(generateOpId());

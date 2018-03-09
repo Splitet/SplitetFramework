@@ -32,12 +32,15 @@ public class AddStockCommandHandler implements CommandHandler<AddStockCommandDto
         this.stockQuery = stockQuery;
     }
 
-    @Override
     @RequestMapping(value = "/stock/{stockId}/add", method = RequestMethod.POST)
+    public EventKey execute(String stockId, @RequestBody AddStockCommandDto dto) throws Exception {
+        dto.setStockId(stockId);
+        return execute(dto);
+    }
+
     public EventKey execute(@RequestBody AddStockCommandDto dto) throws Exception {
         Stock stock = stockQuery.queryEntity(dto.getStockId());
-//        if(dto != null)
-//            throw new IllegalStateException("assadasd");
+
         return eventRepository.recordAndPublish(stock.getEventKey(), new StockAddedEvent(dto.getStockToAdd()));
     }
 

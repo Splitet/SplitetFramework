@@ -100,6 +100,6 @@ public class EventStoreConfig {
     /**
      * Enable SSL support.
      */
-    private boolean ssl = false;
+    private boolean ssl;
 
 }

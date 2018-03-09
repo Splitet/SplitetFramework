@@ -50,7 +50,11 @@ public class CassandraEventRecorder implements EventRecorder {
     private IdCreationStrategy idCreationStrategy = new UUIDCreationStrategy();
 
 
-    public CassandraEventRecorder(String tableName, CassandraSession cassandraSession, OperationContext operationContext, IUserContext userContext, ObjectMapper objectMapper) {
+    public CassandraEventRecorder(String tableName,
+                                  CassandraSession cassandraSession,
+                                  OperationContext operationContext,
+                                  IUserContext userContext,
+                                  ObjectMapper objectMapper) {
         this.tableName = tableName;
         this.tableNameByOps = tableName + "_byOps";
         this.cassandraSession = cassandraSession;
@@ -59,7 +63,12 @@ public class CassandraEventRecorder implements EventRecorder {
         this.objectMapper = objectMapper;
     }
 
-    public CassandraEventRecorder(String tableName, CassandraSession cassandraSession, OperationContext operationContext, IUserContext userContext, IdCreationStrategy idCreationStrategy, ObjectMapper objectMapper) {
+    public CassandraEventRecorder(String tableName,
+                                  CassandraSession cassandraSession,
+                                  OperationContext operationContext,
+                                  IUserContext userContext,
+                                  IdCreationStrategy idCreationStrategy,
+                                  ObjectMapper objectMapper) {
         this(tableName, cassandraSession, operationContext, userContext, objectMapper);
         this.idCreationStrategy = idCreationStrategy;
     }
@@ -75,7 +84,10 @@ public class CassandraEventRecorder implements EventRecorder {
 //    private Function<E, ConcurrencyResolver> concurrencyResolverFactory;
 
     @Override
-    public <T extends Exception> EventKey recordEntityEvent(PublishedEvent event, long opDate, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
+    public <T extends Exception> EventKey recordEntityEvent(
+            PublishedEvent event, long opDate,
+            Optional<EventKey> previousEventKey,
+            Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
             throws EventStoreException, T {
 
         ConcurrencyResolver<T> concurrencyResolver = null;
@@ -93,7 +105,9 @@ public class CassandraEventRecorder implements EventRecorder {
             eventKey = new EventKey(idCreationStrategy.nextId(), 0);
 
 
-        EntityEvent entityEvent = new EntityEvent(eventKey, operationContext.getContextOpId(), new Date(opDate), event.getClass().getSimpleName(), EventState.CREATED, userContext.getAuditInfo(), eventData);
+        EntityEvent entityEvent = new EntityEvent(eventKey,
+                operationContext.getContextOpId(), new Date(opDate), event.getClass().getSimpleName(),
+                EventState.CREATED, userContext.getAuditInfo(), eventData);
 
         while (true) {
             Insert insert = createInsertQuery(entityEvent);

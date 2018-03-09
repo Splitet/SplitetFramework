@@ -98,7 +98,7 @@ export default Ember.Route.extend({
                 label: publishedEvent.topic,
                 to: "FAIL",
               });
-            }else if (operation.transactionState === "TXN_SUCCEDEED"){
+            } else if (operation.transactionState === "TXN_SUCCEDEED") {
               nodes.push({
                 nId: "SUCCESS",
                 label: "SUCCESS",

@@ -13,7 +13,10 @@ import java.util.function.Function;
  */
 public interface EventRecorder {
 
-    <T extends Exception> EventKey recordEntityEvent(PublishedEvent entityEvent, long date, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
+    <T extends Exception> EventKey recordEntityEvent(
+            PublishedEvent entityEvent, long date,
+            Optional<EventKey> previousEventKey, Function<EntityEvent,
+            ConcurrencyResolver<T>> concurrencyResolverFactory)
             throws EventStoreException, T;
 
     List<EntityEvent> markFail(String key);

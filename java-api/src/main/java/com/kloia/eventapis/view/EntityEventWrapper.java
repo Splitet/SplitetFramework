@@ -23,9 +23,9 @@ public class EntityEventWrapper<E> {
 
     public E getEventData() throws EventStoreException {
         try {
-            return objectMapper.readValue(entityEvent.getEventData(),type);
+            return objectMapper.readValue(entityEvent.getEventData(), type);
         } catch (IOException e) {
-            throw new EventStoreException(e.getMessage(),e);
+            throw new EventStoreException(e.getMessage(), e);
         }
     }
 }

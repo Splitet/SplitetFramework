@@ -16,6 +16,8 @@ import java.io.Serializable;
 @Builder
 public class EventKey implements Serializable {
 
+    private static final long serialVersionUID = -5751030991267102373L;
+
     private String entityId;
 
     private int version;

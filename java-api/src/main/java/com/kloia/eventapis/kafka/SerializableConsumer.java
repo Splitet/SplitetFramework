@@ -6,7 +6,8 @@ package com.kloia.eventapis.kafka;
 
 import java.io.Serializable;
 import java.util.function.Consumer;
+
 @FunctionalInterface
-public interface SerializableConsumer<T>  extends Consumer<T>, Serializable{
+public interface SerializableConsumer<T> extends Consumer<T>, Serializable {
 
 }

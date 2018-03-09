@@ -31,54 +31,51 @@ import java.util.Map;
  * Generic {@link Deserializer} for receiving JSON from Kafka and return Java objects.
  *
  * @param <T> class of the entity, representing messages
- *
  * @author Igor Stepanov
  * @author Artem Bilan
  */
 public class JsonDeserializer<T> implements Deserializer<T> {
 
-	protected final ObjectMapper objectMapper;
+    protected final ObjectMapper objectMapper;
 
-	protected final Class<T> targetType;
+    protected final Class<T> targetType;
 
-	private volatile ObjectReader reader;
+    private volatile ObjectReader reader;
 
 
-	public JsonDeserializer(Class<T> targetType) {
-		this(targetType, new ObjectMapper());
-		this.objectMapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
-		this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-	}
+    public JsonDeserializer(Class<T> targetType) {
+        this(targetType, new ObjectMapper());
+        this.objectMapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
-	@SuppressWarnings("unchecked")
-	public JsonDeserializer(Class<T> targetType, ObjectMapper objectMapper) {
-		this.objectMapper = objectMapper;
-		this.targetType = targetType;
-	}
+    @SuppressWarnings("unchecked")
+    public JsonDeserializer(Class<T> targetType, ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+        this.targetType = targetType;
+    }
 
-	public void configure(Map<String, ?> configs, boolean isKey) {
-		// No-op
-	}
+    public void configure(Map<String, ?> configs, boolean isKey) {
+        // No-op
+    }
 
-	public T deserialize(String topic, byte[] data) {
-		if (this.reader == null) {
-			this.reader = this.objectMapper.readerFor(this.targetType);
-		}
-		try {
-			T result = null;
-			if (data != null) {
-				result = this.reader.readValue(data);
-			}
-			return result;
-		}
-		catch (IOException e) {
-			throw new SerializationException("Can't deserialize data [" + Arrays.toString(data) +
-					"] from topic [" + topic + "]", e);
-		}
-	}
+    public T deserialize(String topic, byte[] data) {
+        if (this.reader == null) {
+            this.reader = this.objectMapper.readerFor(this.targetType);
+        }
+        try {
+            T result = null;
+            if (data != null) {
+                result = this.reader.readValue(data);
+            }
+            return result;
+        } catch (IOException e) {
+            throw new SerializationException("Can't deserialize data [" + Arrays.toString(data) + "] from topic [" + topic + "]", e);
+        }
+    }
 
-	public void close() {
-		// No-op
-	}
+    public void close() {
+        // No-op
+    }
 
 }

@@ -7,13 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.support.Acknowledgment;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,13 +23,14 @@ public class SpringKafkaOpListener {
     void listenOperations(ConsumerRecord<String, Operation> record) throws EventStoreException {
         String key = record.key();
         Operation value = record.value();
-        log.info("Incoming Message: " + key + " " + value);
+        log.debug("Incoming Message: " + key + " " + value);
         for (AggregateListener snapshotRecorder : aggregateListeners) {
             snapshotRecorder.listenOperations(record);
         }
     }
-    public void recover(Exception e) throws Exception {
+
+    public void recover(Exception exception) throws Exception {
         log.error("Operation Handle is failed");
-        throw e;
+        throw exception;
     }
 }

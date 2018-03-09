@@ -16,6 +16,7 @@ import org.aspectj.lang.annotation.Before;
  */
 @Aspect
 @Slf4j
+@SuppressWarnings("checkstyle:IllegalThrows")
 public class CommandExecutionInterceptor {
 
     private KafkaOperationRepository kafkaOperationRepository;
@@ -34,7 +35,7 @@ public class CommandExecutionInterceptor {
         long commandTimeout = ((CommandHandler) target).getCommandTimeout();
         operationContext.startNewContext(commandTimeout); // Ability to generate new Context
         operationContext.setCommandContext(target.getClass().getSimpleName());
-        log.debug("before method:" + (object == null ? "" : object.toString()));
+        log.info("before method:" + (object == null ? "" : object.toString()));
     }
 
     @AfterReturning(value = "within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", returning = "retVal")
@@ -43,10 +44,10 @@ public class CommandExecutionInterceptor {
         operationContext.clearCommandContext();
     }
 
-    @AfterThrowing(value = "within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", throwing = "e")
-    public void afterThrowing(Exception e) {
+    @AfterThrowing(value = "within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", throwing = "exception")
+    public void afterThrowing(Exception exception) {
         try {
-            log.info("afterThrowing Command: " + e);
+            log.info("afterThrowing Command: " + exception);
             kafkaOperationRepository.failOperation(operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));
         } finally {
             operationContext.clearCommandContext();

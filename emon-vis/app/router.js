@@ -6,8 +6,8 @@ const Router = Ember.Router.extend({
   rootURL: config.rootURL
 });
 
-Router.map(function() {
-  this.route('topology', { path: '/topology/:opId' });
+Router.map(function () {
+  this.route('topology', {path: '/topology/:opId'});
   this.route('dashboard');
 });
 

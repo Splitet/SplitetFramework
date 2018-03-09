@@ -15,6 +15,7 @@ import org.aspectj.lang.annotation.Before;
  */
 @Aspect
 @Slf4j
+@SuppressWarnings("checkstyle:IllegalThrows")
 public class EventExecutionInterceptor {
 
     private KafkaOperationRepository kafkaOperationRepository;
@@ -38,10 +39,10 @@ public class EventExecutionInterceptor {
         operationContext.clearCommandContext();
     }
 
-    @AfterThrowing(value = "within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "e")
-    public void afterThrowing(Exception e) throws Throwable {
+    @AfterThrowing(value = "within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "exception")
+    public void afterThrowing(Exception exception) throws Throwable {
         try {
-            log.debug("afterThrowing EventHandler method:" + e.getMessage());
+            log.debug("afterThrowing EventHandler method:" + exception.getMessage());
             kafkaOperationRepository.failOperation(operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));
         } finally {
             operationContext.clearCommandContext();

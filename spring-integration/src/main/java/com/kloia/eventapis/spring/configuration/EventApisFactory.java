@@ -206,7 +206,7 @@ public class EventApisFactory {
         }
     }
 
-    public static abstract class EventApisConsumerFactory<K, V> implements ConsumerFactory<K, V> {
+    public abstract static class EventApisConsumerFactory<K, V> implements ConsumerFactory<K, V> {
         private final EventApisConfiguration eventApisConfiguration;
         private final boolean autoCommit;
 

@@ -20,11 +20,11 @@ export default VisJsChild.extend({
    */
   to: '',
 
-  eId: Ember.computed('from', 'to', function() {
+  eId: Ember.computed('from', 'to', function () {
     return `${this.get('from')}-${this.get('to')}`;
   }),
 
-  arrowChanged: Ember.observer('arrows', function() {
+  arrowChanged: Ember.observer('arrows', function () {
     let container = this.get('containerLayer');
     container.updateEdgeArrow(this.get('eId'), this.get('arrows'));
   }),
@@ -38,7 +38,7 @@ export default VisJsChild.extend({
    */
   label: undefined,
 
-  labelChanged: Ember.observer('label', function() {
+  labelChanged: Ember.observer('label', function () {
     let container = this.get('containerLayer');
     container.updateEdgeLabel(this.get('eId'), this.get('label'));
   }),

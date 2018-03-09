@@ -30,19 +30,13 @@ import java.io.IOException;
 public class StockRestController {
 
     @Autowired
+    CreateStockCommandHandler createStockCommandHandler;
+    @Autowired
     private ViewQuery<Stock> stockViewQuery;
-
     @Autowired
     private StockRepository stockRepository;
-
-
     @Autowired
     private ObjectMapper objectMapper;
-
-
-    @Autowired
-    CreateStockCommandHandler createStockCommandHandler;
-
 
     @RequestMapping(value = "/{stockId}", method = RequestMethod.GET)
     public ResponseEntity<?> getStock(@PathVariable("stockId") String stockId) throws IOException, EventStoreException {

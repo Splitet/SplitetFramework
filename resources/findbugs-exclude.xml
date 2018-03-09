@@ -1,0 +1,16 @@
+<FindBugsFilter>
+    <Match>
+        <Class name="~.*\.generated\..*"/>
+    </Match>
+
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Bug pattern="BC_UNCONFIRMED_CAST"/>
+    </Match>
+
+</FindBugsFilter>

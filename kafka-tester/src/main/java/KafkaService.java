@@ -16,7 +16,7 @@ public class KafkaService {
 
     @KafkaListener(topics = "test", containerFactory = "eventsKafkaListenerContainerFactory")
     public void handleMessage(JsonNode event, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-        kafkaTemplate.send("top","id","data");
+        kafkaTemplate.send("top", "id", "data");
 
         log.warn(topic + " key: " + topic + " EventData: " + event.toString());
     }

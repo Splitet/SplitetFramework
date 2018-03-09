@@ -2,7 +2,6 @@ package com.kloia.eventapis.cassandra;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.QueryLogger;
 import com.datastax.driver.core.QueryOptions;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
@@ -15,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import pl.touk.throwing.ThrowingFunction;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Optional;
@@ -27,27 +25,34 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CassandraSession {
 
+    private EventStoreConfig eventStoreConfig;
+    private Session session;
+
+
     public CassandraSession(EventStoreConfig eventStoreConfig) {
         this.eventStoreConfig = eventStoreConfig;
     }
 
-    private EventStoreConfig eventStoreConfig;
+    static <T> T instantiate(Class<T> type) {
+        try {
+            return type.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    /*    private Cluster cluster() {
+            Cluster.Builder builder = Cluster.builder();
+            Arrays.stream(eventStoreConfig.getContactPoints().split(";")).forEach(s -> {
+                String[] hostPort = s.split(":");
+                builder.addContactPointsWithPorts(new InetSocketAddress(hostPort[0], Integer.parseInt(hostPort[1])));
+            });
+            builder.withPoolingOptions(eventStoreConfig.getPoolingOptions());
 
-    private Session session;
-
-/*    private Cluster cluster() {
-        Cluster.Builder builder = Cluster.builder();
-        Arrays.stream(eventStoreConfig.getContactPoints().split(";")).forEach(s -> {
-            String[] hostPort = s.split(":");
-            builder.addContactPointsWithPorts(new InetSocketAddress(hostPort[0], Integer.parseInt(hostPort[1])));
-        });
-        builder.withPoolingOptions(eventStoreConfig.getPoolingOptions());
-
-        Cluster cluster = builder.build();
-        cluster.register(QueryLogger.builder().build());
-        return cluster.init();
-    }*/
+            Cluster cluster = builder.build();
+            cluster.register(QueryLogger.builder().build());
+            return cluster.init();
+        }*/
     private Cluster cluster() {
         EventStoreConfig properties = eventStoreConfig;
         Cluster.Builder builder = Cluster.builder()
@@ -87,11 +92,12 @@ public class CassandraSession {
             } catch (Exception e) {
                 log.trace(e.getMessage());
             }
-            return new InetSocketAddress(host,port);
+            return new InetSocketAddress(host, port);
         }).collect(Collectors.toList()));
 
         return builder.build();
     }
+
     private QueryOptions getQueryOptions() {
         QueryOptions options = new QueryOptions();
         if (eventStoreConfig.getConsistencyLevel() != null) {
@@ -103,6 +109,7 @@ public class CassandraSession {
         options.setFetchSize(eventStoreConfig.getFetchSize());
         return options;
     }
+
     private SocketOptions getSocketOptions() {
         SocketOptions options = new SocketOptions();
         options.setConnectTimeoutMillis(this.eventStoreConfig.getConnectTimeoutMillis());
@@ -110,39 +117,30 @@ public class CassandraSession {
         return options;
     }
 
-    static <T> T instantiate(Class<T> type) {
-        try {
-            return type.newInstance();
-        } catch (InstantiationException|IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Session getSession() {
+    private synchronized Session getSession() {
         if (session == null) {
-            synchronized (this) {
-                if (session == null)
-                    session = cluster().connect(eventStoreConfig.getKeyspaceName());
-            }
+            session = cluster().connect(eventStoreConfig.getKeyspaceName());
         }
         return session;
     }
 
-    public <R, E extends Exception> R execute(Statement t,ThrowingFunction<ResultSet,R, E> f) throws E {
-        return execute(t,Optional.ofNullable(f));
+    public <R, E extends Exception> R execute(Statement st, ThrowingFunction<ResultSet, R, E> tf) throws E {
+        return execute(st, Optional.ofNullable(tf));
     }
-    public <R, E extends Exception> R execute(Statement t, Optional<ThrowingFunction<ResultSet, R, E>> f) throws E {
+
+    public <R, E extends Exception> R execute(Statement st, Optional<ThrowingFunction<ResultSet, R, E>> tf) throws E {
 //        try (Session session = getCluster().connect(eventStoreConfig.getKeyspaceName())) {
-            log.trace("Session:"+getSession());
-            ResultSet execute = getSession().execute(t);
-            if(f.isPresent())
-                return f.get().apply(execute);
-            else
-                return (R) execute;
+        log.trace("Session:" + getSession());
+        ResultSet execute = getSession().execute(st);
+        if (tf.isPresent())
+            return tf.get().apply(execute);
+        else
+            return (R) execute;
 //        }
     }
-    public ResultSet execute(Statement t) {
-       return execute(t,Optional.empty());
+
+    public ResultSet execute(Statement st) {
+        return execute(st, Optional.empty());
     }
 
     public PreparedStatement prepare(String statement) {

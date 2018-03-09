@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-const { A } = Ember;
+const {A} = Ember;
 
 // From https://github.com/miguelcobain/ember-leaflet/blob/master/addon/mixins/container.js
 export default Ember.Mixin.create({

@@ -5,21 +5,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.InjectMocks;
+import org.mockito.runners.MockitoJUnitRunner;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OperationContextTest {
 
-    @InjectMocks
-    private OperationContext operationContext;
-
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
+    @InjectMocks
+    private OperationContext operationContext;
 
     @Test
     public void shouldSwitchContext() {

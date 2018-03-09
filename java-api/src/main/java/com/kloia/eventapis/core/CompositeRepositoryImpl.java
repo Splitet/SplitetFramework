@@ -3,7 +3,6 @@ package com.kloia.eventapis.core;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.EventRepository;
-import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.api.Views;
 import com.kloia.eventapis.cassandra.ConcurrencyResolver;
 import com.kloia.eventapis.cassandra.ConcurrentEventException;
@@ -12,11 +11,9 @@ import com.kloia.eventapis.cassandra.EntityEvent;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.common.EventType;
-import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.common.PublishedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.kafka.IOperationRepository;
-import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.EventState;
 import com.kloia.eventapis.view.Entity;
 
@@ -97,9 +94,9 @@ public class CompositeRepositoryImpl implements EventRepository {
 
     private <P extends PublishedEvent> void checkOperationFinalStates(P publishedEvent) {
         if (publishedEvent.getEventType() == EventType.OP_SUCCESS || publishedEvent.getEventType() == EventType.OP_SINGLE) {
-            operationRepository.successOperation( publishedEvent.getClass().getSimpleName(), successEvent -> successEvent.setEventState(EventState.TXN_SUCCEDEED));
+            operationRepository.successOperation(publishedEvent.getClass().getSimpleName(), successEvent -> successEvent.setEventState(EventState.TXN_SUCCEDEED));
         } else if (publishedEvent.getEventType() == EventType.OP_FAIL) {
-            operationRepository.failOperation( publishedEvent.getClass().getSimpleName(), failEvent -> failEvent.setEventState(EventState.TXN_FAILED));
+            operationRepository.failOperation(publishedEvent.getClass().getSimpleName(), failEvent -> failEvent.setEventState(EventState.TXN_FAILED));
         }
     }
 }

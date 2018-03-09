@@ -1,7 +1,6 @@
 package com.kloia.eventapis.api.emon.service;
 
 import com.kloia.eventapis.api.emon.configuration.StoreConfiguration;
-import com.kloia.eventapis.pojos.Operation;
 import kafka.admin.ConsumerGroupCommand;
 import kafka.utils.ZkUtils;
 import lombok.Getter;

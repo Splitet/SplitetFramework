@@ -13,11 +13,12 @@ import java.util.Map;
 @Component
 @Slf4j
 @Data
-public class EventApisConfiguration  {
+public class EventApisConfiguration {
     private EventStoreConfig storeConfig;
     private KafkaProperties eventBus;
     private Map<String, String> eventRecords;
-    public String getTableNameForEvents(String eventName){
+
+    public String getTableNameForEvents(String eventName) {
         return getEventRecords().getOrDefault(eventName, eventName);
     }
 }

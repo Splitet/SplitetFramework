@@ -25,11 +25,12 @@ export default Ember.Component.extend(ContainerMixin, {
     let options = this.get('options') || {
       physics: {
         enabled: true,
-        barnesHut:{
-          gravitationalConstant:-3000,
-          springLength:200
+        barnesHut: {
+          gravitationalConstant: -3000,
+          springLength: 200
         }
-      }};
+      }
+    };
     options.manipulation = options.manipulation || {};
     options.manipulation.addEdge = this.cEdgeAdded.bind(this);
 
@@ -170,7 +171,8 @@ export default Ember.Component.extend(ContainerMixin, {
       scaling: {
         min: 40,
         max: 40
-      }};
+      }
+    };
 
     if (node.get('color')) {
       simplifiedNode.color = node.get('color');

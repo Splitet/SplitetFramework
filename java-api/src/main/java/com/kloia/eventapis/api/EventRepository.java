@@ -14,7 +14,7 @@ import java.util.function.Function;
 /**
  * Created by zeldalozdemir on 21/04/2017.
  */
-public interface EventRepository{
+public interface EventRepository {
 
     List<EntityEvent> markFail(String opId);
 

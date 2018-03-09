@@ -59,27 +59,27 @@ public class KafkaProperties implements Cloneable {
     private Map<String, String> properties = new HashMap<String, String>();
 
     private Map<String, Object> buildCommonProperties() {
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Object> commonProperties = new HashMap<String, Object>();
         if (this.bootstrapServers != null) {
-            properties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,
+            commonProperties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,
                     this.bootstrapServers);
         }
         if (this.clientId != null) {
-            properties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.clientId);
+            commonProperties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.clientId);
         } else if (this.consumer.groupId != null)
-            properties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.consumer.groupId + "-" + new Random().nextInt(1000));
+            commonProperties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.consumer.groupId + "-" + new Random().nextInt(1000));
 
 
         if (!MapUtils.isEmpty(this.properties)) {
-            properties.putAll(this.properties);
+            commonProperties.putAll(this.properties);
         }
-        return properties;
+        return commonProperties;
     }
 
     /**
      * Create an initial map of consumer properties from the state of this instance.
-     * <p>
-     * This allows you to add additional properties, if necessary, and override the
+     *
+     * <p>This allows you to add additional properties, if necessary, and override the
      * default kafkaConsumerFactory bean.
      *
      * @return the consumer properties initialized with the customizations defined on this

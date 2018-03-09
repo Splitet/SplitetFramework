@@ -1,7 +1,6 @@
 package com.kloia.eventapis.kafka;
 
 import com.kloia.eventapis.api.IUserContext;
-import com.kloia.eventapis.common.Context;
 import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.pojos.Event;
 import com.kloia.eventapis.pojos.Operation;
@@ -9,8 +8,6 @@ import com.kloia.eventapis.pojos.TransactionState;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-
-import java.util.UUID;
 
 /**
  * Created by zeldalozdemir on 20/04/2017.

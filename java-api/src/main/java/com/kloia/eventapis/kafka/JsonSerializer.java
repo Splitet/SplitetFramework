@@ -28,38 +28,36 @@ import java.util.Map;
  * Generic {@link Serializer} for sending Java objects to Kafka as JSON.
  *
  * @param <T> class of the entity, representing messages
- *
  * @author Igor Stepanov
  * @author Artem Bilan
  */
 public class JsonSerializer<T> implements Serializer<T> {
 
-	protected final ObjectMapper objectMapper;
+    protected final ObjectMapper objectMapper;
 
 
-	public JsonSerializer(@Nonnull ObjectMapper objectMapper) {
-		this.objectMapper = objectMapper;
-	}
+    public JsonSerializer(@Nonnull ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
-	public void configure(Map<String, ?> configs, boolean isKey) {
-		// No-op
-	}
+    public void configure(Map<String, ?> configs, boolean isKey) {
+        // No-op
+    }
 
-	public byte[] serialize(String topic, T data) {
-		try {
-			byte[] result = null;
-			if (data != null) {
-				result = this.objectMapper.writeValueAsBytes(data);
-			}
-			return result;
-		}
-		catch (IOException ex) {
-			throw new SerializationException("Can't serialize data [" + data + "] for topic [" + topic + "]", ex);
-		}
-	}
+    public byte[] serialize(String topic, T data) {
+        try {
+            byte[] result = null;
+            if (data != null) {
+                result = this.objectMapper.writeValueAsBytes(data);
+            }
+            return result;
+        } catch (IOException exception) {
+            throw new SerializationException("Can't serialize data [" + data + "] for topic [" + topic + "]", exception);
+        }
+    }
 
-	public void close() {
-		// No-op
-	}
+    public void close() {
+        // No-op
+    }
 
 }

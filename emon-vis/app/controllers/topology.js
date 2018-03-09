@@ -11,7 +11,7 @@ export default Ember.Controller.extend({
   hasMessage: Ember.computed.notEmpty('model.statusMessage'),
   actions: {
     openTopology(opId) {
-      this.transitionToRoute("topology",opId);
+      this.transitionToRoute("topology", opId);
     }
   }
 });

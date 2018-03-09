@@ -27,7 +27,11 @@ public class AggregateListener<T extends Entity> {
     private SnapshotRepository<T, String> snapshotRepository;
     private ObjectMapper objectMapper;
 
-    public AggregateListener(ViewQuery<T> viewQuery, EventRepository eventRepository, SnapshotRepository<T, String> snapshotRepository, List<RollbackSpec> rollbackSpecs, ObjectMapper objectMapper) {
+    public AggregateListener(ViewQuery<T> viewQuery,
+                             EventRepository eventRepository,
+                             SnapshotRepository<T, String> snapshotRepository,
+                             List<RollbackSpec> rollbackSpecs,
+                             ObjectMapper objectMapper) {
         this.viewQuery = viewQuery;
         this.eventRepository = eventRepository;
         this.snapshotRepository = snapshotRepository;

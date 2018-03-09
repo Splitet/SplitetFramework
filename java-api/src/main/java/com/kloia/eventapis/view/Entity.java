@@ -9,13 +9,13 @@ import java.io.Serializable;
  */
 public interface Entity extends Serializable {
 
-    public EventKey getEventKey();
+    EventKey getEventKey();
 
-    public String getId();
+    String getId();
 
-    public void setId(String id);
+    void setId(String id);
 
-    public int getVersion();
+    int getVersion();
 
-    public void setVersion(int version);
+    void setVersion(int version);
 }

@@ -22,7 +22,7 @@ public class NoneHandled implements IHandledEvent {
     }
 
     @Override
-    public boolean attachOperation(Operation operation) {
+    public boolean attachOperation(Operation operationtoAttach) {
         return false;
     }
 
@@ -31,3 +31,4 @@ public class NoneHandled implements IHandledEvent {
         this.operation = operation;
     }
 }
+

@@ -7,14 +7,14 @@ import com.kloia.eventapis.pojos.Operation;
 import java.io.Serializable;
 
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME,
-        include=JsonTypeInfo.As.PROPERTY,
-        property="type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value=HandledEvent.class, name="handled"),
-        @JsonSubTypes.Type(value=NoneHandled.class, name="none"),
+        @JsonSubTypes.Type(value = HandledEvent.class, name = "handled"),
+        @JsonSubTypes.Type(value = NoneHandled.class, name = "none")
 })
-public interface IHandledEvent extends Serializable{
+public interface IHandledEvent extends Serializable {
     boolean isFinished();
 
     void setOperation(Operation operation);

@@ -6,11 +6,11 @@ import com.kloia.eventapis.pojos.Operation;
 
 import java.io.Serializable;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME,
-        include=JsonTypeInfo.As.PROPERTY,
-        property="type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value=ProducedEvent.class, name="event"),
+        @JsonSubTypes.Type(value = ProducedEvent.class, name = "event")
 })
 public interface IProducedEvent extends Serializable {
 

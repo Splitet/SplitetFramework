@@ -5,7 +5,6 @@ import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.cassandra.ConcurrentEventException;
 import com.kloia.eventapis.common.EventKey;
-import com.kloia.eventapis.exception.EventPulisherException;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.sample.client.PaymentClient;
@@ -34,7 +33,6 @@ public class StockReleasedEventHandler implements EventHandler<StockReleasedEven
     private PaymentClient paymentClient;
 
 
-
     @KafkaListener(topics = "StockReleasedEvent", containerFactory = "eventsKafkaListenerContainerFactory")
     public EventKey execute(StockReleasedEvent dto) throws EventStoreException, ConcurrentEventException {
         Orders order = orderQuery.queryEntity(dto.getOrderId());
@@ -43,7 +41,7 @@ public class StockReleasedEventHandler implements EventHandler<StockReleasedEven
             OrderCancelledEvent orderCancelledEvent = new OrderCancelledEvent();
             log.info("Payment is processing : " + dto);
             EventKey eventKey = eventRepository.recordAndPublish(order, orderCancelledEvent);
-            paymentClient.returnPaymentCommand(order.getPaymentId(),new ReturnPaymentCommandDto(order.getId()));
+            paymentClient.returnPaymentCommand(order.getPaymentId(), new ReturnPaymentCommandDto(order.getId()));
             return eventKey;
         } else
             throw new EventStoreException("Order state is not valid for this Operation: " + dto);

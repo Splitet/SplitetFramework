@@ -22,7 +22,7 @@ export default VisJsChild.extend({
    */
   color: false,
 
-  colorChanged: Ember.observer('color', function() {
+  colorChanged: Ember.observer('color', function () {
     let container = this.get('containerLayer');
     container.updateNodeColor(this.get('nId'), this.get('color'));
   }),
@@ -36,7 +36,7 @@ export default VisJsChild.extend({
    */
   label: undefined,
 
-  labelChanged: Ember.observer('label', function() {
+  labelChanged: Ember.observer('label', function () {
     let container = this.get('containerLayer');
     container.updateNodeLabel(this.get('nId'), this.get('label'));
   }),
@@ -49,7 +49,7 @@ export default VisJsChild.extend({
    */
   image: false,
 
-  imageChanged: Ember.observer('image', function() {
+  imageChanged: Ember.observer('image', function () {
     let container = this.get('containerLayer');
     container.updateNodeImage(this.get('nId'), this.get('image'));
   })

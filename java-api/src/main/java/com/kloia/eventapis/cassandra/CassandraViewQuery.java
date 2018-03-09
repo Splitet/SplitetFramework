@@ -63,9 +63,31 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
         return queryEntityInternal(entityId, select);
     }
 
+    @Override
+    public E queryEntity(EventKey eventKey) throws EventStoreException {
+        return queryEntity(eventKey.getEntityId(), eventKey.getVersion());
+    }
+
+    @Override
+    public E queryEntity(String entityId, int version) throws EventStoreException {
+        Select select = QueryBuilder.select().from(tableName);
+        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
+        select.where(QueryBuilder.lte(CassandraEventRecorder.VERSION, version));
+        return queryEntityInternal(entityId, select);
+    }
+
+    E queryEntity(String entityId, int version, E previousEntity) throws EventStoreException {
+        Select select = QueryBuilder.select().from(tableName);
+        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
+        select.where(QueryBuilder.gt(CassandraEventRecorder.VERSION, previousEntity.getVersion()));
+        select.where(QueryBuilder.lte(CassandraEventRecorder.VERSION, version));
+        return queryEntityInternal(entityId, select, previousEntity);
+    }
+
     private E queryEntityInternal(String entityId, Select select) throws EventStoreException {
 
-        E initialInstance, result = null;
+        E initialInstance;
+        E result = null;
         try {
             initialInstance = entityType.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
@@ -95,6 +117,7 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
 
     private E queryEntityInternal(String entityId, Select select, E previousEntity) throws EventStoreException {
 
+        E currentEntity = previousEntity;
         List<Row> entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
         for (Row entityEventData : entityEventDatas) {
             EntityEvent entityEvent = convertToEntityEvent(entityEventData);
@@ -103,22 +126,19 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
                 if (functionSpec != null) {
                     EntityEventWrapper eventWrapper = new EntityEventWrapper<>(functionSpec.getQueryType(), objectMapper, entityEvent);
                     EntityFunction<E, ?> entityFunction = functionSpec.getEntityFunction();
-                    previousEntity = (E) entityFunction.apply(previousEntity, eventWrapper);
+                    currentEntity = (E) entityFunction.apply(currentEntity, eventWrapper);
                 } else
                     log.trace("Function Spec is not available for " + entityEvent.getEventType() + " EntityId:" + entityId + " Table:" + tableName);
             }
-            if (previousEntity != null) {
-                previousEntity.setId(entityId);
-                previousEntity.setVersion(entityEvent.getEventKey().getVersion());
+            if (currentEntity != null) {
+                currentEntity.setId(entityId);
+                currentEntity.setVersion(entityEvent.getEventKey().getVersion());
             }
         }
-        return (previousEntity == null || previousEntity.getId() == null) ? null : previousEntity;
+        return (currentEntity == null || currentEntity.getId() == null) ? null : currentEntity;
     }
 
-    @Override
-    public E queryEntity(EventKey eventKey) throws EventStoreException {
-        return queryEntity(eventKey.getEntityId(), eventKey.getVersion());
-    }
+
 
     @Override
     public List<EntityEvent> queryHistory(String entityId) throws EventStoreException {
@@ -128,13 +148,6 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
                 .stream().map(CassandraViewQuery::convertToEntityEvent).collect(Collectors.toList());
     }
 
-    @Override
-    public E queryEntity(String entityId, int version) throws EventStoreException {
-        Select select = QueryBuilder.select().from(tableName);
-        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
-        select.where(QueryBuilder.lte(CassandraEventRecorder.VERSION, version));
-        return queryEntityInternal(entityId, select);
-    }
 
     @Override
     public List<E> queryByOpId(String opId) throws EventStoreException {
@@ -152,15 +165,6 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
             }
         }
         return new ArrayList<>(resultList.values());
-    }
-
-
-    E queryEntity(String entityId, int version, E previousEntity) throws EventStoreException {
-        Select select = QueryBuilder.select().from(tableName);
-        select.where(QueryBuilder.eq(CassandraEventRecorder.ENTITY_ID, entityId));
-        select.where(QueryBuilder.gt(CassandraEventRecorder.VERSION, previousEntity.getVersion()));
-        select.where(QueryBuilder.lte(CassandraEventRecorder.VERSION, version));
-        return queryEntityInternal(entityId, select, previousEntity);
     }
 
     @Override
@@ -202,9 +206,9 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
 
     @Override
     public <T extends PublishedEvent> T queryEventData(String entityId, int version) throws EventStoreException {
-        EntityEvent e = queryEvent(entityId, version);
-        EntityFunctionSpec<E, ?> functionSpec = functionMap.get(e.getEventType());
-        return new EntityEventWrapper<>((Class<T>) functionSpec.getQueryType(), objectMapper, e).getEventData();
+        EntityEvent entityEvent = queryEvent(entityId, version);
+        EntityFunctionSpec<E, ?> functionSpec = functionMap.get(entityEvent.getEventType());
+        return new EntityEventWrapper<>((Class<T>) functionSpec.getQueryType(), objectMapper, entityEvent).getEventData();
     }
 
     private void addCommandSpecs(List<EntityFunctionSpec<E, ?>> commandSpec) {

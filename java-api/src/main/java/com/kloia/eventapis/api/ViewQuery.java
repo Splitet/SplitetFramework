@@ -16,8 +16,6 @@ import java.util.function.Function;
 public interface ViewQuery<E extends Entity> {
     E queryEntity(String entityId) throws EventStoreException;
 
-    List<EntityEvent> queryHistory(String entityId) throws EventStoreException;
-
     E queryEntity(String entityId, int version) throws EventStoreException;
 
     E queryEntity(EventKey eventKey) throws EventStoreException;
@@ -25,6 +23,8 @@ public interface ViewQuery<E extends Entity> {
     List<E> queryByOpId(String opId) throws EventStoreException;
 
     List<E> queryByOpId(String key, Function<String, E> findOne) throws EventStoreException;
+
+    List<EntityEvent> queryHistory(String entityId) throws EventStoreException;
 
     EntityEvent queryEvent(String entityId, int version) throws EventStoreException;
 

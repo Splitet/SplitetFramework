@@ -1,15 +1,9 @@
 package com.kloia.eventapis.api.emon.configuration;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.config.DiscoveryConfig;
 import com.hazelcast.config.GroupConfig;
-import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapIndexConfig;
-import com.hazelcast.config.NetworkConfig;
-import com.hazelcast.config.PredicateConfig;
-import com.hazelcast.config.QueryCacheConfig;
-import com.hazelcast.query.PagingPredicate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -37,8 +31,8 @@ public class Components {
         mapConfig.setTimeToLiveSeconds(TIME_TO_LIVE_SECONDS);
         mapConfig.setMapIndexConfigs(
                 Arrays.asList(
-                        new MapIndexConfig("opDate",true),
-                        new MapIndexConfig("operationState",true)
+                        new MapIndexConfig("opDate", true),
+                        new MapIndexConfig("operationState", true)
                 )
         );
 //        QueryCacheConfig queryCacheConfig = new QueryCacheConfig("Latest-Operations");

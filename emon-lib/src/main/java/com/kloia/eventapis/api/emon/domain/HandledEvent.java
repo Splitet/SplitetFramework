@@ -1,12 +1,10 @@
 package com.kloia.eventapis.api.emon.domain;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.kloia.eventapis.common.EventType;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.annotation.DeclareAnnotation;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -32,7 +30,7 @@ public class HandledEvent implements IHandledEvent {
 
     public void attachProducedEvent(ProducedEvent producedEvent) {
         Optional<ProducedEvent> first = producedEvents.stream().filter(existingEvent -> Objects.equals(existingEvent.getTopic(), producedEvent.getTopic())).findFirst();
-        if(first.isPresent())
+        if (first.isPresent())
             first.get().incrementNumberOfVisit();
         else
             producedEvents.add(producedEvent);
@@ -45,13 +43,13 @@ public class HandledEvent implements IHandledEvent {
     }
 
     @Override
-    public boolean attachOperation(Operation operation) {
-        if (Objects.equals(operation.getSender(), getHandlerService())
-                && Objects.equals(operation.getAggregateId(), topic)
-                && operation.getTransactionState() == TransactionState.TXN_SUCCEDEED) {
-            this.operation = operation;
+    public boolean attachOperation(Operation operationToAttach) {
+        if (Objects.equals(operationToAttach.getSender(), getHandlerService())
+                && Objects.equals(operationToAttach.getAggregateId(), topic)
+                && operationToAttach.getTransactionState() == TransactionState.TXN_SUCCEDEED) {
+            this.operation = operationToAttach;
             return true;
         }
-        return producedEvents.stream().anyMatch(producedEvent -> producedEvent.attachOperation(operation));
+        return producedEvents.stream().anyMatch(producedEvent -> producedEvent.attachOperation(operationToAttach));
     }
 }

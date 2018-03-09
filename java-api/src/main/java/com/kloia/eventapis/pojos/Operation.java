@@ -12,8 +12,8 @@ import java.util.UUID;
  */
 @Data
 public class Operation implements /*Externalizable,Binarylizable,*/  Serializable {
-    private static final long serialVersionUID = -2003849346218727591L;
     public static final String OPERATION_EVENTS = "operation-events";
+    private static final long serialVersionUID = -2003849346218727591L;
     private List<Event> events;
 
     private TransactionState transactionState;
@@ -32,8 +32,8 @@ public class Operation implements /*Externalizable,Binarylizable,*/  Serializabl
         this.transactionState = transactionState;
     }
 
-    public Optional<Event> getEventFor(UUID eventID){
-       return getEvents().stream().filter(event -> event.getEventId().equals(eventID)).findFirst();
+    public Optional<Event> getEventFor(UUID eventID) {
+        return getEvents().stream().filter(event -> event.getEventId().equals(eventID)).findFirst();
     }
 
 /*    public void writeExternal(ObjectOutput out) throws IOException {

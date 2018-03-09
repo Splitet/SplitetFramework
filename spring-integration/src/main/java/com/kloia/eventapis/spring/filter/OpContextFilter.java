@@ -19,7 +19,7 @@ import java.util.List;
 public class OpContextFilter extends OncePerRequestFilter {
 
 
-    public static final List<String> changeMethods = Collections.unmodifiableList(Arrays.asList("POST", "PUT", "DELETE"));
+    public static final List<String> CHANGE_METHODS = Collections.unmodifiableList(Arrays.asList("POST", "PUT", "DELETE"));
     public static final String OP_ID_HEADER = "X-OPID";
     public static final String OP_TIMEOUT_HEADER = "X-OP-TIMEOUT";
     public static final String OP_START_TIME_HEADER = "X-OP-START-TIME";
@@ -34,7 +34,7 @@ public class OpContextFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         try {
-            if (changeMethods.contains(httpServletRequest.getMethod())) {
+            if (CHANGE_METHODS.contains(httpServletRequest.getMethod())) {
 
                 String parentOpId = httpServletRequest.getHeader(OP_ID_HEADER);
                 String olderOpIds = httpServletRequest.getHeader(PARENT_OP_ID_HEADER);
@@ -44,7 +44,7 @@ public class OpContextFilter extends OncePerRequestFilter {
                 String opId = operationContext.generateContext(StringUtils.hasText(parentOpId) ? parentOpId : null, true);
                 httpServletResponse.setHeader(OperationContext.OP_ID, opId); //legacy
                 httpServletResponse.setHeader(OP_ID_HEADER, opId);
-                httpServletResponse.setHeader(PARENT_OP_ID_HEADER, parentOpId);
+//                httpServletResponse.setHeader(PARENT_OP_ID_HEADER, parentOpId);
                 operationContext.getContext().getPreGenerationConsumers().add(generatedContext -> {
                     httpServletResponse.setHeader(OP_TIMEOUT_HEADER, String.valueOf(generatedContext.getCommandTimeout()));
                     httpServletResponse.setHeader(OP_START_TIME_HEADER, String.valueOf(generatedContext.getStartTime()));

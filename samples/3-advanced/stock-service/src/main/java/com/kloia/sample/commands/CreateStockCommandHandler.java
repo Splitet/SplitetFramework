@@ -40,7 +40,7 @@ public class CreateStockCommandHandler implements CommandHandler<CreateStockComm
         BeanUtils.copyProperties(dto, stockCreatedEvent);
         EventKey eventKey = eventRepository.recordAndPublish(stockCreatedEvent);
         try {
-            addStockCommandHandler.execute(new AddStockCommandDto(dto.getRemainingStock(), eventKey.getEntityId()));
+            addStockCommandHandler.execute(eventKey.getEntityId(), new AddStockCommandDto(dto.getRemainingStock(), eventKey.getEntityId()));
         } catch (Exception e) {
             log.warn("Sub Command Failed:" + e.getMessage());
         }

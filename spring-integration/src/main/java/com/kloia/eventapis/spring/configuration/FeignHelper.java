@@ -18,10 +18,9 @@ import java.util.List;
 public class FeignHelper {
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     OperationContext operationContext;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /*    @Bean
         public ErrorDecoder errorDecoder() {
@@ -43,7 +42,7 @@ public class FeignHelper {
     @Bean
     @Scope("prototype")
     public RequestInterceptor opIdInterceptor() {
-        return (template) -> {
+        return template -> {
             String key = this.operationContext.getContextOpId();
             if (key != null) {
                 template.header(OpContextFilter.OP_ID_HEADER, key);

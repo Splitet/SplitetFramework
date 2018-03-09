@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -17,6 +17,11 @@
     <properties>
         <spring.version>1.5.7.RELEASE</spring.version>
         <spring.cloud.version>Dalston.SR4</spring.cloud.version>
+
+        <skip.jacoco.check>true</skip.jacoco.check>
+        <skip.checkstyle.check>true</skip.checkstyle.check>
+        <skip.findbugs.check>true</skip.findbugs.check>
+
     </properties>
     <dependencyManagement>
         <dependencies>
