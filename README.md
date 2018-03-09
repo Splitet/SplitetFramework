@@ -12,7 +12,7 @@ It has a unique architecture called Operation Store™ together with the stack e
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/eventapis/Lobby)
 
 ## Build
-![Image of Yaktocat](https://travis-ci.org/kloiasoft/eventapis.svg?branch=master)
+[![Build Status](https://travis-ci.org/kloiasoft/eventapis.svg?branch=master)](https://travis-ci.org/kloiasoft/eventapis)
 ```
 mvn package
 ```
