@@ -2,6 +2,7 @@ package com.kloia.sample.commands;
 
 import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventRepository;
+import com.kloia.eventapis.api.RollbackSpec;
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.view.EntityFunctionSpec;
@@ -32,6 +33,11 @@ public class AddStockCommandHandler implements CommandHandler<AddStockCommandDto
         this.stockQuery = stockQuery;
     }
 
+    @Override
+    public EventRepository getDefaultEventRepository() {
+        return eventRepository;
+    }
+
     @RequestMapping(value = "/stock/{stockId}/add", method = RequestMethod.POST)
     public EventKey execute(String stockId, @RequestBody AddStockCommandDto dto) throws Exception {
         dto.setStockId(stockId);
@@ -41,17 +47,38 @@ public class AddStockCommandHandler implements CommandHandler<AddStockCommandDto
     public EventKey execute(@RequestBody AddStockCommandDto dto) throws Exception {
         Stock stock = stockQuery.queryEntity(dto.getStockId());
 
+        if(dto.getStockToAdd() > 1000000)
+            throw new IllegalArgumentException("Invalid Stock to Add");
+
         return eventRepository.recordAndPublish(stock.getEventKey(), new StockAddedEvent(dto.getStockToAdd()));
     }
 
     @Component
-    public static class CreateStockSpec extends EntityFunctionSpec<Stock, StockAddedEvent> {
-        public CreateStockSpec() {
+    public static class AddStockSpec extends EntityFunctionSpec<Stock, StockAddedEvent> {
+        public AddStockSpec() {
             super((stock, event) -> {
                 StockAddedEvent eventData = event.getEventData();
                 stock.setRemainingStock(stock.getRemainingStock() + eventData.getAddedStock());
                 return stock;
             });
+        }
+    }
+
+    @Component
+    public static class AddStockRollbackSpec implements RollbackSpec<StockAddedEvent> {
+
+        @Override
+        public void rollback(StockAddedEvent event) {
+            log.warn("Rolling back StockAddedEvent for: " + event.toString());
+        }
+    }
+
+    @Component
+    public static class AddStockCommandRollbackSpec implements RollbackSpec<AddStockCommandDto> {
+
+        @Override
+        public void rollback(AddStockCommandDto event) {
+            log.warn("Rolling back AddStockCommandDto for: " + event.toString());
         }
     }
 

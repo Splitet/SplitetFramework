@@ -16,7 +16,7 @@ import com.kloia.eventapis.api.impl.UUIDCreationStrategy;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.common.OperationContext;
-import com.kloia.eventapis.common.PublishedEvent;
+import com.kloia.eventapis.common.RecordedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +73,11 @@ public class CassandraEventRecorder implements EventRecorder {
         this.idCreationStrategy = idCreationStrategy;
     }
 
+    @Override
+    public String getTableName() {
+        return tableName;
+    }
+
 /*    private EntityEvent convertToEntityEvent(Row entityEventData) throws EventStoreException {
         EventKey eventKey = new EventKey(entityEventData.getString(ENTITY_ID), entityEventData.getInt(VERSION));
         String opId = entityEventData.getString(OP_ID);
@@ -85,7 +90,7 @@ public class CassandraEventRecorder implements EventRecorder {
 
     @Override
     public <T extends Exception> EventKey recordEntityEvent(
-            PublishedEvent event, long opDate,
+            RecordedEvent event, long opDate,
             Optional<EventKey> previousEventKey,
             Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
             throws EventStoreException, T {

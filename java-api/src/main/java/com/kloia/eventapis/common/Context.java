@@ -33,7 +33,7 @@ public class Context implements Serializable {
     }
 
     public void setGenerated() {
-        preGenerated = true;
+        preGenerated = false;
         preGenerationConsumers.forEach(contextConsumer -> contextConsumer.accept(this));
     }
 

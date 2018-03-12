@@ -1,7 +1,10 @@
 package com.kloia.eventapis.common;
 
 
+import com.kloia.eventapis.api.CommandDto;
 import com.kloia.eventapis.api.CommandHandler;
+import com.kloia.eventapis.api.EventRepository;
+import com.kloia.eventapis.cassandra.DefaultConcurrencyResolver;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +13,8 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+
+import java.util.Optional;
 
 /**
  * Created by zeldalozdemir on 24/04/2017.
@@ -27,24 +32,41 @@ public class CommandExecutionInterceptor {
         this.kafkaOperationRepository = kafkaOperationRepository;
     }
 
-    @Before("within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..)) && args(object,..)")
+    @Before("this(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..)) && args(object,..)")
     public void before(JoinPoint jp, Object object) throws Throwable {
         Object target = jp.getTarget();
         if (!(target instanceof CommandHandler))
             throw new IllegalArgumentException("Point is not Instance of CommandHandler");
-        long commandTimeout = ((CommandHandler) target).getCommandTimeout();
+        CommandHandler commandHandler = (CommandHandler) target;
+        long commandTimeout = commandHandler.getCommandTimeout();
         operationContext.startNewContext(commandTimeout); // Ability to generate new Context
         operationContext.setCommandContext(target.getClass().getSimpleName());
-        log.info("before method:" + (object == null ? "" : object.toString()));
+        recordCommand(jp, commandHandler);
+
+        log.debug("before method:" + (object == null ? "" : object.toString()));
     }
 
-    @AfterReturning(value = "within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", returning = "retVal")
+    private void recordCommand(JoinPoint jp, CommandHandler commandHandler) throws com.kloia.eventapis.exception.EventStoreException, com.kloia.eventapis.cassandra.ConcurrentEventException {
+        EventRepository eventRepository = commandHandler.getDefaultEventRepository();
+        CommandDto commandDto = null;
+        for (Object arg : jp.getArgs()) {
+            if (arg instanceof CommandDto)
+                commandDto = (CommandDto) arg;
+        }
+        if (commandDto == null) {
+            log.warn("Command" + jp.getTarget().getClass().getSimpleName() + " does not have CommandDto");
+            return;
+        }
+        eventRepository.getEventRecorder().recordEntityEvent(commandDto, System.currentTimeMillis(), Optional.empty(), entityEvent -> new DefaultConcurrencyResolver());
+    }
+
+    @AfterReturning(value = "this(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", returning = "retVal")
     public void afterReturning(Object retVal) {
         log.debug("AfterReturning:" + (retVal == null ? "" : retVal.toString()));
         operationContext.clearCommandContext();
     }
 
-    @AfterThrowing(value = "within(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", throwing = "exception")
+    @AfterThrowing(value = "this(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", throwing = "exception")
     public void afterThrowing(Exception exception) {
         try {
             log.info("afterThrowing Command: " + exception);

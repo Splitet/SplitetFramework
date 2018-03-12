@@ -13,8 +13,10 @@ import java.util.function.Function;
  */
 public interface EventRecorder {
 
+    String getTableName();
+
     <T extends Exception> EventKey recordEntityEvent(
-            PublishedEvent entityEvent, long date,
+            RecordedEvent entityEvent, long date,
             Optional<EventKey> previousEventKey, Function<EntityEvent,
             ConcurrencyResolver<T>> concurrencyResolverFactory)
             throws EventStoreException, T;

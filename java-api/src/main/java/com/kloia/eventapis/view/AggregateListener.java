@@ -6,7 +6,7 @@ import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.RollbackSpec;
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.cassandra.EntityEvent;
-import com.kloia.eventapis.common.ReceivedEvent;
+import com.kloia.eventapis.common.RecordedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
@@ -21,7 +21,7 @@ import java.util.Map;
 
 @Slf4j
 public class AggregateListener<T extends Entity> {
-    private final Map<String, Map.Entry<Class<ReceivedEvent>, RollbackSpec>> rollbackSpecMap;
+    private final Map<String, Map.Entry<Class<RecordedEvent>, RollbackSpec>> rollbackSpecMap;
     private ViewQuery<T> viewQuery;
     private EventRepository eventRepository;
     private SnapshotRepository<T, String> snapshotRepository;
@@ -40,7 +40,7 @@ public class AggregateListener<T extends Entity> {
         rollbackSpecs.forEach(rollbackSpec -> {
             ParameterizedType type = (ParameterizedType) TypeToken.of(rollbackSpec.getClass()).getSupertype(RollbackSpec.class).getType();
             try {
-                Class<ReceivedEvent> publishedEventClass = (Class<ReceivedEvent>) Class.forName(type.getActualTypeArguments()[0].getTypeName());
+                Class<RecordedEvent> publishedEventClass = (Class<RecordedEvent>) Class.forName(type.getActualTypeArguments()[0].getTypeName());
                 rollbackSpecMap.put(publishedEventClass.getSimpleName(), new AbstractMap.SimpleEntry<>(publishedEventClass, rollbackSpec));
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
@@ -54,7 +54,7 @@ public class AggregateListener<T extends Entity> {
                 List<EntityEvent> entityEvents = eventRepository.markFail(data.key());
                 entityEvents.forEach(entityEvent -> {
                     try {
-                        Map.Entry<Class<ReceivedEvent>, RollbackSpec> specEntry = rollbackSpecMap.get(entityEvent.getEventType());
+                        Map.Entry<Class<RecordedEvent>, RollbackSpec> specEntry = rollbackSpecMap.get(entityEvent.getEventType());
                         if (specEntry != null)
                             specEntry.getValue().rollback(new EntityEventWrapper<>(specEntry.getKey(), objectMapper, entityEvent).getEventData());
                     } catch (Exception e) {

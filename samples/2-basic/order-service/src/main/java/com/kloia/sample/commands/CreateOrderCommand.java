@@ -32,6 +32,11 @@ public class CreateOrderCommand implements CommandHandler<CreateOrderCommandDto>
         this.eventRepository = eventRepository;
     }
 
+    @Override
+    public EventRepository getDefaultEventRepository() {
+        return eventRepository;
+    }
+
     @RequestMapping(value = "/order/v1/create", method = RequestMethod.POST)
     public EventKey execute(@RequestBody @Valid CreateOrderCommandDto dto) throws Exception {
 

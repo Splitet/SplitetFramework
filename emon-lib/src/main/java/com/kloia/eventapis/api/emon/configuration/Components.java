@@ -31,7 +31,7 @@ public class Components {
         mapConfig.setTimeToLiveSeconds(TIME_TO_LIVE_SECONDS);
         mapConfig.setMapIndexConfigs(
                 Arrays.asList(
-                        new MapIndexConfig("opDate", true),
+                        new MapIndexConfig("startTime", true),
                         new MapIndexConfig("operationState", true)
                 )
         );

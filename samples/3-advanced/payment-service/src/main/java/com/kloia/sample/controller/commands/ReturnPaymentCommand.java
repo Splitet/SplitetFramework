@@ -36,6 +36,11 @@ public class ReturnPaymentCommand implements CommandHandler<ReturnPaymentCommand
         this.paymentViewQuery = paymentViewQuery;
     }
 
+    @Override
+    public EventRepository getDefaultEventRepository() {
+        return eventRepository;
+    }
+
     @RequestMapping(value = "/payment/{paymentId}/return", method = RequestMethod.POST)
     public EventKey execute(@PathVariable("paymentId") String paymentId, @RequestBody @Valid ReturnPaymentCommandDto dto) throws Exception {
         dto.setPaymentId(paymentId);

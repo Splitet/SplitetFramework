@@ -37,6 +37,11 @@ public class CancelOrderCommand implements CommandHandler<ProcessOrderCommandDto
         this.orderQuery = orderQuery;
     }
 
+    @Override
+    public EventRepository getDefaultEventRepository() {
+        return eventRepository;
+    }
+
     @RequestMapping(value = "/order/{orderId}/cancel", method = RequestMethod.POST)
     public EventKey execute(@PathVariable("orderId") String orderId, @RequestBody @Valid ProcessOrderCommandDto dto) throws Exception {
         dto.setOrderId(orderId);

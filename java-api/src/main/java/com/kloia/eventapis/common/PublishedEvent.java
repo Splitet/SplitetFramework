@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class PublishedEvent {
+public abstract class PublishedEvent implements RecordedEvent {
 
     @JsonView(Views.PublishedOnly.class)
     EventKey sender;

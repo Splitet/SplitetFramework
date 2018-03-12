@@ -73,6 +73,11 @@ public class CompositeRepositoryImpl implements EventRepository {
         return recordAndPublishInternal(publishedEvent, Optional.of(previousEventKey), concurrencyResolverFactory);
     }
 
+    @Override
+    public EventRecorder getEventRecorder() {
+        return eventRecorder;
+    }
+
 
     private <P extends PublishedEvent, T extends Exception> EventKey recordAndPublishInternal(
             P publishedEvent, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory

@@ -34,6 +34,11 @@ public class CreateStockCommandHandler implements CommandHandler<CreateStockComm
     private AddStockCommandHandler addStockCommandHandler;
 
     @Override
+    public EventRepository getDefaultEventRepository() {
+        return eventRepository;
+    }
+
+    @Override
     @RequestMapping(value = "/stock/create", method = RequestMethod.POST)
     public EventKey execute(@RequestBody CreateStockCommandDto dto) throws Exception {
         StockCreatedEvent stockCreatedEvent = new StockCreatedEvent();

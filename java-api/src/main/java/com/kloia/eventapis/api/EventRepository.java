@@ -4,6 +4,7 @@ import com.kloia.eventapis.cassandra.ConcurrencyResolver;
 import com.kloia.eventapis.cassandra.ConcurrentEventException;
 import com.kloia.eventapis.cassandra.EntityEvent;
 import com.kloia.eventapis.common.EventKey;
+import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.common.PublishedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.Entity;
@@ -31,5 +32,7 @@ public interface EventRepository {
     <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
             EventKey eventKey, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
     ) throws EventStoreException, T;
+
+    EventRecorder getEventRecorder();
 
 }

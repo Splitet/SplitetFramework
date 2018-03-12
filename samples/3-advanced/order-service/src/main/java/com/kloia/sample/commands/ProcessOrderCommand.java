@@ -38,6 +38,11 @@ public class ProcessOrderCommand implements CommandHandler<ProcessOrderCommandDt
         this.orderQuery = orderQuery;
     }
 
+    @Override
+    public EventRepository getDefaultEventRepository() {
+        return eventRepository;
+    }
+
     @RequestMapping(value = "/order/{orderId}/process", method = RequestMethod.POST)
     public EventKey process(@PathVariable("orderId") String orderId, @RequestBody @Valid ProcessOrderCommandDto dto) throws Exception {
         dto.setOrderId(orderId);

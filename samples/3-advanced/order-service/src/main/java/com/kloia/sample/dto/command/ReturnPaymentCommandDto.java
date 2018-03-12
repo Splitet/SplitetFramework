@@ -1,5 +1,6 @@
 package com.kloia.sample.dto.command;
 
+import com.kloia.eventapis.api.CommandDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReturnPaymentCommandDto {
+public class ReturnPaymentCommandDto implements CommandDto {
     private String orderId;
 }

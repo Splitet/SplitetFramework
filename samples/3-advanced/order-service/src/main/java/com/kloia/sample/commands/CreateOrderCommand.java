@@ -27,6 +27,11 @@ import javax.validation.Valid;
 public class CreateOrderCommand implements CommandHandler<CreateOrderCommandDto> {
     private final EventRepository eventRepository;
 
+    @Override
+    public EventRepository getDefaultEventRepository() {
+        return eventRepository;
+    }
+
     @Autowired
     public CreateOrderCommand(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
