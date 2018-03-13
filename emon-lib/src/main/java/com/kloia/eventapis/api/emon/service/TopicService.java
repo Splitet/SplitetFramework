@@ -11,7 +11,6 @@ import scala.Tuple2;
 import scala.collection.JavaConversions;
 import scala.collection.Seq;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +54,7 @@ public class TopicService implements Runnable {
         return topicServiceList.keySet().toArray(new String[0]);
     }
 
-    @PostConstruct
+    //    @PostConstruct
     public void init() {
         String bootstrapServers = String.join(",", storeConfiguration.getEventBus().getBootstrapServers());
         String zookeeperServers = String.join(",", storeConfiguration.getEventBus().getZookeeperServers());

@@ -88,6 +88,7 @@ public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent>
         ReserveStockEvent reserveStockEvent;
         private int maxTry = 3;
         private int currentTry = 0;
+
         public StockConcurrencyResolver(ViewQuery<Stock> stockQuery, ReserveStockEvent reserveStockEvent) {
             this.stockQuery = stockQuery;
             this.reserveStockEvent = reserveStockEvent;

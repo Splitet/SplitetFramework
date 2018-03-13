@@ -139,7 +139,6 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
     }
 
 
-
     @Override
     public List<EntityEvent> queryHistory(String entityId) throws EventStoreException {
         Select select = QueryBuilder.select().from(tableName);

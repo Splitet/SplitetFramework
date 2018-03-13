@@ -12,7 +12,6 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.config.ContainerProperties;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -32,7 +31,7 @@ public class EventListenService {
     private ConcurrentMessageListenerContainer<String, Operation> operationListenerContainer;
 
 
-    @PostConstruct
+    //    @PostConstruct
     public void startListen() throws ExecutionException, InterruptedException {
         startEvents();
         startOperations();

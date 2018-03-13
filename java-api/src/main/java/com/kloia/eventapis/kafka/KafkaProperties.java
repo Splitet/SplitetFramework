@@ -78,7 +78,7 @@ public class KafkaProperties implements Cloneable {
 
     /**
      * Create an initial map of consumer properties from the state of this instance.
-     *
+     * <p>
      * <p>This allows you to add additional properties, if necessary, and override the
      * default kafkaConsumerFactory bean.
      *
