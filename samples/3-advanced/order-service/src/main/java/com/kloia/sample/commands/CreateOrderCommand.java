@@ -1,5 +1,6 @@
 package com.kloia.sample.commands;
 
+import com.kloia.eventapis.api.Command;
 import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.common.EventKey;
@@ -24,13 +25,8 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-public class CreateOrderCommand implements CommandHandler<CreateOrderCommandDto> {
+public class CreateOrderCommand implements CommandHandler {
     private final EventRepository eventRepository;
-
-    @Override
-    public EventRepository getDefaultEventRepository() {
-        return eventRepository;
-    }
 
     @Autowired
     public CreateOrderCommand(EventRepository eventRepository) {
@@ -38,6 +34,7 @@ public class CreateOrderCommand implements CommandHandler<CreateOrderCommandDto>
     }
 
     @RequestMapping(value = "/order/create", method = RequestMethod.POST)
+    @Command
     public EventKey execute(@RequestBody @Valid CreateOrderCommandDto dto) throws Exception {
 
         OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();

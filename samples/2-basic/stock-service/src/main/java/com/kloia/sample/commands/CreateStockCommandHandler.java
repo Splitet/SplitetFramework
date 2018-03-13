@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-public class CreateStockCommandHandler implements CommandHandler<CreateStockCommandDto> {
+public class CreateStockCommandHandler implements CommandHandler {
     private final EventRepository eventRepository;
     private final ViewQuery<Stock> orderQuery;
 
@@ -32,11 +32,6 @@ public class CreateStockCommandHandler implements CommandHandler<CreateStockComm
     public CreateStockCommandHandler(EventRepository eventRepository, ViewQuery<Stock> orderQuery) {
         this.eventRepository = eventRepository;
         this.orderQuery = orderQuery;
-    }
-
-    @Override
-    public EventRepository getDefaultEventRepository() {
-        return eventRepository;
     }
 
     @Override

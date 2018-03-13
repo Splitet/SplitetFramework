@@ -28,7 +28,7 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-public class ProcessOrderCommand implements CommandHandler<ProcessOrderCommandDto> {
+public class ProcessOrderCommand implements CommandHandler {
     private final EventRepository eventRepository;
     private final ViewQuery<Orders> orderQuery;
 
@@ -36,11 +36,6 @@ public class ProcessOrderCommand implements CommandHandler<ProcessOrderCommandDt
     public ProcessOrderCommand(EventRepository eventRepository, ViewQuery<Orders> orderQuery) {
         this.eventRepository = eventRepository;
         this.orderQuery = orderQuery;
-    }
-
-    @Override
-    public EventRepository getDefaultEventRepository() {
-        return eventRepository;
     }
 
     @RequestMapping(value = "/order/v1/{orderId}/process", method = RequestMethod.POST)

@@ -1,5 +1,6 @@
 package com.kloia.sample.controller.commands;
 
+import com.kloia.eventapis.api.Command;
 import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.ViewQuery;
@@ -26,7 +27,7 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-public class ReturnPaymentCommand implements CommandHandler<ReturnPaymentCommandDto> {
+public class ReturnPaymentCommand implements CommandHandler {
     private final EventRepository eventRepository;
     private final ViewQuery<Payment> paymentViewQuery;
 
@@ -36,19 +37,10 @@ public class ReturnPaymentCommand implements CommandHandler<ReturnPaymentCommand
         this.paymentViewQuery = paymentViewQuery;
     }
 
-    @Override
-    public EventRepository getDefaultEventRepository() {
-        return eventRepository;
-    }
-
     @RequestMapping(value = "/payment/{paymentId}/return", method = RequestMethod.POST)
+    @Command
     public EventKey execute(@PathVariable("paymentId") String paymentId, @RequestBody @Valid ReturnPaymentCommandDto dto) throws Exception {
         dto.setPaymentId(paymentId);
-        return this.execute(dto);
-    }
-
-    @Override
-    public EventKey execute(@RequestBody ReturnPaymentCommandDto dto) throws Exception {
         Payment payment = paymentViewQuery.queryEntity(dto.getPaymentId());
 
         if (payment.getState() == PaymentState.PAID) {

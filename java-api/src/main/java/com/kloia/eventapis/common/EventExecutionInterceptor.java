@@ -26,20 +26,20 @@ public class EventExecutionInterceptor {
         this.kafkaOperationRepository = kafkaOperationRepository;
     }
 
-    @Before("within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..)) && args(object)")
+    @Before("this(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..)) && args(object)")
     public void before(JoinPoint jp, Object object) throws Throwable {
         String commandContext = object == null ? jp.getTarget().getClass().getSimpleName() : object.getClass().getSimpleName();
         operationContext.setCommandContext(commandContext);
         log.debug("before method:" + (object == null ? "" : object.toString()));
     }
 
-    @AfterReturning(value = "within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", returning = "retVal")
+    @AfterReturning(value = "this(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", returning = "retVal")
     public void afterReturning(Object retVal) throws Throwable {
         log.debug("AfterReturning:" + (retVal == null ? "" : retVal.toString()));
         operationContext.clearCommandContext();
     }
 
-    @AfterThrowing(value = "within(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "exception")
+    @AfterThrowing(value = "this(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "exception")
     public void afterThrowing(Exception exception) throws Throwable {
         try {
             log.debug("afterThrowing EventHandler method:" + exception.getMessage());

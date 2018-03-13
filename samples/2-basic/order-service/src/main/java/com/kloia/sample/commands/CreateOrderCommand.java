@@ -24,17 +24,12 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-public class CreateOrderCommand implements CommandHandler<CreateOrderCommandDto> {
+public class CreateOrderCommand implements CommandHandler {
     private final EventRepository eventRepository;
 
     @Autowired
     public CreateOrderCommand(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
-    }
-
-    @Override
-    public EventRepository getDefaultEventRepository() {
-        return eventRepository;
     }
 
     @RequestMapping(value = "/order/v1/create", method = RequestMethod.POST)

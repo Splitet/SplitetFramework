@@ -1,5 +1,6 @@
 package com.kloia.sample.commands;
 
+import com.kloia.eventapis.api.Command;
 import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.RollbackSpec;
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-public class AddStockCommandHandler implements CommandHandler<AddStockCommandDto> {
+public class AddStockCommandHandler implements CommandHandler {
     private final EventRepository eventRepository;
     private final ViewQuery<Stock> stockQuery;
 
@@ -33,21 +34,14 @@ public class AddStockCommandHandler implements CommandHandler<AddStockCommandDto
         this.stockQuery = stockQuery;
     }
 
-    @Override
-    public EventRepository getDefaultEventRepository() {
-        return eventRepository;
-    }
 
     @RequestMapping(value = "/stock/{stockId}/add", method = RequestMethod.POST)
+    @Command
     public EventKey execute(String stockId, @RequestBody AddStockCommandDto dto) throws Exception {
         dto.setStockId(stockId);
-        return execute(dto);
-    }
-
-    public EventKey execute(@RequestBody AddStockCommandDto dto) throws Exception {
         Stock stock = stockQuery.queryEntity(dto.getStockId());
 
-        if(dto.getStockToAdd() > 1000000)
+        if (dto.getStockToAdd() > 1000000)
             throw new IllegalArgumentException("Invalid Stock to Add");
 
         return eventRepository.recordAndPublish(stock.getEventKey(), new StockAddedEvent(dto.getStockToAdd()));

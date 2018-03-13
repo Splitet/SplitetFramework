@@ -1,10 +1,13 @@
 package com.kloia.eventapis.common;
 
 
+import com.kloia.eventapis.api.Command;
 import com.kloia.eventapis.api.CommandDto;
 import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventRepository;
+import com.kloia.eventapis.cassandra.ConcurrentEventException;
 import com.kloia.eventapis.cassandra.DefaultConcurrencyResolver;
+import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +17,7 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 
+import java.lang.reflect.Field;
 import java.util.Optional;
 
 /**
@@ -32,22 +36,23 @@ public class CommandExecutionInterceptor {
         this.kafkaOperationRepository = kafkaOperationRepository;
     }
 
-    @Before("this(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..)) && args(object,..)")
-    public void before(JoinPoint jp, Object object) throws Throwable {
+
+    @Before("this(com.kloia.eventapis.api.CommandHandler) && @annotation(command)")
+    public void before(JoinPoint jp, Command command) throws Throwable {
         Object target = jp.getTarget();
         if (!(target instanceof CommandHandler))
             throw new IllegalArgumentException("Point is not Instance of CommandHandler");
         CommandHandler commandHandler = (CommandHandler) target;
-        long commandTimeout = commandHandler.getCommandTimeout();
+        long commandTimeout = command.commandTimeout();
         operationContext.startNewContext(commandTimeout); // Ability to generate new Context
         operationContext.setCommandContext(target.getClass().getSimpleName());
-        recordCommand(jp, commandHandler);
+        CommandDto commandDto = recordCommand(jp, commandHandler, command);
 
-        log.debug("before method:" + (object == null ? "" : object.toString()));
+        log.debug("before method:" + (commandDto == null ? "" : commandDto.toString()));
     }
 
-    private void recordCommand(JoinPoint jp, CommandHandler commandHandler) throws com.kloia.eventapis.exception.EventStoreException, com.kloia.eventapis.cassandra.ConcurrentEventException {
-        EventRepository eventRepository = commandHandler.getDefaultEventRepository();
+    private CommandDto recordCommand(JoinPoint jp, CommandHandler commandHandler, Command command) throws ConcurrentEventException, EventStoreException {
+        EventRepository eventRepository = null;
         CommandDto commandDto = null;
         for (Object arg : jp.getArgs()) {
             if (arg instanceof CommandDto)
@@ -55,19 +60,28 @@ public class CommandExecutionInterceptor {
         }
         if (commandDto == null) {
             log.warn("Command" + jp.getTarget().getClass().getSimpleName() + " does not have CommandDto");
-            return;
         }
-        eventRepository.getEventRecorder().recordEntityEvent(commandDto, System.currentTimeMillis(), Optional.empty(), entityEvent -> new DefaultConcurrencyResolver());
+        try {
+            Field declaredField = commandHandler.getClass().getDeclaredField(command.eventRepository());
+            if (declaredField.isAccessible())
+                declaredField.setAccessible(true);
+            eventRepository = (EventRepository) declaredField.get(commandHandler);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            log.error("Error while accessing EventRecorder(" + command.eventRepository() + ") of Command:" + commandHandler.getClass().getSimpleName() + " message: " + e.getMessage());
+        }
+        if (commandDto != null && eventRepository != null)
+            eventRepository.getEventRecorder().recordEntityEvent(commandDto, System.currentTimeMillis(), Optional.empty(), entityEvent -> new DefaultConcurrencyResolver());
+        return commandDto;
     }
 
-    @AfterReturning(value = "this(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", returning = "retVal")
-    public void afterReturning(Object retVal) {
+    @AfterReturning(value = "this(com.kloia.eventapis.api.CommandHandler) && @annotation(command)", returning = "retVal")
+    public void afterReturning(Command command, Object retVal) {
         log.debug("AfterReturning:" + (retVal == null ? "" : retVal.toString()));
         operationContext.clearCommandContext();
     }
 
-    @AfterThrowing(value = "this(com.kloia.eventapis.api.CommandHandler+) && execution(public * *(..))", throwing = "exception")
-    public void afterThrowing(Exception exception) {
+    @AfterThrowing(value = "this(com.kloia.eventapis.api.CommandHandler) && @annotation(command)", throwing = "exception")
+    public void afterThrowing(Command command, Exception exception) {
         try {
             log.info("afterThrowing Command: " + exception);
             kafkaOperationRepository.failOperation(operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));

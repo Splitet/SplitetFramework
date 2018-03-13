@@ -1,5 +1,6 @@
 package com.kloia.sample.commands;
 
+import com.kloia.eventapis.api.Command;
 import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.RollbackSpec;
@@ -28,7 +29,7 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-public class ProcessOrderCommand implements CommandHandler<ProcessOrderCommandDto> {
+public class ProcessOrderCommand implements CommandHandler {
     private final EventRepository eventRepository;
     private final ViewQuery<Orders> orderQuery;
 
@@ -38,19 +39,10 @@ public class ProcessOrderCommand implements CommandHandler<ProcessOrderCommandDt
         this.orderQuery = orderQuery;
     }
 
-    @Override
-    public EventRepository getDefaultEventRepository() {
-        return eventRepository;
-    }
-
     @RequestMapping(value = "/order/{orderId}/process", method = RequestMethod.POST)
+    @Command
     public EventKey process(@PathVariable("orderId") String orderId, @RequestBody @Valid ProcessOrderCommandDto dto) throws Exception {
         dto.setOrderId(orderId);
-        return this.execute(dto);
-    }
-
-    @Override
-    public EventKey execute(@RequestBody ProcessOrderCommandDto dto) throws Exception {
         Orders order = orderQuery.queryEntity(dto.getOrderId());
 
         if (order.getState() == OrderState.INITIAL) {

@@ -1,5 +1,6 @@
 package com.kloia.sample.commands;
 
+import com.kloia.eventapis.api.Command;
 import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.ViewQuery;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-public class CreateStockCommandHandler implements CommandHandler<CreateStockCommandDto> {
+public class CreateStockCommandHandler implements CommandHandler {
 
     @Autowired
     private EventRepository eventRepository;
@@ -33,13 +34,8 @@ public class CreateStockCommandHandler implements CommandHandler<CreateStockComm
     @Autowired
     private AddStockCommandHandler addStockCommandHandler;
 
-    @Override
-    public EventRepository getDefaultEventRepository() {
-        return eventRepository;
-    }
-
-    @Override
     @RequestMapping(value = "/stock/create", method = RequestMethod.POST)
+    @Command
     public EventKey execute(@RequestBody CreateStockCommandDto dto) throws Exception {
         StockCreatedEvent stockCreatedEvent = new StockCreatedEvent();
         BeanUtils.copyProperties(dto, stockCreatedEvent);
