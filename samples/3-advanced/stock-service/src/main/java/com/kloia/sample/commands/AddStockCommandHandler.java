@@ -36,7 +36,7 @@ public class AddStockCommandHandler implements CommandHandler {
 
 
     @RequestMapping(value = "/stock/{stockId}/add", method = RequestMethod.POST)
-    @Command
+    @Command()
     public EventKey execute(String stockId, @RequestBody AddStockCommandDto dto) throws Exception {
         dto.setStockId(stockId);
         Stock stock = stockQuery.queryEntity(dto.getStockId());
@@ -44,7 +44,8 @@ public class AddStockCommandHandler implements CommandHandler {
         if (dto.getStockToAdd() > 1000000)
             throw new IllegalArgumentException("Invalid Stock to Add");
 
-        return eventRepository.recordAndPublish(stock.getEventKey(), new StockAddedEvent(dto.getStockToAdd()));
+        EventKey eventKey = eventRepository.recordAndPublish(stock.getEventKey(), new StockAddedEvent(dto.getStockToAdd()));
+        return eventKey;
     }
 
     @Component

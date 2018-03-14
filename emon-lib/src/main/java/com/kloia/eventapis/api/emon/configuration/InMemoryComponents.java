@@ -8,25 +8,29 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.spring.context.SpringManagedContext;
+import com.kloia.eventapis.api.emon.domain.Topic;
+import com.kloia.eventapis.api.emon.domain.Topology;
+import com.kloia.eventapis.api.emon.service.OperationExpirationListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Configuration
+@Import({InMemoryConfig.class,InMemoryInterfacesConfig.class})
 @Slf4j
-public class Components {
+public class InMemoryComponents {
 
     public static final int OPERATIONS_MAX_TTL_INSEC = 60000;
     public static final String OPERATIONS_MAP_NAME = "operations";
+    public static final String OPERATIONS_MAP_HISTORY_NAME = "operations-history";
     public static final String TOPICS_MAP_NAME = "topics";
 
     @Value("${emon.hazelcast.group.name:'emon'}")
@@ -46,18 +50,26 @@ public class Components {
 
     @Bean
     public Config config() {
-        MapConfig mapConfig = new MapConfig();
-        mapConfig.setTimeToLiveSeconds(OPERATIONS_MAX_TTL_INSEC);
-        mapConfig.setMapIndexConfigs(
-                Arrays.asList(
-                        new MapIndexConfig("startTime", true),
-                        new MapIndexConfig("operationState", true)
-                )
-        );
-        Map<String, MapConfig> mapConfigs = new HashMap<>();
-        mapConfigs.put(OPERATIONS_MAP_NAME, mapConfig);
-        mapConfigs.put(TOPICS_MAP_NAME, new MapConfig());
         Config config = new Config();
+
+        List<MapIndexConfig> indexes = Arrays.asList(
+                new MapIndexConfig("startTime", true),
+                new MapIndexConfig("operationState", true)
+        );
+
+        config.addMapConfig(new MapConfig()
+                .setTimeToLiveSeconds(OPERATIONS_MAX_TTL_INSEC)
+                .setMapIndexConfigs(indexes)
+                .setName(OPERATIONS_MAP_NAME)
+        );
+
+        config.addMapConfig(new MapConfig()
+                .setMapIndexConfigs(indexes)
+                .setName(OPERATIONS_MAP_HISTORY_NAME)
+        );
+        config.addMapConfig(new MapConfig()
+                .setName(TOPICS_MAP_NAME)
+        );
         /*
         config.setExecutorConfigs(Collections.singletonMap("default",new ExecutorConfig("default",2)));
         config.setProperty("hazelcast.event.thread.count","2");
@@ -77,16 +89,9 @@ public class Components {
         }
         config.setGroupConfig(groupConfig);
         config.setInstanceName(artifactId);
-        config.setMapConfigs(mapConfigs);
         return config;
     }
 
-    //    @Bean
-//    @Primary
-//    @DependsOn({"adminClient","adminToolsClient"})
-//    public HazelcastInstance hazelcastInstance(Config config) {
-//        return new HazelcastInstanceFactory(config).getHazelcastInstance();
-//    }
     @Bean
     public SpringManagedContext managedContext() {
         return new SpringManagedContext();
@@ -94,24 +99,30 @@ public class Components {
 
     @Bean
     @Primary
-    @DependsOn({"adminClient", "adminToolsClient"})
     public HazelcastInstance hazelcastInstance(Config config, SpringManagedContext springManagedContext) {
-//        BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(SpringManagedContext.class);
-//        builder.setScope("prototype");
-//        builder.setLazyInit(true);
-//        config.addPropertyValue("managedContext", builder.getBeanDefinition());
-//        springManagedContext.set
         config.setManagedContext(springManagedContext);
         return Hazelcast.newHazelcastInstance(config);
     }
 
     @Bean
-    public IMap operationsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
-        return hazelcastInstance.getMap(OPERATIONS_MAP_NAME);
+    public IMap<String, Topology> operationsHistoryMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
+        return hazelcastInstance.getMap(OPERATIONS_MAP_HISTORY_NAME);
     }
 
     @Bean
-    public IMap topicsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
+    public OperationExpirationListener operationExpirationListener(@Autowired @Qualifier("operationsHistoryMap") IMap<String, Topology> operationsHistoryMap) {
+        return new OperationExpirationListener(operationsHistoryMap);
+    }
+
+    @Bean
+    public IMap<String, Topology> operationsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance, OperationExpirationListener operationExpirationListener) {
+        IMap<String, Topology> operationsMap = hazelcastInstance.getMap(OPERATIONS_MAP_NAME);
+        operationsMap.addEntryListener(operationExpirationListener, true);
+        return operationsMap;
+    }
+
+    @Bean
+    public IMap<String, Topic> topicsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
         return hazelcastInstance.getMap(TOPICS_MAP_NAME);
     }
 }

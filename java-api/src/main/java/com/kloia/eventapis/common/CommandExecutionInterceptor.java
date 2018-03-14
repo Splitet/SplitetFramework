@@ -63,7 +63,7 @@ public class CommandExecutionInterceptor {
         }
         try {
             Field declaredField = commandHandler.getClass().getDeclaredField(command.eventRepository());
-            if (declaredField.isAccessible())
+            if (!declaredField.isAccessible())
                 declaredField.setAccessible(true);
             eventRepository = (EventRepository) declaredField.get(commandHandler);
         } catch (IllegalAccessException | NoSuchFieldException e) {

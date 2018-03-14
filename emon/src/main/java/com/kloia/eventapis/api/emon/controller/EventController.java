@@ -1,14 +1,14 @@
 package com.kloia.eventapis.api.emon.controller;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.PagingPredicate;
+import com.kloia.eventapis.api.emon.domain.Topic;
 import com.kloia.eventapis.api.emon.domain.Topology;
+import com.kloia.eventapis.api.emon.dto.ResponseDto;
 import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.exception.EventStoreException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -18,14 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
-
-import static com.kloia.eventapis.api.emon.configuration.Components.OPERATIONS_MAP_NAME;
 
 /**
  * Created by zeldalozdemir on 22/01/2017.
@@ -35,17 +32,12 @@ import static com.kloia.eventapis.api.emon.configuration.Components.OPERATIONS_M
 @RequestMapping(value = "/operations")
 public class EventController {
 
-
     @Autowired
-    @Qualifier("hazelcastInstance")
-    private HazelcastInstance hazelcastInstance;
-
     private IMap<String, Topology> operationsMap;
-
-    @PostConstruct
-    public void init() {
-        operationsMap = hazelcastInstance.getMap(OPERATIONS_MAP_NAME);
-    }
+    @Autowired
+    private IMap<String, Topology> operationsHistoryMap;
+    @Autowired
+    private IMap<String, Topic> topicsMap;
 
     @RequestMapping(value = "/{opId}", method = RequestMethod.GET)
     public ResponseEntity<?> getOperation(@PathVariable(OperationContext.OP_ID) String opId) throws IOException, EventStoreException {
@@ -64,6 +56,31 @@ public class EventController {
                     new PagingPredicate<>((Comparator<Map.Entry<String, Topology>> & Serializable) (o1, o2) -> -1 * Long.compare(o1.getValue().getStartTime(), o2.getValue().getStartTime()),
                             pageable.getPageSize()));
             return new ResponseEntity<>(values, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @RequestMapping(value = "/_all", method = RequestMethod.GET)
+    public ResponseEntity<ResponseDto> getTopics(@PageableDefault Pageable pageable) {
+        try {
+            ResponseDto responseDto = new ResponseDto();
+            responseDto.setTopics(topicsMap.entrySet());
+            responseDto.setOperations(operationsMap.entrySet());
+            return new ResponseEntity<>(responseDto, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @RequestMapping(value = "/_history", method = RequestMethod.GET)
+    public ResponseEntity<ResponseDto> getTopicsHistory(@PageableDefault Pageable pageable) {
+        try {
+            ResponseDto responseDto = new ResponseDto();
+            responseDto.setOperations(operationsHistoryMap.entrySet());
+            return new ResponseEntity<>(responseDto, HttpStatus.OK);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return ResponseEntity.status(500).build();

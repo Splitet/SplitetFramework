@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 @Configuration
 @Import(EventApisConfiguration.class)
 @Slf4j
-public class TopicServiceConfiguration {
+public class TopologyConfiguration {
 
     @Autowired
     private EventApisConfiguration eventApisConfiguration;

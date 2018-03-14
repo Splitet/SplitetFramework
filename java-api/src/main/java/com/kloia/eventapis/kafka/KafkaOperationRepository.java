@@ -45,8 +45,9 @@ public class KafkaOperationRepository implements IOperationRepository {
     public void failOperation(String eventId, SerializableConsumer<Event> action) {
         Operation operation = new Operation();
         operation.setSender(senderGroupId);
-        operation.setParentId(operationContext.getContext().getParentOpId());
         operation.setAggregateId(eventId);
+        operation.setUserContext(userContext.getUserContext());
+        operation.setContext(operationContext.getContext());
         operation.setTransactionState(TransactionState.TXN_FAILED);
         log.debug("Publishing Operation:" + operation.toString());
         operationsKafka.send(new ProducerRecord<>(Operation.OPERATION_EVENTS, operationContext.getContext().getOpId(), operation));
@@ -56,9 +57,10 @@ public class KafkaOperationRepository implements IOperationRepository {
     public void successOperation(String eventId, SerializableConsumer<Event> action) {
         Operation operation = new Operation();
         operation.setSender(senderGroupId);
-        operation.setParentId(operationContext.getContext().getParentOpId());
         operation.setAggregateId(eventId);
         operation.setTransactionState(TransactionState.TXN_SUCCEDEED);
+        operation.setUserContext(userContext.getUserContext());
+        operation.setContext(operationContext.getContext());
         log.debug("Publishing Operation:" + operation.toString());
         operationsKafka.send(new ProducerRecord<>(Operation.OPERATION_EVENTS, operationContext.getContext().getOpId(), operation));
     }
@@ -69,7 +71,7 @@ public class KafkaOperationRepository implements IOperationRepository {
         publishedEventWrapper.setUserContext(userContext.getUserContext());
         publishedEventWrapper.setSender(senderGroupId);
         log.debug("Publishing Topic:" + topic + " Event:" + publishedEventWrapper.toString());
-        eventsKafka.send(new ProducerRecord<>(topic, publishedEventWrapper.getContext().getOpId(), publishedEventWrapper));
+        eventsKafka.send(new ProducerRecord<>(topic, operationContext.getContext().getOpId(), publishedEventWrapper));
     }
 
 }

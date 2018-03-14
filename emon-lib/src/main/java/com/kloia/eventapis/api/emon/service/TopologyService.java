@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
-import com.hazelcast.map.listener.EntryExpiredListener;
-import com.kloia.eventapis.api.emon.configuration.Components;
 import com.kloia.eventapis.api.emon.domain.BaseEvent;
 import com.kloia.eventapis.api.emon.domain.ProducedEvent;
+import com.kloia.eventapis.api.emon.domain.Topic;
 import com.kloia.eventapis.api.emon.domain.Topology;
+import com.kloia.eventapis.common.Context;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventType;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
@@ -24,39 +24,39 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class TopologyService implements MessageListener<String, Serializable> {
+    public static final int GRACE_PERIOD_IN_MILLIS = 3000;
     @Autowired
     @Qualifier("hazelcastInstance")
     private HazelcastInstance hazelcastInstance;
-    @Autowired
-    private TopicService topicService;
 
+    @Autowired
+    private IMap<String,Topic> topicsMap;
+
+    @Autowired
     private IMap<String, Topology> operationsMap;
+
+    @Autowired
     private ObjectMapper objectMapper;
+
     private ObjectReader eventReader;
 
+    private static long calculateTimeout(Context context) {
+        long diff = System.currentTimeMillis() - context.getStartTime();
+        return context.getCommandTimeout() + GRACE_PERIOD_IN_MILLIS;
+    }
 
     @PostConstruct
     public void init() {
-        operationsMap = hazelcastInstance.getMap(Components.OPERATIONS_MAP_NAME);
-        operationsMap.addEntryListener((EntryExpiredListener<String, Topology>) event -> {
-            event.getKey();
-            Topology topology = event.getOldValue();
-            if (!topology.isFinished()) {
-                log.error("Topology Doesn't Finished:" + topology.toString());
-            } else
-                log.info("Topology OK:" + topology.toString());
-
-        }, true);
-        this.objectMapper = new ObjectMapper();
         eventReader = objectMapper.readerFor(BaseEvent.class);
     }
-
 
     private void onEventMessage(String topic, String key, PublishedEventWrapper eventWrapper) {
         try {
@@ -65,8 +65,11 @@ public class TopologyService implements MessageListener<String, Serializable> {
                 return;
             BaseEvent baseEvent = eventReader.readValue(eventWrapper.getEvent());
 
-            List<String> targetList = topicService.getTopicServiceList().get(topic);
+            List<String> targetList = new ArrayList<>(topicsMap.get(topic).getServiceDataHashMap().keySet());
 
+            operationsMap.putIfAbsent(key,
+                    new Topology(eventWrapper.getContext().getOpId(), eventWrapper.getContext().getParentOpId()),
+                    calculateTimeout(eventWrapper.getContext()), TimeUnit.MILLISECONDS);
             operationsMap.executeOnKey(key, new EventTopologyUpdater(
                     eventWrapper, baseEvent.getEventType(), baseEvent.getSender(), targetList, topic));
 
@@ -78,6 +81,9 @@ public class TopologyService implements MessageListener<String, Serializable> {
     private void onOperationMessage(String key, Operation operation) {
         try {
             log.info(key + " - " + operation.getSender() + " Data:" + operation);
+            operationsMap.putIfAbsent(key,
+                    new Topology(key, operation.getParentId()),
+                    calculateTimeout(operation.getContext()), TimeUnit.MILLISECONDS);
             operationsMap.executeOnKey(key, new OperationTopologyUpdater(operation));
         } catch (Exception e) {
             log.error("Error While Handling Event:" + e.getMessage(), e);
@@ -125,7 +131,7 @@ public class TopologyService implements MessageListener<String, Serializable> {
                 if (eventType == EventType.OP_START || eventType == EventType.OP_SINGLE) {
                     topology.setInitiatorCommand(eventWrapper.getContext().getCommandContext());
                     topology.setInitiatorService(eventWrapper.getSender());
-                    topology.setCommandTimeout(eventWrapper.getContext().getCommandTimeout());
+                    topology.setCommandTimeout(calculateTimeout(eventWrapper.getContext()));
                     topology.setStartTime(eventWrapper.getContext().getStartTime());
                 }
 
@@ -169,4 +175,5 @@ public class TopologyService implements MessageListener<String, Serializable> {
             }
         }
     }
+
 }

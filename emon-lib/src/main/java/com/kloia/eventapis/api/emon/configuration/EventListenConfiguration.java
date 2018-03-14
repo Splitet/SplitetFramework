@@ -1,44 +1,47 @@
-package com.kloia.eventapis.api.emon.service;
+package com.kloia.eventapis.api.emon.configuration;
 
-import com.kloia.eventapis.api.emon.configuration.StoreConfiguration;
+import com.kloia.eventapis.api.emon.service.TopologyService;
 import com.kloia.eventapis.kafka.JsonDeserializer;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.Operation;
+import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.config.ContainerProperties;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
 
-@Service
+@Configuration
 @Slf4j
-public class EventListenService {
+public class EventListenConfiguration implements InitializingBean {
 
     @Autowired
-    private StoreConfiguration storeConfiguration;
-    @Autowired
-    private TopicService topicService;
+    private EventApisConfiguration eventApisConfiguration;
+
     @Autowired
     private TopologyService topologyService;
+    @Autowired
+    private Pattern eventTopicRegex;
+
 
     private ConcurrentMessageListenerContainer<String, PublishedEventWrapper> messageListenerContainer;
     private ConcurrentMessageListenerContainer<String, Operation> operationListenerContainer;
 
-
-    //    @PostConstruct
-    public void startListen() throws ExecutionException, InterruptedException {
+    @Override
+    public void afterPropertiesSet() {
         startEvents();
         startOperations();
     }
 
     private void startOperations() {
-        Map<String, Object> consumerProperties = storeConfiguration.getEventBus().buildConsumerProperties();
+        Map<String, Object> consumerProperties = eventApisConfiguration.getEventBus().buildConsumerProperties();
 
         DefaultKafkaConsumerFactory<String, Operation> operationConsumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProperties, new StringDeserializer(), new JsonDeserializer<>(Operation.class));
@@ -47,23 +50,21 @@ public class EventListenService {
         operationContainerProperties.setMessageListener(topologyService);
         operationListenerContainer = new ConcurrentMessageListenerContainer<>(operationConsumerFactory,
                 operationContainerProperties);
-        operationListenerContainer.setBeanName("OpStore-Operations");
+        operationListenerContainer.setBeanName("emon-operations");
         operationListenerContainer.start();
     }
 
-    private void startEvents() throws ExecutionException, InterruptedException {
-        Map<String, Object> consumerProperties = storeConfiguration.getEventBus().buildConsumerProperties();
+    private void startEvents() {
+        Map<String, Object> consumerProperties = eventApisConfiguration.getEventBus().buildConsumerProperties();
 
         DefaultKafkaConsumerFactory<String, PublishedEventWrapper> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProperties, new StringDeserializer(), new JsonDeserializer<>(PublishedEventWrapper.class));
 
-        String[] topics = topicService.queryTopicListAsArr();
-        log.info("Starting to Listen Events:" + String.join(",", topics));
-        ContainerProperties containerProperties = new ContainerProperties(topics);
+        ContainerProperties containerProperties = new ContainerProperties(eventTopicRegex);
         containerProperties.setMessageListener(topologyService);
         messageListenerContainer = new ConcurrentMessageListenerContainer<>(consumerFactory,
                 containerProperties);
-        messageListenerContainer.setBeanName("OpStore-Events");
+        messageListenerContainer.setBeanName("emon-events");
         messageListenerContainer.start();
     }
 
@@ -72,4 +73,5 @@ public class EventListenService {
         if (messageListenerContainer != null && messageListenerContainer.isRunning())
             messageListenerContainer.stop();
     }
+
 }
