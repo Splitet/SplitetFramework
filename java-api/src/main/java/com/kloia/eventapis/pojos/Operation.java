@@ -25,7 +25,7 @@ public class Operation implements Serializable {
     }
 
     /**
-     * Backward compatible
+     * Backward compatible.
      *
      * @return
      */
