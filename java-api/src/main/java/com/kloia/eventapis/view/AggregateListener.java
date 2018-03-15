@@ -1,7 +1,6 @@
 package com.kloia.eventapis.view;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.reflect.TypeToken;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.RollbackSpec;
 import com.kloia.eventapis.api.ViewQuery;
@@ -13,7 +12,6 @@ import com.kloia.eventapis.pojos.TransactionState;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
@@ -38,13 +36,8 @@ public class AggregateListener<T extends Entity> {
         this.objectMapper = objectMapper;
         rollbackSpecMap = new HashMap<>();
         rollbackSpecs.forEach(rollbackSpec -> {
-            ParameterizedType type = (ParameterizedType) TypeToken.of(rollbackSpec.getClass()).getSupertype(RollbackSpec.class).getType();
-            try {
-                Class<RecordedEvent> publishedEventClass = (Class<RecordedEvent>) Class.forName(type.getActualTypeArguments()[0].getTypeName());
-                rollbackSpecMap.put(publishedEventClass.getSimpleName(), new AbstractMap.SimpleEntry<>(publishedEventClass, rollbackSpec));
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            Map.Entry<String, Class<RecordedEvent>> entry = rollbackSpec.getNameAndClass();
+            rollbackSpecMap.put(entry.getKey(), new AbstractMap.SimpleEntry<>(entry.getValue(), rollbackSpec));
         });
     }
 

@@ -3,6 +3,7 @@ package com.kloia.sample.commands;
 import com.kloia.eventapis.api.Command;
 import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventRepository;
+import com.kloia.eventapis.api.RollbackCommandSpec;
 import com.kloia.eventapis.api.RollbackSpec;
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.common.EventKey;
@@ -40,15 +41,14 @@ public class CancelOrderCommand implements CommandHandler {
 
     @RequestMapping(value = "/order/{orderId}/cancel", method = RequestMethod.POST)
     @Command
-    public EventKey execute(@PathVariable("orderId") String orderId, @RequestBody @Valid ProcessOrderCommandDto dto) throws Exception {
-        dto.setOrderId(orderId);
-        Orders order = orderQuery.queryEntity(dto.getOrderId());
+    public EventKey execute(@PathVariable("orderId") String orderId) throws Exception {
+        Orders order = orderQuery.queryEntity(orderId);
 
         if (order.getState() == OrderState.PAID) {
             WaitingStockReleaseEvent waitingStockReleaseEvent = new WaitingStockReleaseEvent(order.getStockId(), order.getReservedStockVersion());
             return eventRepository.recordAndPublish(order, waitingStockReleaseEvent);
         } else
-            throw new EventStoreException("Order state is not valid for this Operation: " + dto);
+            throw new EventStoreException("Order state is not valid for this Operation: " + orderId);
     }
 
     @Component
@@ -67,6 +67,14 @@ public class CancelOrderCommand implements CommandHandler {
         @Override
         public void rollback(WaitingStockReleaseEvent event) {
             log.warn("Rollback WaitingStockReleaseEvent for :" + event);
+        }
+    }
+
+    @Component
+    public static class CancelOrderCommandRollback implements RollbackCommandSpec<CancelOrderCommand> {
+        public void rollback(String orderId) {
+            log.warn("Rollback CancelOrderCommand for :" + orderId);
+
         }
     }
 }

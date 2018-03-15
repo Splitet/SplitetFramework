@@ -9,6 +9,7 @@ import com.kloia.eventapis.cassandra.ConcurrentEventException;
 import com.kloia.eventapis.cassandra.DefaultConcurrencyResolver;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
+import com.kloia.eventapis.pojos.CommandRecord;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -46,21 +47,27 @@ public class CommandExecutionInterceptor {
         long commandTimeout = command.commandTimeout();
         operationContext.startNewContext(commandTimeout); // Ability to generate new Context
         operationContext.setCommandContext(target.getClass().getSimpleName());
-        CommandDto commandDto = recordCommand(jp, commandHandler, command);
-
+        CommandRecord commandDto = recordCommand(jp, commandHandler, command);
         log.debug("before method:" + (commandDto == null ? "" : commandDto.toString()));
     }
 
-    private CommandDto recordCommand(JoinPoint jp, CommandHandler commandHandler, Command command) throws ConcurrentEventException, EventStoreException {
-        EventRepository eventRepository = null;
+    private CommandRecord recordCommand(JoinPoint jp, CommandHandler commandHandler, Command command) throws ConcurrentEventException, EventStoreException {
+        EventRepository eventRepository;
         CommandDto commandDto = null;
-        for (Object arg : jp.getArgs()) {
-            if (arg instanceof CommandDto)
-                commandDto = (CommandDto) arg;
+        CommandRecord commandRecord = new CommandRecord();
+        commandRecord.setEventName(commandHandler.getClass().getSimpleName());
+        for (int i = 0; i < jp.getArgs().length; i++) {
+            Object arg = jp.getArgs()[i];
+            commandRecord.getParameters().put(i, arg);
         }
-        if (commandDto == null) {
-            log.warn("Command" + jp.getTarget().getClass().getSimpleName() + " does not have CommandDto");
-        }
+//        for (Object arg : jp.getArgs()) {
+//            if (arg instanceof CommandDto)
+//                commandDto = (CommandDto) arg;
+//        }
+//        if (commandDto == null) {
+//            log.warn("Command" + jp.getTarget().getClass().getSimpleName() + " does not have CommandDto");
+//            return null;
+//        }
         try {
             Field declaredField = commandHandler.getClass().getDeclaredField(command.eventRepository());
             if (!declaredField.isAccessible())
@@ -68,10 +75,13 @@ public class CommandExecutionInterceptor {
             eventRepository = (EventRepository) declaredField.get(commandHandler);
         } catch (IllegalAccessException | NoSuchFieldException e) {
             log.error("Error while accessing EventRecorder(" + command.eventRepository() + ") of Command:" + commandHandler.getClass().getSimpleName() + " message: " + e.getMessage());
+            return null;
         }
-        if (commandDto != null && eventRepository != null)
-            eventRepository.getEventRecorder().recordEntityEvent(commandDto, System.currentTimeMillis(), Optional.empty(), entityEvent -> new DefaultConcurrencyResolver());
-        return commandDto;
+        if (eventRepository != null) {
+            eventRepository.getEventRecorder().recordEntityEvent(commandRecord, System.currentTimeMillis(), Optional.empty(), entityEvent -> new DefaultConcurrencyResolver());
+        } else
+            log.error("Error while accessing EventRecorder(" + command.eventRepository() + " is null ) of Command:" + commandHandler.getClass().getSimpleName());
+        return commandRecord;
     }
 
     @AfterReturning(value = "this(com.kloia.eventapis.api.CommandHandler) && @annotation(command)", returning = "retVal")

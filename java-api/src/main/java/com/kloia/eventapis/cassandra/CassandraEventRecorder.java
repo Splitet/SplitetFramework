@@ -111,7 +111,7 @@ public class CassandraEventRecorder implements EventRecorder {
 
 
         EntityEvent entityEvent = new EntityEvent(eventKey,
-                operationContext.getContextOpId(), new Date(opDate), event.getClass().getSimpleName(),
+                operationContext.getContextOpId(), new Date(opDate), event.getEventName(),
                 EventState.CREATED, userContext.getAuditInfo(), eventData);
 
         while (true) {

@@ -3,6 +3,7 @@ package com.kloia.sample.commands;
 import com.kloia.eventapis.api.Command;
 import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventRepository;
+import com.kloia.eventapis.api.RollbackCommandSpec;
 import com.kloia.eventapis.api.RollbackSpec;
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.common.EventKey;
@@ -69,10 +70,9 @@ public class AddStockCommandHandler implements CommandHandler {
     }
 
     @Component
-    public static class AddStockCommandRollbackSpec implements RollbackSpec<AddStockCommandDto> {
+    public static class AddStockCommandRollbackSpec implements RollbackCommandSpec<AddStockCommandHandler> {
 
-        @Override
-        public void rollback(AddStockCommandDto event) {
+        public void rollback(String stockId, AddStockCommandDto event) {
             log.warn("Rolling back AddStockCommandDto for: " + event.toString());
         }
     }
