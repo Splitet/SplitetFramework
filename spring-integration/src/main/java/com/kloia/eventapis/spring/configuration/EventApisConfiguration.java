@@ -17,6 +17,7 @@ public class EventApisConfiguration {
     private EventStoreConfig storeConfig;
     private KafkaProperties eventBus;
     private Map<String, String> eventRecords;
+    private String baseEventsPackage;
 
     public String getTableNameForEvents(String eventName) {
         return getEventRecords().getOrDefault(eventName, eventName);

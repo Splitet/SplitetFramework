@@ -46,9 +46,12 @@ import java.util.Map;
 @Import(SpringKafkaOpListener.class)
 public class EventApisFactory {
 
-
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    private EventApisConfiguration eventApisConfiguration;
+
     @Autowired
     private CassandraSession cassandraSession;
 
@@ -58,7 +61,7 @@ public class EventApisFactory {
     }
 
     @Bean
-    CassandraSession cassandraSession(EventApisConfiguration eventApisConfiguration) {
+    CassandraSession cassandraSession() {
         return new CassandraSession(eventApisConfiguration.getStoreConfig());
     }
 
@@ -102,8 +105,7 @@ public class EventApisFactory {
     }
 
     @Bean
-    public KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory(EventApisConfiguration eventApisConfiguration,
-                                                                           @Autowired OperationContext operationContext,
+    public KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory(@Autowired OperationContext operationContext,
                                                                            IUserContext userContext) {
         KafkaProperties eventBus = eventApisConfiguration.getEventBus();
         return new KafkaOperationRepositoryFactory(eventBus, userContext, operationContext);
@@ -120,8 +122,7 @@ public class EventApisFactory {
     }
 
     @Bean
-    public ConsumerFactory<String, PublishedEventWrapper> kafkaConsumerFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory,
-                                                                               EventApisConfiguration eventApisConfiguration) {
+    public ConsumerFactory<String, PublishedEventWrapper> kafkaConsumerFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory) {
         return new EventApisConsumerFactory<String, PublishedEventWrapper>(eventApisConfiguration, true) {
             @Override
             public Consumer<String, PublishedEventWrapper> createConsumer() {
@@ -131,8 +132,7 @@ public class EventApisFactory {
     }
 
     @Bean
-    public ConsumerFactory<String, Operation> kafkaOperationsFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory,
-                                                                     EventApisConfiguration eventApisConfiguration) {
+    public ConsumerFactory<String, Operation> kafkaOperationsFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory) {
         return new EventApisConsumerFactory<String, Operation>(eventApisConfiguration, false) {
             @Override
             public Consumer<String, Operation> createConsumer() {
@@ -143,7 +143,7 @@ public class EventApisFactory {
 
     @Bean({"eventsKafkaListenerContainerFactory", "kafkaListenerContainerFactory"})
     public ConcurrentKafkaListenerContainerFactory<String, PublishedEventWrapper> eventsKafkaListenerContainerFactory(
-            EventApisConfiguration eventApisConfiguration, EventMessageConverter eventMessageConverter, ConsumerFactory<String, PublishedEventWrapper> consumerFactory) {
+            EventMessageConverter eventMessageConverter, ConsumerFactory<String, PublishedEventWrapper> consumerFactory) {
 
         ConcurrentKafkaListenerContainerFactory<String, PublishedEventWrapper> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
