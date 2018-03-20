@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@Import({InMemoryConfig.class,InMemoryInterfacesConfig.class})
+@Import({InMemoryConfig.class, InMemoryInterfacesConfig.class, InMemoryUserCodeDeploymentConfig.class})
 @Slf4j
 public class InMemoryComponents {
 
@@ -43,6 +43,9 @@ public class InMemoryComponents {
 
     @Autowired(required = false)
     private InMemoryInterfacesConfig inMemoryInterfacesConfig;
+
+    @Autowired(required = false)
+    private InMemoryUserCodeDeploymentConfig inMemoryUserCodeDeploymentConfig;
 
     @Value("${eventapis.eventBus.consumer.groupId}")
 //    @Value("${info.build.artifact}")
@@ -87,6 +90,9 @@ public class InMemoryComponents {
         if (inMemoryInterfacesConfig != null) {
             config.getNetworkConfig().setInterfaces(inMemoryInterfacesConfig);
         }
+        if (inMemoryUserCodeDeploymentConfig != null)
+            config.setUserCodeDeploymentConfig(inMemoryUserCodeDeploymentConfig);
+
         config.setGroupConfig(groupConfig);
         config.setInstanceName(artifactId);
         return config;

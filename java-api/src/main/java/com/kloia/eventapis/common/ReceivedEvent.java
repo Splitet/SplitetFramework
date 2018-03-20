@@ -11,11 +11,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class ReceivedEvent extends PublishedEvent {
+public abstract class ReceivedEvent implements RecordedEvent {
+
+    private EventKey sender;
 
     private EventType eventType;
 
-    public final EventType getEventType() {
+    public EventType getEventType() {
         return eventType;
     }
 }

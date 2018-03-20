@@ -38,7 +38,7 @@ public class TopologyService implements MessageListener<String, Serializable> {
     private HazelcastInstance hazelcastInstance;
 
     @Autowired
-    private IMap<String,Topic> topicsMap;
+    private IMap<String, Topic> topicsMap;
 
     @Autowired
     private IMap<String, Topology> operationsMap;

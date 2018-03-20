@@ -42,7 +42,7 @@ class TopicEndOffsetSchedule implements Runnable, NamedTask, Serializable {
             map.forEach((topicPartition, endOffset) -> topicsMap.executeOnKey(topicPartition.topic(), new EndOffsetSetter(endOffset)));
             log.debug("collectEndOffsets:" + map.toString());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         stopWatch.stop();
         log.debug("TopicEndOffsetSchedule:" + topicsMap.entrySet());
@@ -70,6 +70,7 @@ class TopicEndOffsetSchedule implements Runnable, NamedTask, Serializable {
         public EndOffsetSetter(Long endOffset) {
             this.endOffset = endOffset;
         }
+
         @Override
         public Object process(Map.Entry<String, Topic> entry) {
             Topic topic = entry.getValue();

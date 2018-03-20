@@ -1,7 +1,6 @@
 package com.kloia.eventapis.spring.configuration;
 
 import com.kloia.eventapis.common.PublishedEvent;
-import com.kloia.eventapis.common.ReceivedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -42,7 +41,7 @@ public class AutomaticTopicConfiguration {
             stopWatch.start("CheckAndCreateTopics");
             ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
             provider.addIncludeFilter(new AssignableTypeFilter(PublishedEvent.class));
-            provider.addExcludeFilter(new AssignableTypeFilter(ReceivedEvent.class));
+//            provider.addExcludeFilter(new AssignableTypeFilter(ReceivedEvent.class));
             Set<BeanDefinition> candidateComponents = provider.findCandidateComponents(eventApisConfiguration.getBaseEventsPackage());
             int numberOfNodes = 1;
             try {

@@ -9,7 +9,6 @@ import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.EntityFunctionSpec;
-import com.kloia.sample.dto.command.ProcessOrderCommandDto;
 import com.kloia.sample.dto.event.WaitingStockReleaseEvent;
 import com.kloia.sample.model.OrderState;
 import com.kloia.sample.model.Orders;
@@ -17,12 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
 
 /**
  * Created by zeldalozdemir on 23/02/2017.

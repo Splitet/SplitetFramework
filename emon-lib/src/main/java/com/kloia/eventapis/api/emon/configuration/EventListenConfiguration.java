@@ -27,6 +27,7 @@ public class EventListenConfiguration implements InitializingBean {
 
     @Autowired
     private TopologyService topologyService;
+
     @Autowired
     private Pattern eventTopicRegex;
 

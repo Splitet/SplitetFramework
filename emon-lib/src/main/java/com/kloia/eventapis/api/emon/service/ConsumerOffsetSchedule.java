@@ -114,8 +114,7 @@ class ConsumerOffsetSchedule implements Runnable, NamedTask, Serializable {
             if (serviceData == null) {
                 serviceData = new ServiceData(consumer, offset);
                 topic.getServiceDataHashMap().put(consumer, serviceData);
-            }
-            else
+            } else
                 serviceData.setOffset(offset);
             entry.setValue(topic);
             return entry;

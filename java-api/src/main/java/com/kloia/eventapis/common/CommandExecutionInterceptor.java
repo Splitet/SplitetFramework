@@ -74,7 +74,7 @@ public class CommandExecutionInterceptor {
                 declaredField.setAccessible(true);
             eventRepository = (EventRepository) declaredField.get(commandHandler);
         } catch (IllegalAccessException | NoSuchFieldException e) {
-            log.error("Error while accessing EventRecorder(" + command.eventRepository() + ") of Command:" + commandHandler.getClass().getSimpleName() + " message: " + e.getMessage());
+            log.error("Error while accessing EventRecorder(" + command.eventRepository() + ") of Command:" + commandHandler.getClass().getSimpleName() + " message: " + e.getMessage(), e);
             return null;
         }
         if (eventRepository != null) {

@@ -56,17 +56,17 @@ public class TopicServiceScheduler implements ApplicationListener<ApplicationRea
         try {
             scheduledExecutorService = hazelcastInstance.getScheduledExecutorService(this.getClass().getSimpleName());
             List<Member> schedulerMembers = hazelcastInstance.getCluster().getMembers().stream()
-                    .filter(member -> member.getBooleanAttribute("TopicServiceScheduler")).collect(Collectors.toList());
+                    .filter(member -> Boolean.TRUE.equals(member.getBooleanAttribute("TopicServiceScheduler"))).collect(Collectors.toList());
             try {
                 cancelScheduledTasks(listTopicSchedule);
                 scheduledExecutorService.scheduleOnMembersAtFixedRate(listTopicSchedule, schedulerMembers, 0, 10000, TimeUnit.MILLISECONDS);
 
                 cancelScheduledTasks(topicEndOffsetSchedule);
-                scheduledExecutorService.scheduleAtFixedRate(topicEndOffsetSchedule, 0, 500, TimeUnit.MILLISECONDS);
+                scheduledExecutorService.scheduleOnMembersAtFixedRate(topicEndOffsetSchedule, schedulerMembers, 0, 500, TimeUnit.MILLISECONDS);
 
 
                 cancelScheduledTasks(consumerOffsetSchedule);
-                scheduledExecutorService.scheduleAtFixedRate(consumerOffsetSchedule, 0, 500, TimeUnit.MILLISECONDS);
+                scheduledExecutorService.scheduleOnMembersAtFixedRate(consumerOffsetSchedule, schedulerMembers, 0, 500, TimeUnit.MILLISECONDS);
 
 
 //                log.info("Scheduled :" + future.getHandler().toUrn());

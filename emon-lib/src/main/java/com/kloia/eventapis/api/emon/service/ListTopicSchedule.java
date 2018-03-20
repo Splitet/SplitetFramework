@@ -2,6 +2,7 @@ package com.kloia.eventapis.api.emon.service;
 
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
+import com.hazelcast.query.Predicate;
 import com.hazelcast.scheduledexecutor.NamedTask;
 import com.hazelcast.spring.context.SpringAware;
 import com.kloia.eventapis.api.emon.domain.Topic;
@@ -48,7 +49,7 @@ class ListTopicSchedule implements Runnable, NamedTask, Serializable {
         try {
             Collection<String> topicNames = adminClient.listTopics().listings().get()
                     .stream().map(TopicListing::name).filter(this::shouldCollectEvent).collect(Collectors.toList());
-            topicsMap.removeAll(mapEntry -> topicNames.stream().noneMatch(topicName -> Objects.equals(topicName, mapEntry.getKey())));
+            topicsMap.removeAll(new RemoveTopicPredicate(topicNames));
 
             DescribeTopicsResult describeTopicsResult = adminClient.describeTopics(topicNames);
             describeTopicsResult.all().get().forEach(
@@ -60,7 +61,7 @@ class ListTopicSchedule implements Runnable, NamedTask, Serializable {
             log.warn("Error While trying to fetch Topic List " + e.getMessage(), e);
         }
         stopWatch.stop();
-        log.info("Topics:" + topicsMap.entrySet());
+        log.debug("Topics:" + topicsMap.entrySet());
         log.debug(stopWatch.prettyPrint());
     }
 
@@ -77,6 +78,15 @@ class ListTopicSchedule implements Runnable, NamedTask, Serializable {
     @Autowired
     public void setAdminClient(AdminClient adminClient) {
         this.adminClient = adminClient;
+    }
+
+    @Autowired
+    public void setEventTopicRegex(Pattern eventTopicRegex) {
+        this.eventTopicRegex = eventTopicRegex;
+    }
+
+    private boolean shouldCollectEvent(String topic) {
+        return topic != null && (eventTopicRegex.matcher(topic).matches() || topic.equals("operation-events"));
     }
 
     private static class SetTopicPartitionsProcessor extends AbstractEntryProcessor<String, Topic> {
@@ -97,13 +107,17 @@ class ListTopicSchedule implements Runnable, NamedTask, Serializable {
             return entry;
         }
     }
-    @Autowired
-    public void setEventTopicRegex(Pattern eventTopicRegex) {
-        this.eventTopicRegex = eventTopicRegex;
-    }
 
-    private boolean shouldCollectEvent(String topic) {
-        return topic != null && (eventTopicRegex.matcher(topic).matches() || topic.equals("operation-events"));
-    }
+    private static class RemoveTopicPredicate implements Predicate<String, Topic> {
+        private final Collection<String> topicNames;
 
+        public RemoveTopicPredicate(Collection<String> topicNames) {
+            this.topicNames = topicNames;
+        }
+
+        @Override
+        public boolean apply(Map.Entry<String, Topic> mapEntry) {
+            return topicNames.stream().noneMatch(topicName -> Objects.equals(topicName, mapEntry.getKey()));
+        }
+    }
 }
