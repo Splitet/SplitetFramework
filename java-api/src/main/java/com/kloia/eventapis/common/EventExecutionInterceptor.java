@@ -4,11 +4,9 @@ package com.kloia.eventapis.common;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 
 /**
  * Created by zeldalozdemir on 24/04/2017.

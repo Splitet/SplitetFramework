@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.common.Context;
 import com.kloia.eventapis.common.OperationContext;
-import com.kloia.eventapis.common.ReceivedEvent;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.errors.SerializationException;
