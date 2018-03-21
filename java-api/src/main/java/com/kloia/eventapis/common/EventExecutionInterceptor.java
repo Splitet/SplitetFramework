@@ -26,12 +26,12 @@ public class EventExecutionInterceptor {
         this.kafkaOperationRepository = kafkaOperationRepository;
     }
 
-    @Before("this(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..)) && args(object)")
+/*    @Before("this(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..)) && args(object)")
     public void before(JoinPoint jp, Object object) throws Throwable {
         String commandContext = object == null ? jp.getTarget().getClass().getSimpleName() : object.getClass().getSimpleName();
         operationContext.setCommandContext(commandContext);
         log.debug("before method:" + (object == null ? "" : object.toString()));
-    }
+    }*/
 
     @AfterReturning(value = "this(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", returning = "retVal")
     public void afterReturning(Object retVal) throws Throwable {
