@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,7 +40,12 @@ class TopicEndOffsetSchedule implements Runnable, NamedTask, Serializable {
                     topic -> topic.getValue().getPartitions().stream().map(partition -> new TopicPartition(topic.getKey(), partition))
             ).collect(Collectors.toList());
             java.util.Map<TopicPartition, Long> map = kafkaConsumer.endOffsets(collect);
-            map.forEach((topicPartition, endOffset) -> topicsMap.executeOnKey(topicPartition.topic(), new EndOffsetSetter(endOffset)));
+            java.util.Map<String, Long> result = new HashMap<>();
+            map.forEach((topicPartition, endOffset) -> {
+                if (!result.containsKey(topicPartition.topic()) || result.get(topicPartition.topic()) < endOffset)
+                    result.put(topicPartition.topic(), endOffset);
+            });
+            result.forEach((topic, endOffset) -> topicsMap.executeOnKey(topic, new EndOffsetSetter(endOffset)));
             log.debug("collectEndOffsets:" + map.toString());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -74,7 +80,8 @@ class TopicEndOffsetSchedule implements Runnable, NamedTask, Serializable {
         @Override
         public Object process(Map.Entry<String, Topic> entry) {
             Topic topic = entry.getValue();
-            topic.setEndOffSet(endOffset);
+            if (endOffset > topic.getEndOffSet())
+                topic.setEndOffSet(endOffset);
             entry.setValue(topic);
             return entry;
         }
