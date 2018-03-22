@@ -1,6 +1,5 @@
 package com.kloia.eventapis.pojos;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kloia.eventapis.common.Context;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,7 +23,6 @@ public class Operation implements Serializable {
     private String sender;
     private String parentId; // alias for as context.getParentOpId()
     private Context context;
-    @JsonIgnore
     private Map<String, String> userContext;
 
     /**

@@ -20,7 +20,7 @@ public interface IProducedEvent extends Serializable {
 
     boolean isFinished();
 
-    boolean attachOperation(Operation operation);
+    boolean attachOperation(OperationEvent operation);
 
-    void setOperation(Operation operation);
+    void setOperation(OperationEvent operation);
 }

@@ -22,9 +22,9 @@ public class Topology implements Serializable {
     private String initiatorCommand;
     private long commandTimeout;
     private long startTime;
-    private Operation operation;
+    private OperationEvent operation;
     private TransactionState operationState = TransactionState.RUNNING;
-    private Set<Operation> unassignedOperations = new HashSet<>();
+    private Set<OperationEvent> unassignedOperations = new HashSet<>();
     private Set<ProducedEvent> unassignedEvents = new HashSet<>();
     private Set<ProducedEvent> producedEvents = new HashSet<>();
 
@@ -60,7 +60,7 @@ public class Topology implements Serializable {
     private void consumeStales() {
         if (unassignedOperations.isEmpty())
             return;
-        Set<Operation> toConsume = this.unassignedOperations;
+        Set<OperationEvent> toConsume = this.unassignedOperations;
         this.unassignedOperations = new HashSet<>();
         log.warn("Trying to Consume stales:" + toConsume);
         toConsume.forEach(this::attachOperation);
@@ -70,7 +70,7 @@ public class Topology implements Serializable {
         return operationState != TransactionState.RUNNING && producedEvents.stream().allMatch(ProducedEvent::isFinished);
     }
 
-    public void attachOperation(Operation operation) {
+    public void attachOperation(OperationEvent operation) {
         if (operationState != TransactionState.RUNNING)
             log.error("Topology is Already ended with State:" + operationState + " New Operation: " + operation);
         if (Objects.equals(operation.getSender(), getInitiatorService()) && Objects.equals(operation.getAggregateId(), getInitiatorCommand())) {

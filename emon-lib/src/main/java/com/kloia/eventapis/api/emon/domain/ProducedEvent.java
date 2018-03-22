@@ -30,7 +30,7 @@ public class ProducedEvent implements IProducedEvent {
     private String aggregateId;
     private int numberOfVisit = 1;
     private long opDate;
-    private Operation operation;
+    private OperationEvent operation;
     private Map<String, IHandledEvent> listeningServices;
 
     public ProducedEvent(String topic, String sender, String aggregateId, EventType eventType, EventKey eventKey, List<String> targetList, long opDate) {
@@ -79,7 +79,7 @@ public class ProducedEvent implements IProducedEvent {
     }
 
     @Override
-    public boolean attachOperation(Operation operation) {
+    public boolean attachOperation(OperationEvent operation) {
         if (Objects.equals(operation.getSender(), getSender())
                 && Objects.equals(operation.getAggregateId(), topic)
                 && getEventType() == EventType.OP_FAIL
@@ -126,7 +126,7 @@ public class ProducedEvent implements IProducedEvent {
     }
 
     @Override
-    public void setOperation(Operation operation) {
+    public void setOperation(OperationEvent operation) {
         this.operation = operation;
     }
 }

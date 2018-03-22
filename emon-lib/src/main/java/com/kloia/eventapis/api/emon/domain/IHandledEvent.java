@@ -17,7 +17,7 @@ import java.io.Serializable;
 public interface IHandledEvent extends Serializable {
     boolean isFinished();
 
-    void setOperation(Operation operation);
+    void setOperation(OperationEvent operation);
 
-    boolean attachOperation(Operation operation);
+    boolean attachOperation(OperationEvent operation);
 }

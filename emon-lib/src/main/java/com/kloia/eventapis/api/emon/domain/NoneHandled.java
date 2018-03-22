@@ -11,7 +11,7 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NoneHandled implements IHandledEvent {
 
-    private Operation operation;
+    private OperationEvent operation;
 
     NoneHandled() {
     }
@@ -22,12 +22,12 @@ public class NoneHandled implements IHandledEvent {
     }
 
     @Override
-    public boolean attachOperation(Operation operationtoAttach) {
+    public boolean attachOperation(OperationEvent operationtoAttach) {
         return false;
     }
 
     @Override
-    public void setOperation(Operation operation) {
+    public void setOperation(OperationEvent operation) {
         this.operation = operation;
     }
 }

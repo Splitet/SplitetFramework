@@ -6,6 +6,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
 import com.kloia.eventapis.api.emon.domain.BaseEvent;
+import com.kloia.eventapis.api.emon.domain.OperationEvent;
 import com.kloia.eventapis.api.emon.domain.ProducedEvent;
 import com.kloia.eventapis.api.emon.domain.Topic;
 import com.kloia.eventapis.api.emon.domain.Topology;
@@ -166,7 +167,7 @@ public class TopologyService implements MessageListener<String, Serializable> {
                     log.warn("There is no Topology with key: " + entry.getKey());
                     value = new Topology(entry.getKey(), operation.getParentId());
                 }
-                value.attachOperation(operation);
+                value.attachOperation(new OperationEvent(operation));
                 entry.setValue(value);
                 return value;
             } catch (Exception e) {

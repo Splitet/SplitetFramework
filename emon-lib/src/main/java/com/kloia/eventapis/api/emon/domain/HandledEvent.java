@@ -18,7 +18,7 @@ public class HandledEvent implements IHandledEvent {
 
     private String handlerService;
     private String topic;
-    private Operation operation;
+    private OperationEvent operation;
     private Set<ProducedEvent> producedEvents = new HashSet<>();
 
     public HandledEvent(ProducedEvent producedEvent, String handlerService, String topic) {
@@ -43,7 +43,7 @@ public class HandledEvent implements IHandledEvent {
     }
 
     @Override
-    public boolean attachOperation(Operation operationToAttach) {
+    public boolean attachOperation(OperationEvent operationToAttach) {
         if (Objects.equals(operationToAttach.getSender(), getHandlerService())
                 && Objects.equals(operationToAttach.getAggregateId(), topic)
                 && operationToAttach.getTransactionState() == TransactionState.TXN_SUCCEDEED) {
