@@ -46,7 +46,7 @@ class TopicEndOffsetSchedule implements Runnable, NamedTask, Serializable {
                     result.put(topicPartition.topic(), endOffset);
             });
             result.forEach((topic, endOffset) -> topicsMap.executeOnKey(topic, new EndOffsetSetter(endOffset)));
-            log.debug("collectEndOffsets:" + map.toString());
+            log.debug("collectEndOffsets:" + result.toString());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
