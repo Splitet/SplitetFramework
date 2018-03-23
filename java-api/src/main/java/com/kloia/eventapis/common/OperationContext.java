@@ -13,6 +13,7 @@ import java.util.UUID;
 public class OperationContext {
 
     public static final String OP_ID = "opId";
+    public static final String COMMAND = "command";
     public static final char PARENT_OP_ID_DELIMITER = ',';
 
     private ThreadLocal<Stack<Context>> operationContext = ThreadLocal.withInitial(Stack::new);
@@ -65,15 +66,29 @@ public class OperationContext {
             throw new EventContextException("There is no Operation Context");
         }
         context.peek().setCommandContext(eventId);
-        MDC.put("command", eventId);
+        MDC.put(COMMAND, eventId);
     }
 
     public void clearContext() {
         operationContext.remove();
+        MDC.remove(COMMAND);
+        MDC.remove(OP_ID);
     }
 
     public String clearCommandContext() {
-        return operationContext.get().empty() ? null : operationContext.get().pop().getOpId();
+        if (operationContext.get().empty()) {
+            return null;
+        } else {
+            MDC.remove(COMMAND);
+            MDC.remove(OP_ID);
+            Context pop = operationContext.get().pop();
+            if (!operationContext.get().isEmpty()) {
+                Context newContext = operationContext.get().peek();
+                MDC.put(COMMAND, newContext.getCommandContext());
+                MDC.put(OP_ID, newContext.getOpId());
+            }
+            return pop.getOpId();
+        }
     }
 
     public String generateContext() {
