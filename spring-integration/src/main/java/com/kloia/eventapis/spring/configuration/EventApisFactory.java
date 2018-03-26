@@ -100,8 +100,9 @@ public class EventApisFactory {
 
     @Bean
     public EventExecutionInterceptor createEventExecutionInterceptor(@Autowired KafkaOperationRepository kafkaOperationRepository,
-                                                                     @Autowired OperationContext operationContext) {
-        return new EventExecutionInterceptor(kafkaOperationRepository, operationContext);
+                                                                     @Autowired OperationContext operationContext,
+                                                                     @Autowired IUserContext userContext) {
+        return new EventExecutionInterceptor(kafkaOperationRepository, operationContext, userContext);
     }
 
     @Bean

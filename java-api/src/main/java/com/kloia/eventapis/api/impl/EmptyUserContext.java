@@ -16,6 +16,11 @@ public class EmptyUserContext implements IUserContext {
     }
 
     @Override
+    public void clearUserContext() {
+
+    }
+
+    @Override
     public String getAuditInfo() {
         return null;
     }

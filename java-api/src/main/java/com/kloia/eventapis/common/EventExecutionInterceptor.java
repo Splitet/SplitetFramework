@@ -1,6 +1,7 @@
 package com.kloia.eventapis.common;
 
 
+import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
@@ -18,10 +19,12 @@ public class EventExecutionInterceptor {
 
     private KafkaOperationRepository kafkaOperationRepository;
     private OperationContext operationContext;
+    private IUserContext userContext;
 
-    public EventExecutionInterceptor(KafkaOperationRepository kafkaOperationRepository, OperationContext operationContext) {
+    public EventExecutionInterceptor(KafkaOperationRepository kafkaOperationRepository, OperationContext operationContext, IUserContext userContext) {
         this.operationContext = operationContext;
         this.kafkaOperationRepository = kafkaOperationRepository;
+        this.userContext = userContext;
     }
 
 /*    @Before("this(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..)) && args(object)")
@@ -35,6 +38,7 @@ public class EventExecutionInterceptor {
     public void afterReturning(Object retVal) throws Throwable {
         log.debug("AfterReturning:" + (retVal == null ? "" : retVal.toString()));
         operationContext.clearCommandContext();
+        userContext.getUserContext();
     }
 
     @AfterThrowing(value = "this(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "exception")
@@ -44,6 +48,7 @@ public class EventExecutionInterceptor {
             kafkaOperationRepository.failOperation(operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));
         } finally {
             operationContext.clearCommandContext();
+            userContext.getUserContext();
         }
     }
 

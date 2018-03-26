@@ -7,5 +7,7 @@ public interface IUserContext {
 
     void extractUserContext(Map<String, String> userContext);
 
+    void clearUserContext();
+
     String getAuditInfo();
 }
