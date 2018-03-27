@@ -98,7 +98,7 @@ export default Ember.Route.extend({
                 label: publishedEvent.topic,
                 to: "FAIL",
               });
-            } else if (operation.transactionState === "TXN_SUCCEDEED") {
+            } else if (operation.transactionState === "TXN_SUCCEEDED") {
               nodes.push({
                 nId: "SUCCESS",
                 label: "SUCCESS",
@@ -127,7 +127,7 @@ export default Ember.Route.extend({
         return '#f8ffd2';
       case "OP_FAIL":
         return '#ff9d09';
-      case "TXN_SUCCEDEED":
+      case "TXN_SUCCEEDED":
         return '#089d0a';
       case "TXN_FAILED":
         return '#ff1109';

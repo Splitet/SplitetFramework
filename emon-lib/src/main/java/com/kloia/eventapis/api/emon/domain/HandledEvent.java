@@ -1,7 +1,6 @@
 package com.kloia.eventapis.api.emon.domain;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +45,7 @@ public class HandledEvent implements IHandledEvent {
     public boolean attachOperation(OperationEvent operationToAttach) {
         if (Objects.equals(operationToAttach.getSender(), getHandlerService())
                 && Objects.equals(operationToAttach.getAggregateId(), topic)
-                && operationToAttach.getTransactionState() == TransactionState.TXN_SUCCEDEED) {
+                && operationToAttach.getTransactionState() == TransactionState.TXN_SUCCEEDED) {
             this.operation = operationToAttach;
             return true;
         }

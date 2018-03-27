@@ -220,7 +220,7 @@ public class CompositeRepositoryImplTest {
 
         Event event = new Event();
         serializableConsumerCaptor.getValue().accept(event);
-        assertThat(event.getEventState(), equalTo(EventState.TXN_SUCCEDEED));
+        assertThat(event.getEventState(), equalTo(EventState.TXN_SUCCEEDED));
     }
 
     @Test

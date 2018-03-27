@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventType;
-import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.pojos.TransactionState;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -91,7 +90,7 @@ public class ProducedEvent implements IProducedEvent {
         if (Objects.equals(operation.getSender(), getSender())
                 && Objects.equals(operation.getAggregateId(), topic)
                 && (getEventType() == EventType.OP_SUCCESS || getEventType() == EventType.OP_SINGLE)
-                && operation.getTransactionState() == TransactionState.TXN_SUCCEDEED) {
+                && operation.getTransactionState() == TransactionState.TXN_SUCCEEDED) {
             this.operation = operation;
             return true;
         }
@@ -115,7 +114,7 @@ public class ProducedEvent implements IProducedEvent {
             if (operation.getTransactionState() == TransactionState.TXN_FAILED && eventType != EventType.EVENT) {
                 log.error("Operation Failed in Non-EVENT type:" + eventType);
             }
-            if (operation.getTransactionState() == TransactionState.TXN_SUCCEDEED && (eventType != EventType.OP_SUCCESS && eventType != EventType.OP_SINGLE)) {
+            if (operation.getTransactionState() == TransactionState.TXN_SUCCEEDED && (eventType != EventType.OP_SUCCESS && eventType != EventType.OP_SINGLE)) {
                 log.error("Operation Success in Non-SINGLE/SUCCESS type:" + eventType);
             }
             transactionState = operation.getTransactionState();

@@ -58,7 +58,7 @@ public class KafkaOperationRepository implements IOperationRepository {
         Operation operation = new Operation();
         operation.setSender(senderGroupId);
         operation.setAggregateId(eventId);
-        operation.setTransactionState(TransactionState.TXN_SUCCEDEED);
+        operation.setTransactionState(TransactionState.TXN_SUCCEEDED);
         operation.setUserContext(userContext.getUserContext());
         operation.setContext(operationContext.getContext());
         log.debug("Publishing Operation:" + operation.toString());

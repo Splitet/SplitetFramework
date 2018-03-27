@@ -57,7 +57,7 @@ public class AggregateListener<T extends Entity> {
 //                List<T> list = viewQuery.queryByOpId(data.key(), o -> snapshotRepository.findOne(o));
 //                snapshotRepository.save(list);
                 snapshotRepository.save(viewQuery.queryByOpId(data.key())); // We may not need this
-            } else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEDEED) {
+            } else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEEDED) {
 //                List<T> list = viewQuery.queryByOpId(data.key(), o -> snapshotRepository.findOne(o));
 //                snapshotRepository.save(list);
                 snapshotRepository.save(viewQuery.queryByOpId(data.key()));

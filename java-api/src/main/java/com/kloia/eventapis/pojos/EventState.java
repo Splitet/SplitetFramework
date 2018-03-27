@@ -6,8 +6,8 @@ package com.kloia.eventapis.pojos;
 public enum EventState {
     CREATED,
     FAILED,
-    SUCCEDEED,
+    SUCCEEDED,
     TXN_FAILED,
-    TXN_SUCCEDEED;
+    TXN_SUCCEEDED;
 
 }

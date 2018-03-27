@@ -16,7 +16,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Event implements Externalizable /*, Binarylizable*/, Cloneable {
+public class Event implements Externalizable, Cloneable {
     private UUID eventId;
     private IEventType eventType;
     private EventState eventState;
@@ -27,27 +27,11 @@ public class Event implements Externalizable /*, Binarylizable*/, Cloneable {
         out.writeUTF(eventState.name());
     }
 
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    public void readExternal(ObjectInput in) throws IOException {
         eventId = UUID.fromString(in.readUTF());
         eventState = EventState.valueOf(EventState.class, in.readUTF());
 
     }
-
-/*    public void writeBinary(BinaryWriter writer) throws BinaryObjectException {
-        BinaryRawWriter binaryRawWriter = writer.rawWriter();
-        binaryRawWriter.writeUuid(eventId);
-        binaryRawWriter.writeObject(eventType);
-        binaryRawWriter.writeEnum(eventState);
-        binaryRawWriter.writeStringArray(params);
-    }
-
-    public void readBinary(BinaryReader reader) throws BinaryObjectException {
-        BinaryRawReader binaryRawReader = reader.rawReader();
-        eventId = binaryRawReader.readUuid();
-        eventType = binaryRawReader.readObject();
-        eventState = binaryRawReader.readEnum();
-        params = binaryRawReader.readStringArray();
-    }*/
 
     @Override
     public Object clone() {
@@ -56,17 +40,5 @@ public class Event implements Externalizable /*, Binarylizable*/, Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public Event success() {
-        Event clone = (Event) this.clone();
-        clone.setEventState(EventState.SUCCEDEED);
-        return clone;
-    }
-
-    public Event fail() {
-        Event clone = (Event) this.clone();
-        clone.setEventState(EventState.FAILED);
-        return clone;
     }
 }

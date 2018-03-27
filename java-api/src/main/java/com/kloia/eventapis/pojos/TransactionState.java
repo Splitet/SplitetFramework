@@ -6,5 +6,5 @@ package com.kloia.eventapis.pojos;
 public enum TransactionState {
     RUNNING,
     TXN_FAILED,
-    TXN_SUCCEDEED;
+    TXN_SUCCEEDED;
 }

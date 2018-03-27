@@ -98,7 +98,7 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
         List<Row> entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
         for (Row entityEventData : entityEventDatas) {
             EntityEvent entityEvent = convertToEntityEvent(entityEventData);
-            if (entityEvent.getStatus() == EventState.CREATED || entityEvent.getStatus() == EventState.SUCCEDEED) {
+            if (entityEvent.getStatus() == EventState.CREATED) {
                 EntityFunctionSpec<E, ?> functionSpec = functionMap.get(entityEvent.getEventType());
                 if (functionSpec != null) {
                     EntityEventWrapper eventWrapper = new EntityEventWrapper<>(functionSpec.getQueryType(), objectMapper, entityEvent);
@@ -121,7 +121,7 @@ public class CassandraViewQuery<E extends Entity> implements ViewQuery<E> {
         List<Row> entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
         for (Row entityEventData : entityEventDatas) {
             EntityEvent entityEvent = convertToEntityEvent(entityEventData);
-            if (entityEvent.getStatus() == EventState.CREATED || entityEvent.getStatus() == EventState.SUCCEDEED) {
+            if (entityEvent.getStatus() == EventState.CREATED) {
                 EntityFunctionSpec<E, ?> functionSpec = functionMap.get(entityEvent.getEventType());
                 if (functionSpec != null) {
                     EntityEventWrapper eventWrapper = new EntityEventWrapper<>(functionSpec.getQueryType(), objectMapper, entityEvent);

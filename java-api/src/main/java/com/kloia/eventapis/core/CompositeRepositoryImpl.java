@@ -99,7 +99,7 @@ public class CompositeRepositoryImpl implements EventRepository {
 
     private <P extends PublishedEvent> void checkOperationFinalStates(P publishedEvent) {
         if (publishedEvent.getEventType() == EventType.OP_SUCCESS || publishedEvent.getEventType() == EventType.OP_SINGLE) {
-            operationRepository.successOperation(publishedEvent.getClass().getSimpleName(), successEvent -> successEvent.setEventState(EventState.TXN_SUCCEDEED));
+            operationRepository.successOperation(publishedEvent.getClass().getSimpleName(), successEvent -> successEvent.setEventState(EventState.TXN_SUCCEEDED));
         } else if (publishedEvent.getEventType() == EventType.OP_FAIL) {
             operationRepository.failOperation(publishedEvent.getClass().getSimpleName(), failEvent -> failEvent.setEventState(EventState.TXN_FAILED));
         }
