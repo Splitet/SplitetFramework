@@ -51,10 +51,10 @@
     </properties>
 
     <modules>
-        <module>java-api</module>
+        <!--<module>java-api</module>-->
         <!--<module>evented-common</module>-->
-        <module>spring-integration</module>
-        <module>spring-jpa-view</module>
+        <!--<module>spring-integration</module>-->
+        <!--<module>spring-jpa-view</module>-->
         <!--<module>samples</module>-->
         <!--<module>samples/3-advanced</module>-->
         <!--<module>kafka-tester</module>-->
