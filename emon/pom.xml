@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.kloia.eventapis</groupId>
         <artifactId>eventapis-parent</artifactId>
-        <version>0.5.9-SNAPSHOT</version>
+        <version>0.5.9</version>
     </parent>
 
     <artifactId>emon</artifactId>
