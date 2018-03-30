@@ -2,7 +2,6 @@ package com.kloia.eventapis.api.emon.domain;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.kloia.eventapis.pojos.Operation;
 
 import java.io.Serializable;
 

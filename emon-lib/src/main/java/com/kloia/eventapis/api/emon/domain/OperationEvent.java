@@ -22,6 +22,7 @@ public class OperationEvent implements Serializable {
     private TransactionState transactionState;
     private String aggregateId;
     private String sender;
+    private long opDate;
     private Context context;
 
     public OperationEvent(Operation operation) {
@@ -29,5 +30,6 @@ public class OperationEvent implements Serializable {
         this.aggregateId = operation.getAggregateId();
         this.sender = operation.getSender();
         this.context = operation.getContext();
+        this.opDate = operation.getOpDate() != 0L ? operation.getOpDate() : System.currentTimeMillis();
     }
 }

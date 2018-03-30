@@ -23,6 +23,7 @@ public class Operation implements Serializable {
     private String sender;
     private String parentId; // alias for as context.getParentOpId()
     private Context context;
+    private long opDate;
     private Map<String, String> userContext;
 
     /**

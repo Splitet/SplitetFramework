@@ -49,6 +49,7 @@ public class KafkaOperationRepository implements IOperationRepository {
         operation.setUserContext(userContext.getUserContext());
         operation.setContext(operationContext.getContext());
         operation.setTransactionState(TransactionState.TXN_FAILED);
+        operation.setOpDate(System.currentTimeMillis());
         log.debug("Publishing Operation:" + operation.toString());
         operationsKafka.send(new ProducerRecord<>(Operation.OPERATION_EVENTS, operationContext.getContext().getOpId(), operation));
     }
@@ -61,6 +62,7 @@ public class KafkaOperationRepository implements IOperationRepository {
         operation.setTransactionState(TransactionState.TXN_SUCCEEDED);
         operation.setUserContext(userContext.getUserContext());
         operation.setContext(operationContext.getContext());
+        operation.setOpDate(System.currentTimeMillis());
         log.debug("Publishing Operation:" + operation.toString());
         operationsKafka.send(new ProducerRecord<>(Operation.OPERATION_EVENTS, operationContext.getContext().getOpId(), operation));
     }
