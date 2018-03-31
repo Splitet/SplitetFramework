@@ -3,7 +3,6 @@ package com.kloia.eventapis.api.emon.service;
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
 import com.hazelcast.query.Predicate;
-import com.hazelcast.scheduledexecutor.NamedTask;
 import com.hazelcast.spring.context.SpringAware;
 import com.kloia.eventapis.api.emon.domain.Topic;
 import lombok.extern.slf4j.Slf4j;
@@ -12,10 +11,10 @@ import org.apache.kafka.clients.admin.DescribeTopicsResult;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.apache.kafka.common.TopicPartitionInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @SpringAware
 @Component
-class ListTopicSchedule implements Runnable, NamedTask, Serializable {
+class ListTopicSchedule extends ScheduledTask {
 
     private transient AdminClient adminClient;
     private transient IMap<String, Topic> topicsMap;
@@ -42,33 +41,36 @@ class ListTopicSchedule implements Runnable, NamedTask, Serializable {
     }
 
     @Override
-    public void run() {
+    boolean runInternal(StopWatch stopWatch) throws InterruptedException, ExecutionException {
 
-        StopWatch stopWatch = new StopWatch();
         stopWatch.start("adminClient.listTopics()");
-        try {
-            Collection<String> topicNames = adminClient.listTopics().listings().get()
-                    .stream().map(TopicListing::name).filter(this::shouldCollectEvent).collect(Collectors.toList());
-            topicsMap.removeAll(new RemoveTopicPredicate(topicNames));
+        Collection<String> topicNames = adminClient.listTopics().listings().get()
+                .stream().map(TopicListing::name).filter(this::shouldCollectEvent).collect(Collectors.toList());
+        topicsMap.removeAll(new RemoveTopicPredicate(topicNames));
 
-            DescribeTopicsResult describeTopicsResult = adminClient.describeTopics(topicNames);
-            describeTopicsResult.all().get().forEach(
-                    (topic, topicDescription) -> topicsMap.executeOnKey(topic, new SetTopicPartitionsProcessor(
-                            topicDescription.partitions().stream().map(TopicPartitionInfo::partition).collect(Collectors.toList()))
-                    )
-            );
-        } catch (InterruptedException | ExecutionException e) {
-            log.warn("Error While trying to fetch Topic List " + e.getMessage(), e);
-        }
-        stopWatch.stop();
+        DescribeTopicsResult describeTopicsResult = adminClient.describeTopics(topicNames);
+        describeTopicsResult.all().get().forEach(
+                (topic, topicDescription) -> topicsMap.executeOnKey(topic, new SetTopicPartitionsProcessor(
+                        topicDescription.partitions().stream().map(TopicPartitionInfo::partition).collect(Collectors.toList()))
+                )
+        );
+        metaMap.set(this.getName() + TopicServiceScheduler.LAST_SUCCESS_PREFIX, System.currentTimeMillis());
         log.debug("Topics:" + topicsMap.entrySet());
         log.debug(stopWatch.prettyPrint());
+        return true;
     }
 
     @Override
     public String getName() {
         return this.getClass().getSimpleName();
     }
+
+    @Override
+    @Autowired
+    public void setScheduleRateInMillis(@Value("${emon.schedulesInMillis.ListTopicSchedule:500}") Long scheduleRateInMillis) {
+        this.scheduleRateInMillis = scheduleRateInMillis;
+    }
+
 
     @Autowired
     public void setTopicsMap(IMap topicsMap) {

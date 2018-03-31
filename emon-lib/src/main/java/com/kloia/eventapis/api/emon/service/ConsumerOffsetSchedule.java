@@ -2,7 +2,6 @@ package com.kloia.eventapis.api.emon.service;
 
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
-import com.hazelcast.scheduledexecutor.NamedTask;
 import com.hazelcast.spring.context.SpringAware;
 import com.kloia.eventapis.api.emon.domain.ServiceData;
 import com.kloia.eventapis.api.emon.domain.Topic;
@@ -10,20 +9,21 @@ import kafka.coordinator.group.GroupOverview;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 import scala.collection.JavaConversions;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
 @SpringAware
 @Component
-class ConsumerOffsetSchedule implements Runnable, NamedTask, Serializable {
+class ConsumerOffsetSchedule extends ScheduledTask {
 
     private transient kafka.admin.AdminClient adminToolsClient;
     private transient IMap<String, Topic> topicsMap;
@@ -31,9 +31,9 @@ class ConsumerOffsetSchedule implements Runnable, NamedTask, Serializable {
 
 
     @Override
-    public void run() {
+    public boolean runInternal(StopWatch stopWatch) {
+        AtomicBoolean isSuccess = new AtomicBoolean(true);
 
-        StopWatch stopWatch = new StopWatch();
         stopWatch.start("ConsumerOffsetSchedule.listAllConsumerGroupsFlattened()");
         List<String> groupList = JavaConversions.seqAsJavaList(adminToolsClient.listAllConsumerGroupsFlattened())
                 .stream().map(GroupOverview::groupId).collect(Collectors.toList());
@@ -58,18 +58,25 @@ class ConsumerOffsetSchedule implements Runnable, NamedTask, Serializable {
                     log.debug(listGroupOffsets.toString());
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
+                    isSuccess.set(false);
                 }
             }
         });
-        stopWatch.stop();
 
+        stopWatch.stop();
         log.debug("Topics:" + topicsMap.entrySet());
-        log.debug(stopWatch.prettyPrint());
+        return isSuccess.get();
     }
 
     @Override
     public String getName() {
         return this.getClass().getSimpleName();
+    }
+
+    @Override
+    @Autowired
+    public void setScheduleRateInMillis(@Value("${emon.schedulesInMillis.ConsumerOffsetSchedule:1000}") Long scheduleRateInMillis) {
+        this.scheduleRateInMillis = scheduleRateInMillis;
     }
 
     @Autowired

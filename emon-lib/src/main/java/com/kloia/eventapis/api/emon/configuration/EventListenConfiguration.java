@@ -41,6 +41,10 @@ public class EventListenConfiguration implements InitializingBean {
         startOperations();
     }
 
+    public boolean isRunning() {
+        return messageListenerContainer.isRunning() && operationListenerContainer.isRunning();
+    }
+
     private void startOperations() {
         Map<String, Object> consumerProperties = eventApisConfiguration.getEventBus().buildConsumerProperties();
 

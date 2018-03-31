@@ -31,7 +31,10 @@ public class InMemoryComponents {
     public static final int OPERATIONS_MAX_TTL_INSEC = 60000;
     public static final String OPERATIONS_MAP_NAME = "operations";
     public static final String OPERATIONS_MAP_HISTORY_NAME = "operations-history";
+    public static final String META_MAP_NAME = "meta";
     public static final String TOPICS_MAP_NAME = "topics";
+
+    public static final String LAST_CHECK_TIME_KEY = "LAST_CHECK_TIME";
 
     @Value("${emon.hazelcast.group.name:'emon'}")
     private String hazelcastGrid;
@@ -113,6 +116,11 @@ public class InMemoryComponents {
     @Bean
     public IMap<String, Topology> operationsHistoryMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
         return hazelcastInstance.getMap(OPERATIONS_MAP_HISTORY_NAME);
+    }
+
+    @Bean
+    public IMap<String, Object> metaMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
+        return hazelcastInstance.getMap(META_MAP_NAME);
     }
 
     @Bean

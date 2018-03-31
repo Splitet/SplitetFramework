@@ -16,18 +16,17 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class TopicServiceScheduler implements ApplicationListener<ApplicationReadyEvent> {
 
-    @Autowired
-    private Pattern eventTopicRegex;
+    public static final String LAST_SUCCESS_PREFIX = "_LAST_SUCCESS";
 
     @Autowired
     private ListTopicSchedule listTopicSchedule;
@@ -35,10 +34,8 @@ public class TopicServiceScheduler implements ApplicationListener<ApplicationRea
     @Autowired
     private TopicEndOffsetSchedule topicEndOffsetSchedule;
 
-
     @Autowired
     private ConsumerOffsetSchedule consumerOffsetSchedule;
-
 
     @Autowired
     @Qualifier("hazelcastInstance")
@@ -59,14 +56,14 @@ public class TopicServiceScheduler implements ApplicationListener<ApplicationRea
                     .filter(member -> Boolean.TRUE.equals(member.getBooleanAttribute("TopicServiceScheduler"))).collect(Collectors.toList());
             try {
                 cancelScheduledTasks(listTopicSchedule);
-                scheduledExecutorService.scheduleOnMembersAtFixedRate(listTopicSchedule, schedulerMembers, 0, 10000, TimeUnit.MILLISECONDS);
+                scheduledExecutorService.scheduleOnMembersAtFixedRate(listTopicSchedule, schedulerMembers, 0, listTopicSchedule.getScheduleRateInMillis(), TimeUnit.MILLISECONDS);
 
                 cancelScheduledTasks(topicEndOffsetSchedule);
-                scheduledExecutorService.scheduleOnMembersAtFixedRate(topicEndOffsetSchedule, schedulerMembers, 0, 500, TimeUnit.MILLISECONDS);
+                scheduledExecutorService.scheduleOnMembersAtFixedRate(topicEndOffsetSchedule, schedulerMembers, 0, topicEndOffsetSchedule.getScheduleRateInMillis(), TimeUnit.MILLISECONDS);
 
 
                 cancelScheduledTasks(consumerOffsetSchedule);
-                scheduledExecutorService.scheduleOnMembersAtFixedRate(consumerOffsetSchedule, schedulerMembers, 0, 500, TimeUnit.MILLISECONDS);
+                scheduledExecutorService.scheduleOnMembersAtFixedRate(consumerOffsetSchedule, schedulerMembers, 0, consumerOffsetSchedule.getScheduleRateInMillis(), TimeUnit.MILLISECONDS);
 
 
 //                log.info("Scheduled :" + future.getHandler().toUrn());
@@ -96,6 +93,15 @@ public class TopicServiceScheduler implements ApplicationListener<ApplicationRea
                         }
                 )
         );
+    }
+
+    public boolean checkTasksAreRunning() throws Exception {
+        List<ScheduledTask> scheduledTasks = Arrays.asList(listTopicSchedule, topicEndOffsetSchedule, consumerOffsetSchedule);
+        for (ScheduledTask scheduledTask : scheduledTasks) {
+            if (!scheduledTask.isRunning())
+                throw new Exception("Task:" + scheduledTask.getName() + "is not Running");
+        }
+        return true;
     }
 
     @PreDestroy

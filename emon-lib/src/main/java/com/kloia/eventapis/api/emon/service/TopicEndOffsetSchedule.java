@@ -2,17 +2,16 @@ package com.kloia.eventapis.api.emon.service;
 
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
-import com.hazelcast.scheduledexecutor.NamedTask;
 import com.hazelcast.spring.context.SpringAware;
 import com.kloia.eventapis.api.emon.domain.Topic;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @SpringAware
 @Component
-class TopicEndOffsetSchedule implements Runnable, NamedTask, Serializable {
+class TopicEndOffsetSchedule extends ScheduledTask {
 
     private transient Consumer kafkaConsumer;
     private transient IMap<String, Topic> topicsMap;
@@ -31,33 +30,36 @@ class TopicEndOffsetSchedule implements Runnable, NamedTask, Serializable {
 
 
     @Override
-    public void run() {
+    boolean runInternal(StopWatch stopWatch) {
 
-        StopWatch stopWatch = new StopWatch();
         stopWatch.start("collectEndOffsets");
-        try {
-            List<TopicPartition> collect = topicsMap.entrySet().stream().flatMap(
-                    topic -> topic.getValue().getPartitions().stream().map(partition -> new TopicPartition(topic.getKey(), partition))
-            ).collect(Collectors.toList());
-            java.util.Map<TopicPartition, Long> map = kafkaConsumer.endOffsets(collect);
-            java.util.Map<String, Long> result = new HashMap<>();
-            map.forEach((topicPartition, endOffset) -> {
-                if (!result.containsKey(topicPartition.topic()) || result.get(topicPartition.topic()) < endOffset)
-                    result.put(topicPartition.topic(), endOffset);
-            });
-            result.forEach((topic, endOffset) -> topicsMap.executeOnKey(topic, new EndOffsetSetter(endOffset)));
-            log.debug("collectEndOffsets:" + result.toString());
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+        List<TopicPartition> collect = topicsMap.entrySet().stream().flatMap(
+                topic -> topic.getValue().getPartitions().stream().map(partition -> new TopicPartition(topic.getKey(), partition))
+        ).collect(Collectors.toList());
+        java.util.Map<TopicPartition, Long> map = kafkaConsumer.endOffsets(collect);
+        java.util.Map<String, Long> result = new HashMap<>();
+        map.forEach((topicPartition, endOffset) -> {
+            if (!result.containsKey(topicPartition.topic()) || result.get(topicPartition.topic()) < endOffset)
+                result.put(topicPartition.topic(), endOffset);
+        });
+        result.forEach((topic, endOffset) -> topicsMap.executeOnKey(topic, new EndOffsetSetter(endOffset)));
+        log.debug("collectEndOffsets:" + result.toString());
+
         stopWatch.stop();
         log.debug("TopicEndOffsetSchedule:" + topicsMap.entrySet());
         log.debug(stopWatch.prettyPrint());
+        return true;
     }
 
     @Override
     public String getName() {
         return this.getClass().getSimpleName();
+    }
+
+    @Override
+    @Autowired
+    public void setScheduleRateInMillis(@Value("${emon.schedulesInMillis.TopicEndOffsetSchedule:500}") Long scheduleRateInMillis) {
+        this.scheduleRateInMillis = scheduleRateInMillis;
     }
 
     @Autowired
