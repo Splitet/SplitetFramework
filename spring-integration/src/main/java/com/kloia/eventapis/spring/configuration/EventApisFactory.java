@@ -157,7 +157,7 @@ public class EventApisFactory {
         scheduler.setBeanName("EventsFactory-Scheduler");
         scheduler.initialize();
 
-//        factory.getContainerProperties().setScheduler(scheduler);
+        factory.getContainerProperties().setScheduler(scheduler);
 //        ThreadPoolTaskScheduler consumerScheduler = new ThreadPoolTaskScheduler();
 //        consumerScheduler.setPoolSize(30);
 //        consumerScheduler.setBeanName("EventsFactory-ConsumerScheduler");
@@ -182,7 +182,7 @@ public class EventApisFactory {
         scheduler.setPoolSize(eventApisConfiguration.getEventBus().getConsumer().getOperationSchedulerPoolSize());
         scheduler.setBeanName("OperationsFactory-Scheduler");
         scheduler.initialize();
-//        abstractKafkaListenerContainerFactory.getContainerProperties().setScheduler(scheduler);
+        abstractKafkaListenerContainerFactory.getContainerProperties().setScheduler(scheduler);
 //        ThreadPoolTaskScheduler consumerScheduler = new ThreadPoolTaskScheduler();
 //        consumerScheduler.setPoolSize(30);
 //        consumerScheduler.setBeanName("OperationsFactory-ConsumerScheduler");
