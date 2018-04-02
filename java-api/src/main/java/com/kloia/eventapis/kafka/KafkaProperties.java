@@ -154,10 +154,18 @@ public class KafkaProperties implements Cloneable {
          */
         private Integer eventConcurrency = 1;
 
+        private Integer eventSchedulerPoolSize = 2;
+
+        private Integer eventConsumerSchedulerPoolSize = 4;
+
         /**
          * Concurrency option, default 1
          */
         private Integer operationConcurrency = 3;
+
+        private Integer operationSchedulerPoolSize = 1;
+
+        private Integer operationConsumerSchedulerPoolSize = 2;
 
         /**
          * Expected time in milliseconds between heartbeats to the consumer coordinator.

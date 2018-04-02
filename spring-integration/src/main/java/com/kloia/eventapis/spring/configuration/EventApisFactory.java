@@ -33,6 +33,7 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.config.ContainerProperties;
 import org.springframework.kafka.support.TopicPartitionInitialOffset;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.annotation.PreDestroy;
@@ -151,6 +152,18 @@ public class EventApisFactory {
         factory.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getEventConcurrency());
         factory.setMessageConverter(eventMessageConverter);
         factory.getContainerProperties().setPollTimeout(3000);
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(eventApisConfiguration.getEventBus().getConsumer().getEventSchedulerPoolSize());
+        scheduler.setBeanName("EventsFactory-Scheduler");
+        scheduler.initialize();
+
+//        factory.getContainerProperties().setScheduler(scheduler);
+//        ThreadPoolTaskScheduler consumerScheduler = new ThreadPoolTaskScheduler();
+//        consumerScheduler.setPoolSize(30);
+//        consumerScheduler.setBeanName("EventsFactory-ConsumerScheduler");
+//        consumerScheduler.initialize();
+
+//        factory.getContainerProperties().setConsumerTaskExecutor(consumerScheduler);
         factory.getContainerProperties().setAckMode(AbstractMessageListenerContainer.AckMode.RECORD);
         return factory;
     }
@@ -165,6 +178,17 @@ public class EventApisFactory {
         abstractKafkaListenerContainerFactory.setRetryTemplate(retryTemplate);
         abstractKafkaListenerContainerFactory.getContainerProperties().setPollTimeout(3000L);
         abstractKafkaListenerContainerFactory.getContainerProperties().setAckOnError(false);
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(eventApisConfiguration.getEventBus().getConsumer().getOperationSchedulerPoolSize());
+        scheduler.setBeanName("OperationsFactory-Scheduler");
+        scheduler.initialize();
+//        abstractKafkaListenerContainerFactory.getContainerProperties().setScheduler(scheduler);
+//        ThreadPoolTaskScheduler consumerScheduler = new ThreadPoolTaskScheduler();
+//        consumerScheduler.setPoolSize(30);
+//        consumerScheduler.setBeanName("OperationsFactory-ConsumerScheduler");
+//        consumerScheduler.initialize();
+//
+//        abstractKafkaListenerContainerFactory.getContainerProperties().setConsumerTaskExecutor(consumerScheduler);
         abstractKafkaListenerContainerFactory.getContainerProperties().setAckMode(AbstractMessageListenerContainer.AckMode.RECORD);
         abstractKafkaListenerContainerFactory.getContainerProperties().setTransactionManager(platformTransactionManager);
         return abstractKafkaListenerContainerFactory;
