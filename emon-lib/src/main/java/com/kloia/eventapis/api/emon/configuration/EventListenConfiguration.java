@@ -1,6 +1,7 @@
 package com.kloia.eventapis.api.emon.configuration;
 
-import com.kloia.eventapis.api.emon.service.TopologyService;
+import com.kloia.eventapis.api.emon.service.EventMessageListener;
+import com.kloia.eventapis.api.emon.service.MultipleEventMessageListener;
 import com.kloia.eventapis.kafka.JsonDeserializer;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.Operation;
@@ -9,36 +10,47 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.config.ContainerProperties;
 
 import javax.annotation.PreDestroy;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 @Configuration
 @Slf4j
+@Import(EventApisConfiguration.class)
 public class EventListenConfiguration implements InitializingBean {
 
     @Autowired
     private EventApisConfiguration eventApisConfiguration;
 
     @Autowired
-    private TopologyService topologyService;
-
-    @Autowired
-    private Pattern eventTopicRegex;
-
+    private List<EventMessageListener> eventMessageListeners;
 
     private ConcurrentMessageListenerContainer<String, PublishedEventWrapper> messageListenerContainer;
     private ConcurrentMessageListenerContainer<String, Operation> operationListenerContainer;
 
+    @Value(value = "${eventapis.eventBus.eventTopicRegex:.*Event}")
+    private String eventTopicRegexStr;
+
+    @Bean("eventTopicRegex")
+    public Pattern eventTopicRegex() {
+        return Pattern.compile(eventTopicRegexStr);
+    }
+
     @Override
     public void afterPropertiesSet() {
-        startEvents();
-        startOperations();
+        if (eventMessageListeners != null && !eventMessageListeners.isEmpty()) {
+            startEvents();
+            startOperations();
+        }
     }
 
     public boolean isRunning() {
@@ -52,7 +64,7 @@ public class EventListenConfiguration implements InitializingBean {
                 new DefaultKafkaConsumerFactory<>(consumerProperties, new StringDeserializer(), new JsonDeserializer<>(Operation.class));
 
         ContainerProperties operationContainerProperties = new ContainerProperties(Operation.OPERATION_EVENTS);
-        operationContainerProperties.setMessageListener(topologyService);
+        operationContainerProperties.setMessageListener(new MultipleEventMessageListener(eventMessageListeners));
         operationListenerContainer = new ConcurrentMessageListenerContainer<>(operationConsumerFactory,
                 operationContainerProperties);
         operationListenerContainer.setBeanName("emon-operations");
@@ -65,8 +77,8 @@ public class EventListenConfiguration implements InitializingBean {
         DefaultKafkaConsumerFactory<String, PublishedEventWrapper> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProperties, new StringDeserializer(), new JsonDeserializer<>(PublishedEventWrapper.class));
 
-        ContainerProperties containerProperties = new ContainerProperties(eventTopicRegex);
-        containerProperties.setMessageListener(topologyService);
+        ContainerProperties containerProperties = new ContainerProperties(Pattern.compile(eventTopicRegexStr));
+        containerProperties.setMessageListener(new MultipleEventMessageListener(eventMessageListeners));
         messageListenerContainer = new ConcurrentMessageListenerContainer<>(consumerFactory,
                 containerProperties);
         messageListenerContainer.setBeanName("emon-events");
@@ -75,8 +87,14 @@ public class EventListenConfiguration implements InitializingBean {
 
     @PreDestroy
     public void stopListen() {
-        if (messageListenerContainer != null && messageListenerContainer.isRunning())
+
+        if (messageListenerContainer != null && messageListenerContainer.isRunning()) {
             messageListenerContainer.stop();
+        }
+
+        if (operationListenerContainer != null && operationListenerContainer.isRunning()) {
+            operationListenerContainer.stop();
+        }
     }
 
 }

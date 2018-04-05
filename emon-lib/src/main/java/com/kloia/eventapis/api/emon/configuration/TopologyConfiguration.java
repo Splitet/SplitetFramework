@@ -10,6 +10,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -21,17 +22,11 @@ import java.util.regex.Pattern;
 @Configuration
 @Import(EventApisConfiguration.class)
 @Slf4j
+@ConditionalOnProperty(value = "emon.offsetScheduler.enabled", havingValue = "true")
 public class TopologyConfiguration {
 
     @Autowired
     private EventApisConfiguration eventApisConfiguration;
-
-
-    @Bean("eventTopicRegex")
-    public Pattern eventTopicRegex(@Value(value = "${eventapis.eventBus.eventTopicRegex:.*Event}")
-                                           String eventTopicRegexStr) {
-        return Pattern.compile(eventTopicRegexStr);
-    }
 
 
     @Bean(name = "kafkaAdminProperties")

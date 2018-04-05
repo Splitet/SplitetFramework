@@ -11,6 +11,7 @@ import com.hazelcast.scheduledexecutor.ScheduledTaskHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@ConditionalOnProperty(value = "emon.offsetScheduler.enabled", havingValue = "true")
 public class TopicServiceScheduler implements ApplicationListener<ApplicationReadyEvent> {
 
     public static final String LAST_SUCCESS_PREFIX = "_LAST_SUCCESS";
@@ -52,18 +54,18 @@ public class TopicServiceScheduler implements ApplicationListener<ApplicationRea
             return;
         try {
             scheduledExecutorService = hazelcastInstance.getScheduledExecutorService(this.getClass().getSimpleName());
-            List<Member> schedulerMembers = hazelcastInstance.getCluster().getMembers().stream()
-                    .filter(member -> Boolean.TRUE.equals(member.getBooleanAttribute("TopicServiceScheduler"))).collect(Collectors.toList());
+//            List<Member> schedulerMembers = hazelcastInstance.getCluster().getMembers().stream()
+//                    .filter(member -> Boolean.TRUE.equals(member.getBooleanAttribute("TopicServiceScheduler"))).collect(Collectors.toList());
             try {
                 cancelScheduledTasks(listTopicSchedule);
-                scheduledExecutorService.scheduleOnMembersAtFixedRate(listTopicSchedule, schedulerMembers, 0, listTopicSchedule.getScheduleRateInMillis(), TimeUnit.MILLISECONDS);
+                scheduledExecutorService.scheduleAtFixedRate(listTopicSchedule, 0, listTopicSchedule.getScheduleRateInMillis(), TimeUnit.MILLISECONDS);
 
                 cancelScheduledTasks(topicEndOffsetSchedule);
-                scheduledExecutorService.scheduleOnMembersAtFixedRate(topicEndOffsetSchedule, schedulerMembers, 0, topicEndOffsetSchedule.getScheduleRateInMillis(), TimeUnit.MILLISECONDS);
+                scheduledExecutorService.scheduleAtFixedRate(topicEndOffsetSchedule, 0, topicEndOffsetSchedule.getScheduleRateInMillis(), TimeUnit.MILLISECONDS);
 
 
                 cancelScheduledTasks(consumerOffsetSchedule);
-                scheduledExecutorService.scheduleOnMembersAtFixedRate(consumerOffsetSchedule, schedulerMembers, 0, consumerOffsetSchedule.getScheduleRateInMillis(), TimeUnit.MILLISECONDS);
+                scheduledExecutorService.scheduleAtFixedRate(consumerOffsetSchedule, 0, consumerOffsetSchedule.getScheduleRateInMillis(), TimeUnit.MILLISECONDS);
 
 
 //                log.info("Scheduled :" + future.getHandler().toUrn());

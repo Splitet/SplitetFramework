@@ -4,6 +4,7 @@ import com.kloia.eventapis.common.Context;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.Map;
  * Created by zeldalozdemir on 25/01/2017.
  */
 @Data
+@ToString(exclude = "userContext")
 @AllArgsConstructor
 @NoArgsConstructor
 public class Operation implements Serializable {

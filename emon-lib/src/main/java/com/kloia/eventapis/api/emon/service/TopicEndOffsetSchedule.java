@@ -9,6 +9,7 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @SpringAware
 @Component
+@ConditionalOnProperty(value = "emon.offsetScheduler.enabled", havingValue = "true")
 class TopicEndOffsetSchedule extends ScheduledTask {
 
     private transient Consumer kafkaConsumer;
@@ -58,7 +60,7 @@ class TopicEndOffsetSchedule extends ScheduledTask {
 
     @Override
     @Autowired
-    public void setScheduleRateInMillis(@Value("${emon.schedulesInMillis.TopicEndOffsetSchedule:500}") Long scheduleRateInMillis) {
+    public void setScheduleRateInMillis(@Value("${emon.offsetScheduler.schedulesInMillis.TopicEndOffsetSchedule:500}") Long scheduleRateInMillis) {
         this.scheduleRateInMillis = scheduleRateInMillis;
     }
 

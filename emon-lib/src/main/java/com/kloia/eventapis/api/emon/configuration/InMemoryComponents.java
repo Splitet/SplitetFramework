@@ -1,9 +1,11 @@
 package com.kloia.eventapis.api.emon.configuration;
 
 import com.hazelcast.config.Config;
+import com.hazelcast.config.EvictionPolicy;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapIndexConfig;
+import com.hazelcast.config.MaxSizeConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -20,6 +22,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
+import javax.annotation.PreDestroy;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,25 +37,22 @@ public class InMemoryComponents {
     public static final String META_MAP_NAME = "meta";
     public static final String TOPICS_MAP_NAME = "topics";
 
-    public static final String LAST_CHECK_TIME_KEY = "LAST_CHECK_TIME";
-
     @Value("${emon.hazelcast.group.name:'emon'}")
     private String hazelcastGrid;
     @Value("${emon.hazelcast.group.password:'emon123'}")
     private String hazelcastPassword;
-
+    @Value("${emon.hazelcast.evict.freeHeapPercentage:20}")
+    private Integer evictFreePercentage;
     @Autowired(required = false)
     private InMemoryConfig inMemoryConfig;
-
     @Autowired(required = false)
     private InMemoryInterfacesConfig inMemoryInterfacesConfig;
-
     @Autowired(required = false)
     private InMemoryUserCodeDeploymentConfig inMemoryUserCodeDeploymentConfig;
-
     @Value("${eventapis.eventBus.consumer.groupId}")
 //    @Value("${info.build.artifact}")
     private String artifactId;
+    private HazelcastInstance hazelcastInstance;
 
     @Bean
     public Config config() {
@@ -71,6 +71,8 @@ public class InMemoryComponents {
 
         config.addMapConfig(new MapConfig()
                 .setMapIndexConfigs(indexes)
+                .setMaxSizeConfig(new MaxSizeConfig(evictFreePercentage, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_PERCENTAGE))
+                .setEvictionPolicy(EvictionPolicy.LRU)
                 .setName(OPERATIONS_MAP_HISTORY_NAME)
         );
         config.addMapConfig(new MapConfig()
@@ -110,7 +112,8 @@ public class InMemoryComponents {
     @Primary
     public HazelcastInstance hazelcastInstance(Config config, SpringManagedContext springManagedContext) {
         config.setManagedContext(springManagedContext);
-        return Hazelcast.newHazelcastInstance(config);
+        hazelcastInstance = Hazelcast.newHazelcastInstance(config);
+        return this.hazelcastInstance;
     }
 
     @Bean
@@ -138,5 +141,10 @@ public class InMemoryComponents {
     @Bean
     public IMap<String, Topic> topicsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
         return hazelcastInstance.getMap(TOPICS_MAP_NAME);
+    }
+
+    @PreDestroy
+    public void destroy() {
+        hazelcastInstance.shutdown();
     }
 }

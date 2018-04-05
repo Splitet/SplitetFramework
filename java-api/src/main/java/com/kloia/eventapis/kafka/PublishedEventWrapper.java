@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.kloia.eventapis.common.Context;
 import lombok.Data;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.Map;
  * Created by zeldalozdemir on 25/04/2017.
  */
 @Data
+@ToString(exclude = "userContext")
 public class PublishedEventWrapper implements Serializable {
 
     private static final long serialVersionUID = 7950670808405003425L;
@@ -22,10 +24,7 @@ public class PublishedEventWrapper implements Serializable {
     @JsonIgnore
     private String event;
     private Context context;
-    //    private String opId;
-//    private String parentOpId;
     private String sender;
-    //    private String aggregateId;
     private long opDate;
     private Map<String, String> userContext;
 

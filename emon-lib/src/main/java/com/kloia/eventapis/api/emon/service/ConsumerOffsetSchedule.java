@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 import scala.collection.JavaConversions;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @SpringAware
 @Component
+@ConditionalOnProperty(value = "emon.offsetScheduler.enabled", havingValue = "true")
 class ConsumerOffsetSchedule extends ScheduledTask {
 
     private transient kafka.admin.AdminClient adminToolsClient;
@@ -75,7 +77,7 @@ class ConsumerOffsetSchedule extends ScheduledTask {
 
     @Override
     @Autowired
-    public void setScheduleRateInMillis(@Value("${emon.schedulesInMillis.ConsumerOffsetSchedule:1000}") Long scheduleRateInMillis) {
+    public void setScheduleRateInMillis(@Value("${emon.offsetScheduler.schedulesInMillis.ConsumerOffsetSchedule:500}") Long scheduleRateInMillis) {
         this.scheduleRateInMillis = scheduleRateInMillis;
     }
 

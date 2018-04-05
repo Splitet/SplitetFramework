@@ -11,7 +11,9 @@ import org.apache.kafka.clients.admin.DescribeTopicsResult;
 import org.apache.kafka.clients.admin.TopicListing;
 import org.apache.kafka.common.TopicPartitionInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @SpringAware
 @Component
+@ConditionalOnProperty(value = "emon.offsetScheduler.enabled", havingValue = "true")
 class ListTopicSchedule extends ScheduledTask {
 
     private transient AdminClient adminClient;
@@ -67,7 +70,7 @@ class ListTopicSchedule extends ScheduledTask {
 
     @Override
     @Autowired
-    public void setScheduleRateInMillis(@Value("${emon.schedulesInMillis.ListTopicSchedule:500}") Long scheduleRateInMillis) {
+    public void setScheduleRateInMillis(@Value("${emon.offsetScheduler.schedulesInMillis.ListTopicSchedule:10000}") Long scheduleRateInMillis) {
         this.scheduleRateInMillis = scheduleRateInMillis;
     }
 
@@ -83,7 +86,7 @@ class ListTopicSchedule extends ScheduledTask {
     }
 
     @Autowired
-    public void setEventTopicRegex(Pattern eventTopicRegex) {
+    public void setEventTopicRegex(@Qualifier("eventTopicRegex") Pattern eventTopicRegex) {
         this.eventTopicRegex = eventTopicRegex;
     }
 

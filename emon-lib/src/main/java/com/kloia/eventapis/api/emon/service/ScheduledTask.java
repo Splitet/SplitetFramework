@@ -30,7 +30,7 @@ abstract class ScheduledTask implements Runnable, NamedTask, Serializable {
                 metaMap.set(getLastSuccessKey(), System.currentTimeMillis());
             }
         } catch (InterruptedException | ExecutionException e) {
-            log.warn("Error While trying to fetch Topic List " + e.getMessage(), e);
+            log.warn("Error While trying to run ScheduledTask: " + e.getMessage(), e);
         }
         log.debug(stopWatch.prettyPrint());
     }

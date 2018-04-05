@@ -50,7 +50,7 @@ public class ProducedEvent implements IProducedEvent {
         if (Objects.equals(topic, producedEvent.getAggregateId())) {
             IHandledEvent existingEvent = listeningServices.get(producedEvent.getSender());
             if (existingEvent instanceof NoneHandled) {
-                log.info("Attaching Event into: " + this + " New Event:" + producedEvent);
+                log.debug("Attaching Event into: " + this + " New Event:" + producedEvent);
                 producedEvent.setOperation(((NoneHandled) existingEvent).getOperation()); // if any
                 listeningServices.put(producedEvent.getSender(), new HandledEvent(producedEvent, producedEvent.getSender(), topic));
             } else {
@@ -107,21 +107,7 @@ public class ProducedEvent implements IProducedEvent {
                 return true;
             }
         }
-
         return listeningServices.values().stream().anyMatch(iEventHandler -> iEventHandler.attachOperation(operation));
-
-/*        if (Objects.equals(operation.getSender(), getSender()) && Objects.equals(operation.getAggregateId(), topic)) {
-            if (operation.getTransactionState() == TransactionState.TXN_FAILED && eventType != EventType.EVENT) {
-                log.error("Operation Failed in Non-EVENT type:" + eventType);
-            }
-            if (operation.getTransactionState() == TransactionState.TXN_SUCCEEDED && (eventType != EventType.OP_SUCCESS && eventType != EventType.OP_SINGLE)) {
-                log.error("Operation Success in Non-SINGLE/SUCCESS type:" + eventType);
-            }
-            transactionState = operation.getTransactionState();
-            return true;
-        } else
-            return listeningServices.values().stream().anyMatch(iEventHandler -> iEventHandler.attachOperation(operation));*/
-
     }
 
     @Override
