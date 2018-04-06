@@ -4,7 +4,6 @@ import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.util.List;
@@ -23,7 +22,7 @@ public class MultipleEventMessageListener implements EventMessageListener {
             try {
                 eventMessageListener.onOperationMessage(record, value);
             } catch (Exception e) {
-                log.error(e.getMessage(),e);
+                log.error(e.getMessage(), e);
             }
         });
     }
@@ -32,9 +31,9 @@ public class MultipleEventMessageListener implements EventMessageListener {
     public void onEventMessage(ConsumerRecord<String, Serializable> record, PublishedEventWrapper value) {
         eventMessageListeners.forEach(eventMessageListener -> {
             try {
-                eventMessageListener.onEventMessage(record,value);
+                eventMessageListener.onEventMessage(record, value);
             } catch (Exception e) {
-                log.error(e.getMessage(),e);
+                log.error(e.getMessage(), e);
             }
         });
     }

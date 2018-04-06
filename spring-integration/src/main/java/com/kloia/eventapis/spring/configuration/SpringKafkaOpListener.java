@@ -1,7 +1,6 @@
 package com.kloia.eventapis.spring.configuration;
 
 import com.kloia.eventapis.api.IUserContext;
-import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.view.AggregateListener;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +22,9 @@ public class SpringKafkaOpListener {
     IUserContext userContext;
 
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @KafkaListener(id = "op-listener", topics = Operation.OPERATION_EVENTS, containerFactory = "operationsKafkaListenerContainerFactory")
-    void listenOperations(ConsumerRecord<String, Operation> record) throws EventStoreException {
+    void listenOperations(ConsumerRecord<String, Operation> record) {
         String key = record.key();
         Operation value = record.value();
         log.debug("Incoming Message: " + key + " " + value);

@@ -119,8 +119,8 @@ public class EventApisFactory {
     }
 
     @Bean
-    public EventMessageConverter eventMessageConverter(OperationContext operationContext, IUserContext userContext) {
-        return new EventMessageConverter(objectMapper, operationContext, userContext);
+    public EventMessageConverter eventMessageConverter(OperationContext operationContext, IUserContext userContext, KafkaOperationRepository kafkaOperationRepository) {
+        return new EventMessageConverter(objectMapper, operationContext, userContext, kafkaOperationRepository);
     }
 
     @Bean
@@ -158,12 +158,6 @@ public class EventApisFactory {
         scheduler.initialize();
 
         factory.getContainerProperties().setScheduler(scheduler);
-//        ThreadPoolTaskScheduler consumerScheduler = new ThreadPoolTaskScheduler();
-//        consumerScheduler.setPoolSize(30);
-//        consumerScheduler.setBeanName("EventsFactory-ConsumerScheduler");
-//        consumerScheduler.initialize();
-
-//        factory.getContainerProperties().setConsumerTaskExecutor(consumerScheduler);
         factory.getContainerProperties().setAckMode(AbstractMessageListenerContainer.AckMode.RECORD);
         return factory;
     }
