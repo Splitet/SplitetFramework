@@ -56,10 +56,10 @@ class ConsumerOffsetSchedule extends ScheduledTask {
                             Collectors.toMap(
                                     entry -> entry.getKey().topic(),
                                     entry ->
-                                    Collections.singletonList(
-                                            new Partition(entry.getKey().partition(),(Long)entry.getValue())
-                                    ),
-                                    (u, u2) -> u));
+                                            Collections.singletonList(
+                                                    new Partition(entry.getKey().partition(), (Long) entry.getValue())
+                                            ),
+                                    (u1, u2) -> Stream.concat(u1.stream(), u2.stream()).collect(Collectors.toList())));
                     for (java.util.Map.Entry<String, List<Partition>> entry : result.entrySet()) {
                         if (shouldCollectEvent(entry.getKey())) {
                             topicsMap.executeOnKey(entry.getKey(), new ConsumerOffsetProcessor(consumer, entry.getValue()));
