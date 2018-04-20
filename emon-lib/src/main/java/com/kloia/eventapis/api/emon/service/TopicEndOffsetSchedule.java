@@ -3,6 +3,7 @@ package com.kloia.eventapis.api.emon.service;
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
 import com.hazelcast.spring.context.SpringAware;
+import com.kloia.eventapis.api.emon.domain.Partition;
 import com.kloia.eventapis.api.emon.domain.Topic;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -13,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,13 +38,14 @@ class TopicEndOffsetSchedule extends ScheduledTask {
 
         stopWatch.start("collectEndOffsets");
         List<TopicPartition> collect = topicsMap.entrySet().stream().flatMap(
-                topic -> topic.getValue().getPartitions().stream().map(partition -> new TopicPartition(topic.getKey(), partition))
+                topic -> topic.getValue().getPartitions().stream().map(partition -> new TopicPartition(topic.getKey(), partition.getNumber()))
         ).collect(Collectors.toList());
         java.util.Map<TopicPartition, Long> map = kafkaConsumer.endOffsets(collect);
-        java.util.Map<String, Long> result = new HashMap<>();
+        java.util.Map<String, List<Partition>> result = new HashMap<>();
         map.forEach((topicPartition, endOffset) -> {
-            if (!result.containsKey(topicPartition.topic()) || result.get(topicPartition.topic()) < endOffset)
-                result.put(topicPartition.topic(), endOffset);
+            if (!result.containsKey(topicPartition.topic()))
+                result.put(topicPartition.topic(),new ArrayList<>());
+            result.get(topicPartition.topic()).add(new Partition(topicPartition.partition(),endOffset));
         });
         result.forEach((topic, endOffset) -> topicsMap.executeOnKey(topic, new EndOffsetSetter(endOffset)));
         log.debug("collectEndOffsets:" + result.toString());
@@ -75,17 +78,16 @@ class TopicEndOffsetSchedule extends ScheduledTask {
     }
 
     private static class EndOffsetSetter extends AbstractEntryProcessor<String, Topic> {
-        private final Long endOffset;
+        private final List<Partition> partitions;
 
-        public EndOffsetSetter(Long endOffset) {
-            this.endOffset = endOffset;
+        public EndOffsetSetter(List<Partition> partitions) {
+            this.partitions = partitions;
         }
 
         @Override
         public Object process(Map.Entry<String, Topic> entry) {
             Topic topic = entry.getValue();
-            if (endOffset > topic.getEndOffSet())
-                topic.setEndOffSet(endOffset);
+            topic.setPartitions(partitions);
             entry.setValue(topic);
             return entry;
         }

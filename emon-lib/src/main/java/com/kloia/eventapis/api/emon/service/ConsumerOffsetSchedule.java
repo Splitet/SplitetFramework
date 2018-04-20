@@ -3,6 +3,7 @@ package com.kloia.eventapis.api.emon.service;
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
 import com.hazelcast.spring.context.SpringAware;
+import com.kloia.eventapis.api.emon.domain.Partition;
 import com.kloia.eventapis.api.emon.domain.ServiceData;
 import com.kloia.eventapis.api.emon.domain.Topic;
 import kafka.coordinator.group.GroupOverview;
@@ -15,11 +16,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 import scala.collection.JavaConversions;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @SpringAware
@@ -49,10 +52,15 @@ class ConsumerOffsetSchedule extends ScheduledTask {
                 try {
                     scala.collection.immutable.Map<TopicPartition, Object> listGroupOffsets = adminToolsClient.listGroupOffsets(consumer);
                     java.util.Map<TopicPartition, Object> map = JavaConversions.mapAsJavaMap(listGroupOffsets);
-                    java.util.Map<String, Long> result = map.entrySet().stream().collect(
+                    java.util.Map<String, List<Partition>> result = map.entrySet().stream().collect(
                             Collectors.toMap(
-                                    entry -> entry.getKey().topic(), entry -> (Long) entry.getValue(), Math::max));
-                    for (java.util.Map.Entry<String, Long> entry : result.entrySet()) {
+                                    entry -> entry.getKey().topic(),
+                                    entry ->
+                                    Collections.singletonList(
+                                            new Partition(entry.getKey().partition(),(Long)entry.getValue())
+                                    ),
+                                    (u, u2) -> u));
+                    for (java.util.Map.Entry<String, List<Partition>> entry : result.entrySet()) {
                         if (shouldCollectEvent(entry.getKey())) {
                             topicsMap.executeOnKey(entry.getKey(), new ConsumerOffsetProcessor(consumer, entry.getValue()));
                         }
@@ -107,11 +115,11 @@ class ConsumerOffsetSchedule extends ScheduledTask {
 
     private static class ConsumerOffsetProcessor extends AbstractEntryProcessor<String, Topic> {
         private final String consumer;
-        private final Long offset;
+        private final List<Partition> partitions;
 
-        public ConsumerOffsetProcessor(String consumer, Long offset) {
+        public ConsumerOffsetProcessor(String consumer, List<Partition> partitions) {
             this.consumer = consumer;
-            this.offset = offset;
+            this.partitions = partitions;
         }
 
         @Override
@@ -121,10 +129,10 @@ class ConsumerOffsetSchedule extends ScheduledTask {
                 topic = new Topic();
             ServiceData serviceData = topic.getServiceDataHashMap().get(consumer);
             if (serviceData == null) {
-                serviceData = new ServiceData(consumer, offset);
+                serviceData = new ServiceData(consumer, partitions);
                 topic.getServiceDataHashMap().put(consumer, serviceData);
             } else
-                serviceData.setOffset(offset);
+                serviceData.setPartition(partitions);
             entry.setValue(topic);
             return entry;
         }

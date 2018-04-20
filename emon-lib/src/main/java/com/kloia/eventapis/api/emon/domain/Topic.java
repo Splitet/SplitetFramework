@@ -7,10 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Data
@@ -23,17 +25,19 @@ public class Topic implements Serializable {
 
     private Map<String, ServiceData> serviceDataHashMap = new HashMap<>();
 
-    private Long endOffSet = 0L;
-
-    private List<Integer> partitions = Collections.singletonList(0);
-
-
-    public void setPartitions(List<Integer> partitions) {
-        this.partitions = partitions;
-    }
+    private List<Partition> partitions = new ArrayList<>();
 
     public Map<String, ServiceData> getServiceDataHashMap() {
-        serviceDataHashMap.forEach((s, serviceData) -> serviceData.calculateLag(endOffSet));
+        try {
+            serviceDataHashMap.forEach((s, serviceData) -> serviceData.getPartition()
+                    .forEach(partition -> getPartition(partition.getNumber()).ifPresent(partition1 -> partition.calculateLag(partition1.getOffset()))));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         return serviceDataHashMap;
+    }
+
+    private Optional<Partition> getPartition(int number){
+        return partitions.stream().filter(partition -> partition.getNumber() == number).findFirst();
     }
 }

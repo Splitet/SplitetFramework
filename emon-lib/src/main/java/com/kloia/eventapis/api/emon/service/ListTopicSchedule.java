@@ -4,6 +4,7 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.spring.context.SpringAware;
+import com.kloia.eventapis.api.emon.domain.Partition;
 import com.kloia.eventapis.api.emon.domain.Topic;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -107,7 +108,11 @@ class ListTopicSchedule extends ScheduledTask {
             if (topic == null) {
                 topic = new Topic();
             }
-            topic.setPartitions(partitions);
+            List<Partition> partitions = topic.getPartitions();
+            topic.setPartitions(
+                    this.partitions.stream().map(
+                            number -> partitions.stream().filter(partition -> partition.getNumber() == number).findFirst().orElse(new Partition(number))
+                    ).collect(Collectors.toList()));
             entry.setValue(topic);
             return entry;
         }
