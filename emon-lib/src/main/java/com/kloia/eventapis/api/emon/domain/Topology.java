@@ -66,7 +66,7 @@ public class Topology implements Serializable {
             return;
         Set<OperationEvent> toConsume = this.unassignedOperations;
         this.unassignedOperations = new HashSet<>();
-        log.info("Trying to Consume stales:" + toConsume);
+        log.debug("Trying to Consume stales:" + toConsume);
         toConsume.forEach(this::attachOperation);
     }
 
@@ -94,7 +94,7 @@ public class Topology implements Serializable {
             if (result)
                 operationState = operation.getTransactionState();
             else {
-                log.info("We Couldn't attach, " + opId + " Adding to UnAssigned Operation Event:" + operation);
+                log.debug("We Couldn't attach, " + opId + " Adding to UnAssigned Operation Event:" + operation);
                 unassignedOperations.add(operation);
             }
         }

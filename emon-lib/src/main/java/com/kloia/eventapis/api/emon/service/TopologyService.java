@@ -133,7 +133,7 @@ public class TopologyService implements EventMessageListener {
                 entry.setValue(topology);
                 return topology;
             } catch (Exception e) {
-                log.error("We Couldn't attach event:" + e.getMessage());
+                log.info("We Couldn't attach event:" + e.getMessage());
                 return null;
             }
         }
@@ -160,7 +160,7 @@ public class TopologyService implements EventMessageListener {
                 entry.setValue(value);
                 return value;
             } catch (Exception e) {
-                log.error("We Couldn't attach Operation:" + e.getMessage());
+                log.info("We Couldn't attach Operation:" + e.getMessage());
                 return null;
             }
         }

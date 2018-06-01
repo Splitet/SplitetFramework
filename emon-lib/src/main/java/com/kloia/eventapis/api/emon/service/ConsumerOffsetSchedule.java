@@ -17,6 +17,7 @@ import org.springframework.util.StopWatch;
 import scala.collection.JavaConversions;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,6 +34,7 @@ class ConsumerOffsetSchedule extends ScheduledTask {
     private transient kafka.admin.AdminClient adminToolsClient;
     private transient IMap<String, Topic> topicsMap;
     private transient Pattern eventTopicRegex;
+    private transient Pattern consumerGroupRegex;
 
 
     @Override
@@ -45,6 +47,9 @@ class ConsumerOffsetSchedule extends ScheduledTask {
 
         log.debug("consumerGroups: " + groupList.toString());
         stopWatch.stop();
+
+        Map<String, Topic> topicMap = topicsMap.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, o -> new Topic(new HashMap<>(), o.getValue().getPartitions())));
 
         stopWatch.start("ConsumerOffsetSchedule.collectGroupOffsets");
         groupList.forEach(consumer -> {
@@ -62,7 +67,19 @@ class ConsumerOffsetSchedule extends ScheduledTask {
                                     (u1, u2) -> Stream.concat(u1.stream(), u2.stream()).collect(Collectors.toList())));
                     for (java.util.Map.Entry<String, List<Partition>> entry : result.entrySet()) {
                         if (shouldCollectEvent(entry.getKey())) {
-                            topicsMap.executeOnKey(entry.getKey(), new ConsumerOffsetProcessor(consumer, entry.getValue()));
+//                            topicsMap.executeOnKey(entry.getKey(), new ConsumerOffsetProcessor(consumer, entry.getValue()));
+                            topicMap.compute(entry.getKey(), (s, topic) -> {
+                                if (topic == null)
+                                    topic = new Topic();
+                                ServiceData serviceData = topic.getServiceDataHashMap().get(consumer);
+                                if (serviceData == null) {
+                                    serviceData = new ServiceData(consumer, entry.getValue());
+                                    topic.getServiceDataHashMap().put(consumer, serviceData);
+                                } else
+                                    serviceData.setPartition(entry.getValue());
+                                return topic;
+                            });
+
                         }
                     }
                     log.debug(listGroupOffsets.toString());
@@ -72,7 +89,7 @@ class ConsumerOffsetSchedule extends ScheduledTask {
                 }
             }
         });
-
+        topicMap.forEach((s, topic) -> topicsMap.executeOnKey(s, new ConsumerOffsetProcessor(topic.getServiceDataHashMap())));
         stopWatch.stop();
         log.debug("Topics:" + topicsMap.entrySet());
         return isSuccess.get();
@@ -104,22 +121,24 @@ class ConsumerOffsetSchedule extends ScheduledTask {
         this.eventTopicRegex = eventTopicRegex;
     }
 
+    @Autowired
+    public void setConsumerGroupRegex(Pattern consumerGroupRegex) {
+        this.consumerGroupRegex = consumerGroupRegex;
+    }
+
     private boolean shouldCollectEvent(String topic) {
-        return topic != null && (eventTopicRegex.matcher(topic).matches() || topic.equals("operation-events"));
+        return eventTopicRegex.matcher(topic).matches();
     }
 
     private boolean shouldCollectConsumer(String consumer) {
-        //todo from
-        return consumer.endsWith("command-query") || consumer.endsWith("command") || consumer.endsWith("-service");
+        return consumerGroupRegex.matcher(consumer).matches();
     }
 
     private static class ConsumerOffsetProcessor extends AbstractEntryProcessor<String, Topic> {
-        private final String consumer;
-        private final List<Partition> partitions;
+        private Map<String, ServiceData> serviceDataMap;
 
-        public ConsumerOffsetProcessor(String consumer, List<Partition> partitions) {
-            this.consumer = consumer;
-            this.partitions = partitions;
+        public ConsumerOffsetProcessor(Map<String, ServiceData> serviceDataMap) {
+            this.serviceDataMap = serviceDataMap;
         }
 
         @Override
@@ -127,12 +146,7 @@ class ConsumerOffsetSchedule extends ScheduledTask {
             Topic topic = entry.getValue();
             if (topic == null)
                 topic = new Topic();
-            ServiceData serviceData = topic.getServiceDataHashMap().get(consumer);
-            if (serviceData == null) {
-                serviceData = new ServiceData(consumer, partitions);
-                topic.getServiceDataHashMap().put(consumer, serviceData);
-            } else
-                serviceData.setPartition(partitions);
+            topic.setServiceDataHashMap(serviceDataMap);
             entry.setValue(topic);
             return entry;
         }

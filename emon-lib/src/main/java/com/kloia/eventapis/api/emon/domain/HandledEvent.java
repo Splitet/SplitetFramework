@@ -29,11 +29,13 @@ public class HandledEvent implements IHandledEvent {
 
     public void attachProducedEvent(ProducedEvent producedEvent) {
         Optional<ProducedEvent> first = producedEvents.stream().filter(existingEvent -> Objects.equals(existingEvent.getTopic(), producedEvent.getTopic())).findFirst();
-        if (first.isPresent())
+        if (first.isPresent()) {
             first.get().incrementNumberOfVisit();
-        else
+            log.info("Duplicate Event Handle for:" + producedEvent);
+        }
+        else {
             producedEvents.add(producedEvent);
-        log.info("Duplicate Event Handle for:" + producedEvent);
+        }
     }
 
     @Override
