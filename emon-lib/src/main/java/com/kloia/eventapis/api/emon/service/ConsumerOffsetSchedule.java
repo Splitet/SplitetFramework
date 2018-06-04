@@ -127,7 +127,7 @@ class ConsumerOffsetSchedule extends ScheduledTask {
     }
 
     private boolean shouldCollectEvent(String topic) {
-        return eventTopicRegex.matcher(topic).matches();
+        return topic != null && (eventTopicRegex.matcher(topic).matches() || topic.equals("operation-events"));
     }
 
     private boolean shouldCollectConsumer(String consumer) {

@@ -37,7 +37,7 @@ public class EventListenConfiguration implements InitializingBean {
     private ConcurrentMessageListenerContainer<String, PublishedEventWrapper> messageListenerContainer;
     private ConcurrentMessageListenerContainer<String, Operation> operationListenerContainer;
 
-    @Value(value = "${eventapis.eventBus.eventTopicRegex:^(.+Event|operation-events)$}")
+    @Value(value = "${eventapis.eventBus.eventTopicRegex:^.+Event$}")
     private String eventTopicRegexStr;
 
     @Value(value = "${eventapis.eventBus.consumerGroupRegex:^(.+-command-query|.+-command)$}")
