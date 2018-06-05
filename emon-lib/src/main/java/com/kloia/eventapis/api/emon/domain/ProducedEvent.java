@@ -2,6 +2,7 @@ package com.kloia.eventapis.api.emon.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.common.EventType;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @JsonTypeName("event")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({"topic", "sender", "eventType", "eventKey", "aggregateId", "numberOfVisit", "opDate", "operation", "finished", "listeningServices"})
 public class ProducedEvent implements IProducedEvent {
 
     private final String topic;
@@ -29,16 +31,19 @@ public class ProducedEvent implements IProducedEvent {
     private String aggregateId;
     private int numberOfVisit = 1;
     private long opDate;
+    private Partition partition;
     private OperationEvent operation;
     private Map<String, IHandledEvent> listeningServices;
 
-    public ProducedEvent(String topic, String sender, String aggregateId, EventType eventType, EventKey eventKey, List<String> targetList, long opDate) {
+    public ProducedEvent(String topic, String sender, String aggregateId, EventType eventType,
+                         EventKey eventKey, List<String> targetList, long opDate, Partition partition) {
         this.topic = topic;
         this.sender = sender;
         this.aggregateId = aggregateId;
         this.eventType = eventType;
         this.eventKey = eventKey;
         this.opDate = opDate;
+        this.partition = partition;
         if (targetList != null)
             listeningServices = targetList.stream().collect(Collectors.toMap(Function.identity(), s -> new NoneHandled()));
         else

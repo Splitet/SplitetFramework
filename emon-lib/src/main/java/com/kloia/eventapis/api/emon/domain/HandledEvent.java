@@ -1,5 +1,6 @@
 package com.kloia.eventapis.api.emon.domain;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.kloia.eventapis.pojos.TransactionState;
 import lombok.Data;
@@ -13,6 +14,7 @@ import java.util.Set;
 @Slf4j
 @Data
 @JsonTypeName("handled")
+@JsonPropertyOrder({"handlerService", "topic","finished", "operation", "producedEvents"})
 public class HandledEvent implements IHandledEvent {
 
     private String handlerService;

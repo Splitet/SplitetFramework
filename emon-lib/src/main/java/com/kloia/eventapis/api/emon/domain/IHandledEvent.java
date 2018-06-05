@@ -18,5 +18,5 @@ public interface IHandledEvent extends Serializable {
 
     void setOperation(OperationEvent operation);
 
-    boolean attachOperation(OperationEvent operation);
+    boolean attachOperation(OperationEvent operationToAttach);
 }

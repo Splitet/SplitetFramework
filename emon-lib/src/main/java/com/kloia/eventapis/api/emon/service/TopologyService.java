@@ -6,6 +6,7 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.map.AbstractEntryProcessor;
 import com.kloia.eventapis.api.emon.domain.BaseEvent;
 import com.kloia.eventapis.api.emon.domain.OperationEvent;
+import com.kloia.eventapis.api.emon.domain.Partition;
 import com.kloia.eventapis.api.emon.domain.ProducedEvent;
 import com.kloia.eventapis.api.emon.domain.Topic;
 import com.kloia.eventapis.api.emon.domain.Topology;
@@ -69,7 +70,7 @@ public class TopologyService implements EventMessageListener {
                     new Topology(eventWrapper.getContext().getOpId(), eventWrapper.getContext().getParentOpId()),
                     calculateTimeout(eventWrapper.getContext()), TimeUnit.MILLISECONDS);
             operationsMap.executeOnKey(key, new EventTopologyUpdater(
-                    eventWrapper, baseEvent.getEventType(), baseEvent.getSender(), targetList, topic));
+                    eventWrapper, baseEvent.getEventType(), baseEvent.getSender(), targetList, topic, new Partition(record.partition(),record.offset())));
 
         } catch (IOException e) {
             log.error("Error While Handling Event:" + e.getMessage(), e);
@@ -96,19 +97,21 @@ public class TopologyService implements EventMessageListener {
 
         private List<String> targetList;
         private String topic;
+        private Partition partition;
         private PublishedEventWrapper eventWrapper;
 
         public EventTopologyUpdater(PublishedEventWrapper eventWrapper,
                                     EventType eventType,
                                     EventKey senderEventKey,
                                     List<String> targetList,
-                                    String topic) {
+                                    String topic, Partition partition) {
             this.eventWrapper = eventWrapper;
             this.eventType = eventType;
             this.senderEventKey = senderEventKey;
 
             this.targetList = targetList;
             this.topic = topic;
+            this.partition = partition;
         }
 
         @Override
@@ -126,7 +129,7 @@ public class TopologyService implements EventMessageListener {
                 }
 
                 ProducedEvent producedEvent = new ProducedEvent(topic, eventWrapper.getSender(),
-                        eventWrapper.getContext().getCommandContext(), eventType, senderEventKey, targetList, eventWrapper.getOpDate());
+                        eventWrapper.getContext().getCommandContext(), eventType, senderEventKey, targetList, eventWrapper.getOpDate(), partition);
                 boolean b = topology.attachProducedEvent(producedEvent);
                 if (!b)
                     log.debug("We Couldn't attach event:" + producedEvent);

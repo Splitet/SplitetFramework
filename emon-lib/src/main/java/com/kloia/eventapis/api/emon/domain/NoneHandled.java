@@ -11,17 +11,20 @@ import lombok.Data;
 public class NoneHandled implements IHandledEvent {
 
     private OperationEvent operation;
+    private boolean finishedAsLeaf = false;
 
     NoneHandled() {
     }
 
     @Override
     public boolean isFinished() {
-        return operation != null && operation.getTransactionState() == TransactionState.TXN_FAILED;
+        if (operation != null)
+            return operation.getTransactionState() == TransactionState.TXN_FAILED;
+        else return finishedAsLeaf;
     }
 
     @Override
-    public boolean attachOperation(OperationEvent operationtoAttach) {
+    public boolean attachOperation(OperationEvent operationToAttach) {
         return false;
     }
 

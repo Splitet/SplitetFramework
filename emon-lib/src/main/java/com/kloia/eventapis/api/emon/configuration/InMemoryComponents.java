@@ -127,14 +127,15 @@ public class InMemoryComponents {
     }
 
     @Bean
-    public OperationExpirationListener operationExpirationListener(@Autowired @Qualifier("operationsHistoryMap") IMap<String, Topology> operationsHistoryMap) {
-        return new OperationExpirationListener(operationsHistoryMap);
+    public OperationExpirationListener operationExpirationListener(@Autowired @Qualifier("operationsHistoryMap") IMap<String, Topology> operationsHistoryMap,
+                                                                   @Autowired @Qualifier("topicsMap") IMap<String, Topic> topicsMap) {
+        return new OperationExpirationListener(operationsHistoryMap, topicsMap);
     }
 
     @Bean
     public IMap<String, Topology> operationsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance, OperationExpirationListener operationExpirationListener) {
         IMap<String, Topology> operationsMap = hazelcastInstance.getMap(OPERATIONS_MAP_NAME);
-        operationsMap.addEntryListener(operationExpirationListener, true);
+        operationsMap.addLocalEntryListener(operationExpirationListener);
         return operationsMap;
     }
 
