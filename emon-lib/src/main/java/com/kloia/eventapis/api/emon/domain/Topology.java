@@ -55,13 +55,24 @@ public class Topology implements Serializable {
         } else
             result = producedEvents.stream().anyMatch(existingEvent -> existingEvent.attachHandler(producedEvent));
         if (result)
-            consumeStales();
+            consumeStaleEvents();
         else
             unassignedEvents.add(producedEvent);
         return result;
     }
 
-    private void consumeStales() {
+    private void consumeStaleEvents() {
+        this.unassignedEvents.removeIf(producedEvent -> {
+            if (producedEvents.stream().anyMatch(existingEvent -> existingEvent.attachHandler(producedEvent))) {
+                consumeStaleOperations();
+                return true;
+            } else {
+                return false;
+            }
+        });
+    }
+
+    private void consumeStaleOperations() {
         if (unassignedOperations.isEmpty())
             return;
         Set<OperationEvent> toConsume = this.unassignedOperations;
