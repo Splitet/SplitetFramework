@@ -70,7 +70,7 @@ public class TopologyService implements EventMessageListener {
                     new Topology(eventWrapper.getContext().getOpId(), eventWrapper.getContext().getParentOpId()),
                     calculateTimeout(eventWrapper.getContext()), TimeUnit.MILLISECONDS);
             operationsMap.executeOnKey(key, new EventTopologyUpdater(
-                    eventWrapper, baseEvent.getEventType(), baseEvent.getSender(), targetList, topic, new Partition(record.partition(),record.offset())));
+                    eventWrapper, baseEvent.getEventType(), baseEvent.getSender(), targetList, topic, new Partition(record.partition(), record.offset())));
 
         } catch (IOException e) {
             log.error("Error While Handling Event:" + e.getMessage(), e);

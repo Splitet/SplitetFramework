@@ -16,6 +16,7 @@ import com.kloia.eventapis.spring.filter.OpContextFilter;
 import feign.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -23,22 +24,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
-import org.springframework.kafka.config.AbstractKafkaListenerContainerFactory;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.KafkaListenerContainerFactory;
-import org.springframework.kafka.config.KafkaListenerEndpoint;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.listener.AbstractMessageListenerContainer;
-import org.springframework.kafka.listener.KafkaMessageListenerContainer;
+import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.config.ContainerProperties;
-import org.springframework.kafka.support.TopicPartitionInitialOffset;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.annotation.PreDestroy;
 import javax.servlet.DispatcherType;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 
@@ -163,29 +159,30 @@ public class EventApisFactory {
     }
 
     @Bean("operationsKafkaListenerContainerFactory")
-    public KafkaListenerContainerFactory<KafkaMessageListenerContainer<String, Operation>> operationsKafkaListenerContainerFactory(
+    public EventApisKafkaListenerContainerFactory operationsKafkaListenerContainerFactory(
             ConsumerFactory<String, Operation> consumerFactory,
             PlatformTransactionManager platformTransactionManager) {
-        AbstractKafkaListenerContainerFactory<KafkaMessageListenerContainer<String, Operation>, String, Operation> abstractKafkaListenerContainerFactory
+        EventApisKafkaListenerContainerFactory factory
                 = new EventApisKafkaListenerContainerFactory(consumerFactory);
         RetryTemplate retryTemplate = new RetryTemplate();
-        abstractKafkaListenerContainerFactory.setRetryTemplate(retryTemplate);
-        abstractKafkaListenerContainerFactory.getContainerProperties().setPollTimeout(3000L);
-        abstractKafkaListenerContainerFactory.getContainerProperties().setAckOnError(false);
+        factory.setRetryTemplate(retryTemplate);
+        factory.getContainerProperties().setPollTimeout(3000L);
+        factory.getContainerProperties().setAckOnError(false);
+        factory.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getOperationSchedulerPoolSize());
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(eventApisConfiguration.getEventBus().getConsumer().getOperationSchedulerPoolSize());
         scheduler.setBeanName("OperationsFactory-Scheduler");
         scheduler.initialize();
-        abstractKafkaListenerContainerFactory.getContainerProperties().setScheduler(scheduler);
-//        ThreadPoolTaskScheduler consumerScheduler = new ThreadPoolTaskScheduler();
-//        consumerScheduler.setPoolSize(30);
-//        consumerScheduler.setBeanName("OperationsFactory-ConsumerScheduler");
-//        consumerScheduler.initialize();
-//
-//        abstractKafkaListenerContainerFactory.getContainerProperties().setConsumerTaskExecutor(consumerScheduler);
-        abstractKafkaListenerContainerFactory.getContainerProperties().setAckMode(AbstractMessageListenerContainer.AckMode.RECORD);
-        abstractKafkaListenerContainerFactory.getContainerProperties().setTransactionManager(platformTransactionManager);
-        return abstractKafkaListenerContainerFactory;
+        factory.getContainerProperties().setScheduler(scheduler);
+        ThreadPoolTaskScheduler consumerScheduler = new ThreadPoolTaskScheduler();
+        consumerScheduler.setPoolSize(eventApisConfiguration.getEventBus().getConsumer().getOperationSchedulerPoolSize());
+        consumerScheduler.setBeanName("OperationsFactory-ConsumerScheduler");
+        consumerScheduler.initialize();
+
+        factory.getContainerProperties().setConsumerTaskExecutor(consumerScheduler);
+        factory.getContainerProperties().setAckMode(AbstractMessageListenerContainer.AckMode.RECORD);
+        factory.getContainerProperties().setTransactionManager(platformTransactionManager);
+        return factory;
     }
 
     @Bean
@@ -194,34 +191,44 @@ public class EventApisFactory {
         return new EmptyUserContext();
     }
 
-    public static class EventApisKafkaListenerContainerFactory extends AbstractKafkaListenerContainerFactory<KafkaMessageListenerContainer<String, Operation>, String, Operation> {
+    public static class EventApisKafkaListenerContainerFactory extends ConcurrentKafkaListenerContainerFactory<String, Operation> {
         private final ConsumerFactory<String, Operation> consumerFactory;
+        private Integer concurrency;
+
+        /**
+         * Specify the container concurrency.
+         * @param concurrency the number of consumers to create.
+         * @see ConcurrentMessageListenerContainer#setConcurrency(int)
+         */
+        public void setConcurrency(Integer concurrency) {
+            this.concurrency = concurrency;
+        }
 
         public EventApisKafkaListenerContainerFactory(ConsumerFactory<String, Operation> consumerFactory) {
             this.consumerFactory = consumerFactory;
         }
 
         @Override
-        protected KafkaMessageListenerContainer<String, Operation> createContainerInstance(KafkaListenerEndpoint endpoint) {
-            ContainerProperties containerProperties;
-            Collection<TopicPartitionInitialOffset> topicPartitions = endpoint.getTopicPartitions();
-            if (!topicPartitions.isEmpty()) {
-                containerProperties = new ContainerProperties(
-                        topicPartitions.toArray(new TopicPartitionInitialOffset[topicPartitions.size()]));
-            } else {
-                Collection<String> topics = endpoint.getTopics();
-                if (!topics.isEmpty()) {
-                    containerProperties = new ContainerProperties(topics.toArray(new String[topics.size()]));
-                } else {
-                    containerProperties = new ContainerProperties(endpoint.getTopicPattern());
-                }
-            }
-            return new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
+        public ConsumerFactory<String, Operation> getConsumerFactory() {
+            return consumerFactory;
         }
 
         @Override
-        protected void initializeContainer(KafkaMessageListenerContainer<String, Operation> instance) {
-//                super.initializeContainer(instance);
+        protected void initializeContainer(ConcurrentMessageListenerContainer<String, Operation> instance) {
+            if (this.concurrency != null) {
+                instance.setConcurrency(this.concurrency);
+            }
+            ContainerProperties properties = instance.getContainerProperties();
+            BeanUtils.copyProperties(
+                    this.getContainerProperties(), properties,
+                    "topics", "topicPartitions", "topicPattern",
+                    "messageListener", "ackCount", "ackTime", "ackMode");
+            if (this.getContainerProperties().getAckCount() > 0) {
+                properties.setAckCount(this.getContainerProperties().getAckCount());
+            }
+            if (this.getContainerProperties().getAckTime() > 0) {
+                properties.setAckTime(this.getContainerProperties().getAckTime());
+            }
         }
     }
 

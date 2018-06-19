@@ -14,7 +14,7 @@ import java.util.Set;
 @Slf4j
 @Data
 @JsonTypeName("handled")
-@JsonPropertyOrder({"handlerService", "topic","finished", "operation", "producedEvents"})
+@JsonPropertyOrder({"handlerService", "topic", "finished", "operation", "producedEvents"})
 public class HandledEvent implements IHandledEvent {
 
     private String handlerService;
@@ -34,8 +34,7 @@ public class HandledEvent implements IHandledEvent {
         if (first.isPresent()) {
             first.get().incrementNumberOfVisit();
             log.info("Duplicate Event Handle for:" + producedEvent);
-        }
-        else {
+        } else {
             producedEvents.add(producedEvent);
         }
     }

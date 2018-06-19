@@ -44,8 +44,8 @@ class TopicEndOffsetSchedule extends ScheduledTask {
         java.util.Map<String, List<Partition>> result = new HashMap<>();
         map.forEach((topicPartition, endOffset) -> {
             if (!result.containsKey(topicPartition.topic()))
-                result.put(topicPartition.topic(),new ArrayList<>());
-            result.get(topicPartition.topic()).add(new Partition(topicPartition.partition(),endOffset));
+                result.put(topicPartition.topic(), new ArrayList<>());
+            result.get(topicPartition.topic()).add(new Partition(topicPartition.partition(), endOffset));
         });
         result.forEach((topic, endOffset) -> topicsMap.executeOnKey(topic, new EndOffsetSetter(endOffset)));
         log.debug("collectEndOffsets:" + result.toString());

@@ -86,24 +86,24 @@ public class KafkaProperties implements Cloneable {
      * instance
      */
     public Map<String, Object> buildConsumerProperties() {
-        Map<String, Object> properties = buildCommonProperties();
-        properties.putAll(this.consumer.buildProperties());
-        return properties;
+        Map<String, Object> consumerProperties = buildCommonProperties();
+        consumerProperties.putAll(this.consumer.buildProperties());
+        return consumerProperties;
     }
 
     /**
      * Create an initial map of producer properties from the state of this instance.
-     * <p>
-     * This allows you to add additional properties, if necessary, and override the
+     *
+     * <p>This allows you to add additional properties, if necessary, and override the
      * default kafkaProducerFactory bean.
      *
      * @return the producer properties initialized with the customizations defined on this
      * instance
      */
     public Map<String, Object> buildProducerProperties() {
-        Map<String, Object> properties = buildCommonProperties();
-        properties.putAll(this.producer.buildProperties());
-        return properties;
+        Map<String, Object> producerProperties = buildCommonProperties();
+        producerProperties.putAll(this.producer.buildProperties());
+        return producerProperties;
     }
 
     @Override
@@ -178,6 +178,8 @@ public class KafkaProperties implements Cloneable {
          */
         private Integer maxPollRecords;
 
+        private Integer sessionTimeout;
+
 
         public Map<String, Object> buildProperties() {
             Map<String, Object> properties = new HashMap<String, Object>();
@@ -210,6 +212,10 @@ public class KafkaProperties implements Cloneable {
             if (this.maxPollRecords != null) {
                 properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,
                         this.maxPollRecords);
+            }
+            if (this.sessionTimeout != null) {
+                properties.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG,
+                        this.sessionTimeout);
             }
             return properties;
         }

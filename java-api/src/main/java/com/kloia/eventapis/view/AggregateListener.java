@@ -19,10 +19,10 @@ import java.util.Map;
 
 @Slf4j
 public class AggregateListener<T extends Entity> {
-    private final Map<String, Map.Entry<Class<RecordedEvent>, RollbackSpec>> rollbackSpecMap;
-    private ViewQuery<T> viewQuery;
-    private EventRepository eventRepository;
-    private SnapshotRepository<T, String> snapshotRepository;
+    final Map<String, Map.Entry<Class<RecordedEvent>, RollbackSpec>> rollbackSpecMap;
+    ViewQuery<T> viewQuery;
+    EventRepository eventRepository;
+    SnapshotRepository<T, String> snapshotRepository;
     private ObjectMapper objectMapper;
 
     public AggregateListener(ViewQuery<T> viewQuery,
@@ -41,29 +41,30 @@ public class AggregateListener<T extends Entity> {
         });
     }
 
-    public void listenOperations(ConsumerRecord<String, Operation> data) {
+    public void listenOperations(ConsumerRecord<String, Operation> data) throws EventStoreException {
         try {
             if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
                 List<EntityEvent> entityEvents = eventRepository.markFail(data.key());
-                entityEvents.forEach(entityEvent -> {
-                    try {
-                        Map.Entry<Class<RecordedEvent>, RollbackSpec> specEntry = rollbackSpecMap.get(entityEvent.getEventType());
-                        if (specEntry != null)
-                            specEntry.getValue().rollback(new EntityEventWrapper<>(specEntry.getKey(), objectMapper, entityEvent).getEventData());
-                    } catch (Exception e) {
-                        log.warn(e.getMessage(), e);
-                    }
-                });
-//                List<T> list = viewQuery.queryByOpId(data.key(), o -> snapshotRepository.findOne(o));
-//                snapshotRepository.save(list);
+                runRollbacks(entityEvents);
                 snapshotRepository.save(viewQuery.queryByOpId(data.key())); // We may not need this
             } else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEEDED) {
-//                List<T> list = viewQuery.queryByOpId(data.key(), o -> snapshotRepository.findOne(o));
-//                snapshotRepository.save(list);
                 snapshotRepository.save(viewQuery.queryByOpId(data.key()));
             }
+            snapshotRepository.flush();
         } catch (EventStoreException e) {
             log.error("Error while applying operation:" + data.toString() + " Exception:" + e.getMessage(), e);
         }
+    }
+
+    void runRollbacks(List<EntityEvent> entityEvents) {
+        entityEvents.forEach(entityEvent -> {
+            try {
+                Map.Entry<Class<RecordedEvent>, RollbackSpec> specEntry = rollbackSpecMap.get(entityEvent.getEventType());
+                if (specEntry != null)
+                    specEntry.getValue().rollback(new EntityEventWrapper<>(specEntry.getKey(), objectMapper, entityEvent).getEventData());
+            } catch (Exception e) {
+                log.warn(e.getMessage(), e);
+            }
+        });
     }
 }

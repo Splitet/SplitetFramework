@@ -31,7 +31,7 @@ public class OperationExpirationListener implements EntryExpiredListener<String,
         try {
             topology.getProducedEvents().forEach(this::setLeafs);
         } catch (Exception ex) {
-            log.warn("Error while trying to check Leafs:"+ ex.getMessage());
+            log.warn("Error while trying to check Leafs:" + ex.getMessage());
         }
         if (!topology.isFinished()) {
             log.error("Topology Doesn't Finished:" + topology.toString());

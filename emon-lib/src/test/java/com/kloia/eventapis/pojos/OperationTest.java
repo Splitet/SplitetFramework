@@ -37,7 +37,7 @@ public class OperationTest {
     }
 
     @Test
-    public void regexpTest(){
+    public void regexpTest() {
         Pattern compile = Pattern.compile("^(.+Event|operation-events)$");
         assert compile.matcher("BalBlaEvent").matches();
         assert !compile.matcher("BalBlaEvent2as").matches();
@@ -49,7 +49,7 @@ public class OperationTest {
     }
 
     @Test
-    public void regexpTest2(){
+    public void regexpTest2() {
         Pattern compile = Pattern.compile("^(.+command-query|.+-command)$");
         assert compile.matcher("payment3d-process-command").matches();
 

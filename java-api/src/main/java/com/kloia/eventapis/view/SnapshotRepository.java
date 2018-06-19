@@ -8,5 +8,9 @@ import java.util.List;
 public interface SnapshotRepository<T, ID extends Serializable> {
     <S extends T> List<S> save(Iterable<S> entities);
 
+    <S extends T> S save(S entity);
+
+    void flush();
+
     T findOne(ID id);
 }
