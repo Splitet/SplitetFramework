@@ -130,7 +130,6 @@
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${plugin.checkstyle.version}</version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>findbugs-maven-plugin</artifactId>

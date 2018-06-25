@@ -5,6 +5,7 @@ import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.RollbackSpec;
 import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.cassandra.EntityEvent;
+import com.kloia.eventapis.common.PublishedEvent;
 import com.kloia.eventapis.common.RecordedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.pojos.Operation;
@@ -60,8 +61,12 @@ public class AggregateListener<T extends Entity> {
         entityEvents.forEach(entityEvent -> {
             try {
                 Map.Entry<Class<RecordedEvent>, RollbackSpec> specEntry = rollbackSpecMap.get(entityEvent.getEventType());
-                if (specEntry != null)
-                    specEntry.getValue().rollback(new EntityEventWrapper<>(specEntry.getKey(), objectMapper, entityEvent).getEventData());
+                if (specEntry != null) {
+                    RecordedEvent eventData = new EntityEventWrapper<>(specEntry.getKey(), objectMapper, entityEvent).getEventData();
+                    if(eventData instanceof PublishedEvent)
+                        ((PublishedEvent) eventData).setSender(entityEvent.getEventKey());
+                    specEntry.getValue().rollback(eventData);
+                }
             } catch (Exception e) {
                 log.warn(e.getMessage(), e);
             }
