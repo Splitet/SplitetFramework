@@ -63,8 +63,9 @@ public class AggregateListener<T extends Entity> {
                 Map.Entry<Class<RecordedEvent>, RollbackSpec> specEntry = rollbackSpecMap.get(entityEvent.getEventType());
                 if (specEntry != null) {
                     RecordedEvent eventData = new EntityEventWrapper<>(specEntry.getKey(), objectMapper, entityEvent).getEventData();
-                    if(eventData instanceof PublishedEvent)
+                    if(eventData instanceof PublishedEvent) {
                         ((PublishedEvent) eventData).setSender(entityEvent.getEventKey());
+                    }
                     specEntry.getValue().rollback(eventData);
                 }
             } catch (Exception e) {
