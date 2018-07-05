@@ -114,7 +114,7 @@ public class SnapshotOptimizedAggregateListener<T extends Entity> extends Aggreg
      * <li>Calculate Min/Max version for each Entity</li>
      * <ul>
      * <li>If we dont have existing snapshot: Calculate snapshot for EntityId/MaxVersion</li>
-     * <li>If we have existing snapshot with version greater then MinVersion:  Calculate new snapshot for EntityId/MaxVersion</li>
+     * <li>If we have existing snapshot with version ge than MinVersion:  Calculate new snapshot for EntityId/MaxVersion</li>
      * <li>If we have existing snapshot with version less then MinVersion:  Do nothing, it's valid</li>
      * </ul>
      * </ul>

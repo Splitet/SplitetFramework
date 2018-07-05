@@ -64,7 +64,7 @@ public class AutomaticTopicConfiguration {
                             throw exception;
                         log.warn("Topic {} does not exists, trying to create", topicName);
                         try {
-                            adminClient.createTopics(Collections.singleton(new NewTopic(topicName, numberOfNodes, (short) 1)));
+                            adminClient.createTopics(Collections.singleton(new NewTopic(topicName, -1, (short) 1)));
                             log.info("Topic {} is Created Successfully:", topicName);
                         } catch (Exception topicCreationEx) {
                             log.warn("Error while creating Topic:" + topicCreationEx.getMessage(), topicCreationEx);
