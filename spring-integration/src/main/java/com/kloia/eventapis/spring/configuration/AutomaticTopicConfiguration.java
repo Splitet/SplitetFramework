@@ -4,7 +4,6 @@ import com.kloia.eventapis.common.PublishedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.common.Node;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -14,7 +13,6 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.StopWatch;
 
 import javax.annotation.PostConstruct;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
@@ -41,16 +39,7 @@ public class AutomaticTopicConfiguration {
             stopWatch.start("CheckAndCreateTopics");
             ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
             provider.addIncludeFilter(new AssignableTypeFilter(PublishedEvent.class));
-//            provider.addExcludeFilter(new AssignableTypeFilter(ReceivedEvent.class));
             Set<BeanDefinition> candidateComponents = provider.findCandidateComponents(eventApisConfiguration.getBaseEventsPackage());
-            int numberOfNodes = 1;
-            try {
-                Collection<Node> nodes = adminClient.describeCluster().nodes().get();
-                numberOfNodes = nodes.size();
-            } catch (InterruptedException | ExecutionException e) {
-                log.warn("Error while finding number of Nodes:" + e.getMessage(), e);
-
-            }
             for (BeanDefinition candidateComponent : candidateComponents) {
                 Class<PublishedEvent> beanClass;
                 try {
