@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.IUserContext;
 import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.pojos.Operation;
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 public class KafkaOperationRepositoryFactory {
