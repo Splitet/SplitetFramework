@@ -6,6 +6,7 @@ import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapIndexConfig;
 import com.hazelcast.config.MaxSizeConfig;
+import com.hazelcast.config.ReplicatedMapConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -75,7 +76,7 @@ public class InMemoryComponents {
                 .setEvictionPolicy(EvictionPolicy.LRU)
                 .setName(OPERATIONS_MAP_HISTORY_NAME)
         );
-        config.addMapConfig(new MapConfig()
+        config.addReplicatedMapConfig(new ReplicatedMapConfig()
                 .setName(TOPICS_MAP_NAME)
         );
         /*

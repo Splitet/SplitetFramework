@@ -7,6 +7,7 @@ import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.AbstractMessageListenerContainer;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.config.ContainerProperties;
 
@@ -67,28 +69,31 @@ public class EventListenConfiguration implements InitializingBean {
 
     private void startOperations() {
         Map<String, Object> consumerProperties = eventApisConfiguration.getEventBus().buildConsumerProperties();
+        consumerProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
         DefaultKafkaConsumerFactory<String, Operation> operationConsumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProperties, new StringDeserializer(), new JsonDeserializer<>(Operation.class));
 
-        ContainerProperties operationContainerProperties = new ContainerProperties(Operation.OPERATION_EVENTS);
-        operationContainerProperties.setMessageListener(new MultipleEventMessageListener(eventMessageListeners));
-        operationListenerContainer = new ConcurrentMessageListenerContainer<>(operationConsumerFactory,
-                operationContainerProperties);
+        ContainerProperties containerProperties = new ContainerProperties(Operation.OPERATION_EVENTS);
+        containerProperties.setMessageListener(new MultipleEventMessageListener(eventMessageListeners));
+        containerProperties.setAckMode(AbstractMessageListenerContainer.AckMode.BATCH);
+        operationListenerContainer = new ConcurrentMessageListenerContainer<>(operationConsumerFactory, containerProperties);
         operationListenerContainer.setBeanName("emon-operations");
         operationListenerContainer.start();
     }
 
     private void startEvents() {
         Map<String, Object> consumerProperties = eventApisConfiguration.getEventBus().buildConsumerProperties();
+        consumerProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        consumerProperties.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, 5000);
 
         DefaultKafkaConsumerFactory<String, PublishedEventWrapper> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProperties, new StringDeserializer(), new JsonDeserializer<>(PublishedEventWrapper.class));
 
         ContainerProperties containerProperties = new ContainerProperties(Pattern.compile(eventTopicRegexStr));
         containerProperties.setMessageListener(new MultipleEventMessageListener(eventMessageListeners));
-        messageListenerContainer = new ConcurrentMessageListenerContainer<>(consumerFactory,
-                containerProperties);
+        containerProperties.setAckMode(AbstractMessageListenerContainer.AckMode.BATCH);
+        messageListenerContainer = new ConcurrentMessageListenerContainer<>(consumerFactory, containerProperties);
         messageListenerContainer.setBeanName("emon-events");
         messageListenerContainer.start();
     }

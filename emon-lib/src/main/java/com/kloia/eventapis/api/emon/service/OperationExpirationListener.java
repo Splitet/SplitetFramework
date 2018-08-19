@@ -51,9 +51,12 @@ public class OperationExpirationListener implements EntryExpiredListener<String,
                 ServiceData serviceData = topicsMap.get(producedEvent.getTopic()).getServiceDataHashMap().get(s);
                 Partition eventPartition = producedEvent.getPartition();
                 ((NoneHandled) iHandledEvent).setFinishedAsLeaf(
-                        serviceData.getPartition().stream().anyMatch(
-                                partition -> partition.getNumber() == eventPartition.getNumber() && partition.getOffset() >= eventPartition.getOffset()
-                        ));
+                        serviceData.getPartitions().get(eventPartition.getNumber()) != null
+                        && serviceData.getPartitions().get(eventPartition.getNumber()).getNumber() >= eventPartition.getOffset()
+//                        serviceData.getPartitions().values().stream().anyMatch(
+//                                partition -> partition.getNumber() == eventPartition.getNumber() && partition.getOffset() >= eventPartition.getOffset()
+//                        )
+                );
             }
         });
     }

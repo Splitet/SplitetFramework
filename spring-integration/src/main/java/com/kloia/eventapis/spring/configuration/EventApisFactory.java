@@ -7,6 +7,7 @@ import com.kloia.eventapis.cassandra.CassandraSession;
 import com.kloia.eventapis.common.CommandExecutionInterceptor;
 import com.kloia.eventapis.common.EventExecutionInterceptor;
 import com.kloia.eventapis.common.OperationContext;
+import com.kloia.eventapis.kafka.JsonDeserializer;
 import com.kloia.eventapis.kafka.KafkaOperationRepository;
 import com.kloia.eventapis.kafka.KafkaOperationRepositoryFactory;
 import com.kloia.eventapis.kafka.KafkaProperties;
@@ -26,6 +27,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.AbstractMessageListenerContainer;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.config.ContainerProperties;
@@ -36,7 +38,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.annotation.PreDestroy;
 import javax.servlet.DispatcherType;
 import java.util.EnumSet;
-import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -120,23 +121,19 @@ public class EventApisFactory {
     }
 
     @Bean
-    public ConsumerFactory<String, PublishedEventWrapper> kafkaConsumerFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory) {
-        return new EventApisConsumerFactory<String, PublishedEventWrapper>(eventApisConfiguration, true) {
-            @Override
-            public Consumer<String, PublishedEventWrapper> createConsumer() {
-                return kafkaOperationRepositoryFactory.createEventConsumer(objectMapper);
-            }
-        };
+    public ConsumerFactory<String, PublishedEventWrapper> kafkaConsumerFactory() {
+        KafkaProperties properties = eventApisConfiguration.getEventBus().clone();
+        properties.getConsumer().setEnableAutoCommit(false);
+        return new DefaultKafkaConsumerFactory<>(properties.buildConsumerProperties(),
+                new StringDeserializer(), new JsonDeserializer<>(PublishedEventWrapper.class, objectMapper));
     }
 
     @Bean
-    public ConsumerFactory<String, Operation> kafkaOperationsFactory(KafkaOperationRepositoryFactory kafkaOperationRepositoryFactory) {
-        return new EventApisConsumerFactory<String, Operation>(eventApisConfiguration, false) {
-            @Override
-            public Consumer<String, Operation> createConsumer() {
-                return kafkaOperationRepositoryFactory.createOperationConsumer(objectMapper);
-            }
-        };
+    public ConsumerFactory<String, Operation> kafkaOperationsFactory() {
+        KafkaProperties properties = eventApisConfiguration.getEventBus().clone();
+        properties.getConsumer().setEnableAutoCommit(false);
+        return new DefaultKafkaConsumerFactory<>(properties.buildConsumerProperties(),
+                new StringDeserializer(), new JsonDeserializer<>(Operation.class, objectMapper));
     }
 
     @Bean({"eventsKafkaListenerContainerFactory", "kafkaListenerContainerFactory"})
@@ -159,15 +156,15 @@ public class EventApisFactory {
     }
 
     @Bean("operationsKafkaListenerContainerFactory")
-    public EventApisKafkaListenerContainerFactory operationsKafkaListenerContainerFactory(
+    public ConcurrentKafkaListenerContainerFactory<String, Operation> operationsKafkaListenerContainerFactory(
             ConsumerFactory<String, Operation> consumerFactory,
             PlatformTransactionManager platformTransactionManager) {
-        EventApisKafkaListenerContainerFactory factory
-                = new EventApisKafkaListenerContainerFactory(consumerFactory);
+        ConcurrentKafkaListenerContainerFactory<String, Operation> factory
+                = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
         RetryTemplate retryTemplate = new RetryTemplate();
         factory.setRetryTemplate(retryTemplate);
-        factory.getContainerProperties().setPollTimeout(3000L);
-        factory.getContainerProperties().setAckOnError(false);
+
         factory.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getOperationSchedulerPoolSize());
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(eventApisConfiguration.getEventBus().getConsumer().getOperationSchedulerPoolSize());
@@ -179,6 +176,8 @@ public class EventApisFactory {
         consumerScheduler.setBeanName("OperationsFactory-ConsumerScheduler");
         consumerScheduler.initialize();
 
+        factory.getContainerProperties().setPollTimeout(3000L);
+        factory.getContainerProperties().setAckOnError(false);
         factory.getContainerProperties().setConsumerTaskExecutor(consumerScheduler);
         factory.getContainerProperties().setAckMode(AbstractMessageListenerContainer.AckMode.RECORD);
         factory.getContainerProperties().setTransactionManager(platformTransactionManager);
@@ -191,21 +190,22 @@ public class EventApisFactory {
         return new EmptyUserContext();
     }
 
-    public static class EventApisKafkaListenerContainerFactory extends ConcurrentKafkaListenerContainerFactory<String, Operation> {
+/*    public static class EventApisKafkaListenerContainerFactory extends ConcurrentKafkaListenerContainerFactory<String, Operation> {
         private final ConsumerFactory<String, Operation> consumerFactory;
         private Integer concurrency;
 
-        /**
-         * Specify the container concurrency.
-         * @param concurrency the number of consumers to create.
-         * @see ConcurrentMessageListenerContainer#setConcurrency(int)
-         */
-        public void setConcurrency(Integer concurrency) {
-            this.concurrency = concurrency;
-        }
-
         public EventApisKafkaListenerContainerFactory(ConsumerFactory<String, Operation> consumerFactory) {
             this.consumerFactory = consumerFactory;
+        }
+
+        *
+         * Specify the container concurrency.
+         *
+         * @param concurrency the number of consumers to create.
+         * @see ConcurrentMessageListenerContainer#setConcurrency(int)
+
+        public void setConcurrency(Integer concurrency) {
+            this.concurrency = concurrency;
         }
 
         @Override
@@ -230,36 +230,6 @@ public class EventApisFactory {
                 properties.setAckTime(this.getContainerProperties().getAckTime());
             }
         }
-    }
+    }*/
 
-    public abstract static class EventApisConsumerFactory<K, V> implements ConsumerFactory<K, V> {
-        private final EventApisConfiguration eventApisConfiguration;
-        private final boolean autoCommit;
-
-        public EventApisConsumerFactory(EventApisConfiguration eventApisConfiguration, boolean autoCommit) {
-            this.autoCommit = autoCommit;
-            this.eventApisConfiguration = eventApisConfiguration;
-        }
-
-        @Override
-        public Consumer<K, V> createConsumer(String clientIdSuffix) {
-            return createConsumer();
-        }
-
-        @Override
-        public Consumer<K, V> createConsumer(String groupId, String clientIdSuffix) {
-            return createConsumer();
-        }
-
-        @Override
-        public boolean isAutoCommit() {
-            return autoCommit;
-        }
-
-        @Override
-        public Map<String, Object> getConfigurationProperties() {
-            return eventApisConfiguration.getEventBus().buildConsumerProperties();
-
-        }
-    }
 }

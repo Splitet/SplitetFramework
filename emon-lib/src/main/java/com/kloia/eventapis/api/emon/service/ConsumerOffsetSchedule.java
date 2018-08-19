@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 @SpringAware
 @Component
 @ConditionalOnProperty(value = "emon.offsetScheduler.enabled", havingValue = "true")
-class ConsumerOffsetSchedule extends ScheduledTask {
+public class ConsumerOffsetSchedule extends ScheduledTask {
 
     private transient kafka.admin.AdminClient adminToolsClient;
     private transient IMap<String, Topic> topicsMap;
@@ -73,10 +73,10 @@ class ConsumerOffsetSchedule extends ScheduledTask {
                                     topic = new Topic();
                                 ServiceData serviceData = topic.getServiceDataHashMap().get(consumer);
                                 if (serviceData == null) {
-                                    serviceData = new ServiceData(consumer, entry.getValue());
+                                    serviceData = ServiceData.createServiceData(consumer, entry.getValue());
                                     topic.getServiceDataHashMap().put(consumer, serviceData);
                                 } else
-                                    serviceData.setPartition(entry.getValue());
+                                    serviceData.setPartitions(entry.getValue());
                                 return topic;
                             });
 
