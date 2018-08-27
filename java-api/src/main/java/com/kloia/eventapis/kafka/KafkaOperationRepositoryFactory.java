@@ -37,22 +37,4 @@ public class KafkaOperationRepositoryFactory {
                 kafkaProperties.getConsumer().getGroupId()
         );
     }
-/*
-    public Consumer<String, PublishedEventWrapper> createEventConsumer(ObjectMapper objectMapper, boolean autoCommit) {
-        KafkaProperties properties = kafkaProperties.clone();
-        properties.getConsumer().setEnableAutoCommit(autoCommit);
-        return new KafkaConsumer<>(properties.buildConsumerProperties(),
-                new StringDeserializer(), new JsonDeserializer<>(PublishedEventWrapper.class, objectMapper));
-    }
-
-    public Consumer<String, Operation> createOperationConsumer(ObjectMapper objectMapper, boolean autoCommit) {
-        KafkaProperties properties = kafkaProperties.clone();
-        properties.getConsumer().setEnableAutoCommit(autoCommit);
-        return new KafkaConsumer<>(properties.buildConsumerProperties(),
-                new StringDeserializer(), new JsonDeserializer<>(Operation.class, objectMapper));
-    }*/
-/*
-    public boolean isAutoCommit() {
-        return Boolean.TRUE.equals(kafkaProperties.getConsumer().getEnableAutoCommit());
-    }*/
 }

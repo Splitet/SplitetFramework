@@ -187,46 +187,4 @@ public class EventApisFactory {
         return new EmptyUserContext();
     }
 
-/*    public static class EventApisKafkaListenerContainerFactory extends ConcurrentKafkaListenerContainerFactory<String, Operation> {
-        private final ConsumerFactory<String, Operation> consumerFactory;
-        private Integer concurrency;
-
-        public EventApisKafkaListenerContainerFactory(ConsumerFactory<String, Operation> consumerFactory) {
-            this.consumerFactory = consumerFactory;
-        }
-
-        *
-         * Specify the container concurrency.
-         *
-         * @param concurrency the number of consumers to create.
-         * @see ConcurrentMessageListenerContainer#setConcurrency(int)
-
-        public void setConcurrency(Integer concurrency) {
-            this.concurrency = concurrency;
-        }
-
-        @Override
-        public ConsumerFactory<String, Operation> getConsumerFactory() {
-            return consumerFactory;
-        }
-
-        @Override
-        protected void initializeContainer(ConcurrentMessageListenerContainer<String, Operation> instance) {
-            if (this.concurrency != null) {
-                instance.setConcurrency(this.concurrency);
-            }
-            ContainerProperties properties = instance.getContainerProperties();
-            BeanUtils.copyProperties(
-                    this.getContainerProperties(), properties,
-                    "topics", "topicPartitions", "topicPattern",
-                    "messageListener", "ackCount", "ackTime", "ackMode");
-            if (this.getContainerProperties().getAckCount() > 0) {
-                properties.setAckCount(this.getContainerProperties().getAckCount());
-            }
-            if (this.getContainerProperties().getAckTime() > 0) {
-                properties.setAckTime(this.getContainerProperties().getAckTime());
-            }
-        }
-    }*/
-
 }

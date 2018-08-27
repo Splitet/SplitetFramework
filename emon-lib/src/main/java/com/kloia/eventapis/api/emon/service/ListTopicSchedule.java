@@ -105,13 +105,9 @@ public class ListTopicSchedule extends ScheduledTask {
         @Override
         public Object process(Map.Entry<String, Topic> entry) {
             final Topic topic = entry.getValue() == null ? new Topic() : entry.getValue();
-
-            partitions.forEach(partitionNo -> topic.getPartitions().putIfAbsent(partitionNo, new Partition(partitionNo)));
-//            List<Partition> partitions = topic.getPartitions();
-//            topic.setPartitions(
-//                    this.partitions.stream().map(
-//                            number -> partitions.stream().filter(partition -> partition.getNumber() == number).findFirst().orElse(new Partition(number))
-//                    ).collect(Collectors.toList()));
+            partitions.forEach(
+                    partitionNo -> topic.getPartitions()
+                            .putIfAbsent(partitionNo, new Partition(partitionNo)));
             entry.setValue(topic);
             return entry;
         }

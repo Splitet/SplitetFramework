@@ -2,6 +2,7 @@ package com.kloia.eventapis.api.emon.service;
 
 import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.ReplicatedMap;
 import com.hazelcast.map.listener.EntryExpiredListener;
 import com.kloia.eventapis.api.emon.domain.HandledEvent;
 import com.kloia.eventapis.api.emon.domain.NoneHandled;
@@ -53,9 +54,6 @@ public class OperationExpirationListener implements EntryExpiredListener<String,
                 ((NoneHandled) iHandledEvent).setFinishedAsLeaf(
                         serviceData.getPartitions().get(eventPartition.getNumber()) != null
                         && serviceData.getPartitions().get(eventPartition.getNumber()).getNumber() >= eventPartition.getOffset()
-//                        serviceData.getPartitions().values().stream().anyMatch(
-//                                partition -> partition.getNumber() == eventPartition.getNumber() && partition.getOffset() >= eventPartition.getOffset()
-//                        )
                 );
             }
         });

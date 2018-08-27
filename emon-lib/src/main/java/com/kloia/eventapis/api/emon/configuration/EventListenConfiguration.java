@@ -85,7 +85,7 @@ public class EventListenConfiguration implements InitializingBean {
     private void startEvents() {
         Map<String, Object> consumerProperties = eventApisConfiguration.getEventBus().buildConsumerProperties();
         consumerProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        consumerProperties.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, 5000);
+        consumerProperties.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, 3000);
 
         DefaultKafkaConsumerFactory<String, PublishedEventWrapper> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProperties, new StringDeserializer(), new JsonDeserializer<>(PublishedEventWrapper.class));
