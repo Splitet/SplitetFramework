@@ -22,9 +22,11 @@ public class ServiceData implements Serializable {
     private String serviceName;
     private Map<Integer, Partition> partitions = new HashMap<>();
 
-    public ServiceData(String serviceName) {
+    public ServiceData(String serviceName, List<Partition> partitionList) {
         this.serviceName = serviceName;
+        this.setPartitions(partitionList);
     }
+
 
     public static ServiceData createServiceData(String consumer, List<Partition> value) {
         return new ServiceData(consumer, value.stream().collect(Collectors.toMap(Partition::getNumber, Function.identity())));
@@ -41,7 +43,7 @@ public class ServiceData implements Serializable {
         return partitions.put(partition.getNumber(), partition);
     }
 
-    public void setPartitions(List<Partition> value) {
-        partitions = value.stream().collect(Collectors.toMap(Partition::getNumber, Function.identity()));
+    public void setPartitions(List<Partition> partitionList) {
+        partitions = partitionList.stream().collect(Collectors.toMap(Partition::getNumber, Function.identity()));
     }
 }

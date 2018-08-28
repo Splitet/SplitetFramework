@@ -1,7 +1,6 @@
 package com.kloia.eventapis.api.emon.service;
 
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.ReplicatedMap;
 import com.hazelcast.map.AbstractEntryProcessor;
 import com.hazelcast.spring.context.SpringAware;
 import com.kloia.eventapis.api.emon.domain.Partition;
@@ -152,10 +151,4 @@ public class ConsumerOffsetSchedule extends ScheduledTask {
             return entry;
         }
     }
-
-
-/*    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }*/
 }
