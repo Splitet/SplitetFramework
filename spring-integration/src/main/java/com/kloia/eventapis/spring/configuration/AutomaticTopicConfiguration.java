@@ -1,6 +1,7 @@
 package com.kloia.eventapis.spring.configuration;
 
 import com.kloia.eventapis.common.PublishedEvent;
+import com.kloia.eventapis.pojos.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -21,6 +22,8 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 @Configuration
 public class AutomaticTopicConfiguration {
+    public static final int DEFAULT_NUM_PARTITIONS = 3;
+    public static final short DEFAULT_REPLICATION_FACTOR = 1;
     @Autowired
     private EventApisConfiguration eventApisConfiguration;
 
@@ -40,6 +43,7 @@ public class AutomaticTopicConfiguration {
             ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
             provider.addIncludeFilter(new AssignableTypeFilter(PublishedEvent.class));
             Set<BeanDefinition> candidateComponents = provider.findCandidateComponents(eventApisConfiguration.getBaseEventsPackage());
+            int numPartitions = getDefaultNumberOfPartitions(adminClient);
             for (BeanDefinition candidateComponent : candidateComponents) {
                 Class<PublishedEvent> beanClass;
                 try {
@@ -53,7 +57,7 @@ public class AutomaticTopicConfiguration {
                             throw exception;
                         log.warn("Topic {} does not exists, trying to create", topicName);
                         try {
-                            adminClient.createTopics(Collections.singleton(new NewTopic(topicName, -1, (short) 1)));
+                            adminClient.createTopics(Collections.singleton(new NewTopic(topicName, numPartitions, DEFAULT_REPLICATION_FACTOR)));
                             log.info("Topic {} is Created Successfully:", topicName);
                         } catch (Exception topicCreationEx) {
                             log.warn("Error while creating Topic:" + topicCreationEx.getMessage(), topicCreationEx);
@@ -67,6 +71,17 @@ public class AutomaticTopicConfiguration {
             log.debug(stopWatch.prettyPrint());
         } finally {
             adminClient.close();
+        }
+    }
+
+    private int getDefaultNumberOfPartitions(AdminClient adminClient) {
+        try {
+            return adminClient.describeTopics(Collections.singleton(Operation.OPERATION_EVENTS))
+                    .all().get().values().iterator().next()
+                    .partitions().size();
+        } catch (InterruptedException | ExecutionException | NullPointerException e) {
+            log.warn("Error while Calculating Number of Partitions from Topic: " + Operation.OPERATION_EVENTS + " Assuming 1");
+            return DEFAULT_NUM_PARTITIONS;
         }
     }
 }
