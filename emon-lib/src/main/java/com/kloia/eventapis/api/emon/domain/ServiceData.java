@@ -33,7 +33,7 @@ public class ServiceData implements Serializable {
     }
 
     public Partition getPartition(int number) {
-        if (partitions != null && partitions.size() > number)
+        if (partitions != null)
             return partitions.get(number);
         else
             return null;

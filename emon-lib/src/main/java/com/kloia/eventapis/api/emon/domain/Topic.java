@@ -39,7 +39,10 @@ public class Topic implements Serializable {
     public Map<String, ServiceData> getServiceDataHashMap() {
         try {
             serviceDataHashMap.forEach((s, serviceData) -> serviceData.getPartitions().values()
-                    .forEach(partition -> getPartition(partition.getNumber()).ifPresent(partition1 -> partition.calculateLag(partition1.getOffset()))));
+                    .forEach(partition -> getPartition(partition.getNumber()).ifPresent(
+                            partition1 -> partition.calculateLag(partition1.getOffset()))
+                    )
+            );
         } catch (Exception ex) {
             log.warn(ex.getMessage());
         }
