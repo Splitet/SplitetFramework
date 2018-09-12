@@ -12,6 +12,7 @@ import com.kloia.eventapis.common.EventRecorder;
 import com.kloia.eventapis.common.OperationContext;
 import com.kloia.eventapis.core.CompositeRepositoryImpl;
 import com.kloia.eventapis.kafka.IOperationRepository;
+import com.kloia.eventapis.spring.configuration.DataMigrationService;
 import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
 import com.kloia.eventapis.view.AggregateListener;
 import com.kloia.eventapis.view.EntityFunctionSpec;
@@ -63,6 +64,11 @@ public class Components {
     @Bean
     EventRepository orderEventRepository(EventRecorder orderEventRecorder, IOperationRepository operationRepository) {
         return new CompositeRepositoryImpl(orderEventRecorder, new ObjectMapper(), operationRepository);
+    }
+
+    @Bean
+    DataMigrationService dataMigrationService(EventRecorder orderEventRecorder, ViewQuery<Orders> orderViewQuery, OrderRepository orderRepository) {
+        return new DataMigrationService(orderEventRecorder, orderViewQuery, orderRepository);
     }
 
 

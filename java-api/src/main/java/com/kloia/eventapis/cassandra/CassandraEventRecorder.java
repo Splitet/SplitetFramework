@@ -21,6 +21,7 @@ import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.annotation.Nullable;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -73,7 +74,6 @@ public class CassandraEventRecorder implements EventRecorder {
         this.idCreationStrategy = idCreationStrategy;
     }
 
-    @Override
     public String getTableName() {
         return tableName;
     }
@@ -178,6 +178,43 @@ public class CassandraEventRecorder implements EventRecorder {
             }
         }).collect(Collectors.toList());
 
+    }
+
+
+    @Override
+    public String updateEvent(EventKey eventKey, @Nullable RecordedEvent newEventData, @Nullable EventState newEventState, @Nullable String newEventType) throws EventStoreException {
+        Update update = QueryBuilder.update(tableName);
+        update.where(QueryBuilder.eq(ENTITY_ID, eventKey.getEntityId()))
+                .and(QueryBuilder.eq(VERSION, eventKey.getVersion()))
+                .ifExists();
+        if (newEventData != null)
+            update.with(QueryBuilder.set(EVENT_DATA, createEventStr(newEventData)));
+        if (newEventState != null)
+            update.with(QueryBuilder.set(STATUS, newEventState.name()));
+        if (newEventType != null)
+            update.with(QueryBuilder.set(EVENT_TYPE, newEventType));
+        try {
+            ResultSet execute = cassandraSession.execute(update);
+            log.debug("Update Event, Result:" + execute.toString() + " Update: " + update.toString());
+            return execute.toString();
+        } catch (Exception e) {
+            log.warn(e.getMessage(), e);
+            throw new EventStoreException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public String updateEvent(EventKey eventKey, RecordedEvent newEventData) throws EventStoreException {
+        assert newEventData != null;
+        return updateEvent(eventKey, newEventData, null, null);
+    }
+
+    private Object createEventStr(RecordedEvent newEventData) throws EventStoreException {
+        try {
+            return objectMapper.writerWithView(Views.RecordedOnly.class).writeValueAsString(newEventData);
+        } catch (IllegalArgumentException | JsonProcessingException e) {
+            throw new EventStoreException(e.getMessage(), e);
+        }
     }
 
 
