@@ -20,12 +20,14 @@ import com.kloia.eventapis.common.RecordedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -87,22 +89,17 @@ public class CassandraEventRecorder implements EventRecorder {
 
     //    private ConcurrencyResolver concurrencyResolver = new DefaultConcurrencyResolver();
 //    private Function<E, ConcurrencyResolver> concurrencyResolverFactory;
-
     @Override
     public <T extends Exception> EventKey recordEntityEvent(
             RecordedEvent event, long opDate,
             Optional<EventKey> previousEventKey,
-            Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
+            Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory)
             throws EventStoreException, T {
 
-        ConcurrencyResolver<T> concurrencyResolver = null;
+        ConcurrentEventResolver<T> concurrencyResolver = null;
 
-        String eventData = null;
-        try {
-            eventData = objectMapper.writerWithView(Views.RecordedOnly.class).writeValueAsString(event);
-        } catch (IllegalArgumentException | JsonProcessingException e) {
-            throw new EventStoreException(e.getMessage(), e);
-        }
+        String eventData = createEventStr(event);
+
         EventKey eventKey;
         if (previousEventKey.isPresent()) {
             eventKey = new EventKey(previousEventKey.get().getEntityId(), previousEventKey.get().getVersion() + 1);
@@ -133,10 +130,21 @@ public class CassandraEventRecorder implements EventRecorder {
                 select.where(QueryBuilder.eq(ENTITY_ID, entityEvent.getEventKey().getEntityId()));
                 ResultSet execute = cassandraSession.execute(select);
                 int lastVersion = execute.one().getInt(0);
-                entityEvent.setEventKey(concurrencyResolver.calculateNext(entityEvent.getEventKey(), lastVersion));
+                Pair<EventKey, RecordedEvent> newData = concurrencyResolver.calculateNext(event, entityEvent.getEventKey(), lastVersion);
+                entityEvent.setEventKey(newData.getKey());
+                entityEvent.setEventData(createEventStr(newData.getValue()));
             }
 
         }
+    }
+
+    @Override
+    public <T extends Exception> EventKey recordEntityEvent(
+            RecordedEvent event,
+            long date,
+            Optional<EventKey> previousEventKey,
+            Supplier<ConcurrentEventResolver<T>> concurrentEventResolverSupplier) throws EventStoreException, T {
+        return recordEntityEvent(event, date, previousEventKey, entityEvent -> concurrentEventResolverSupplier.get());
     }
 
     private Insert createInsertQuery(EntityEvent entityEvent) {
@@ -209,7 +217,7 @@ public class CassandraEventRecorder implements EventRecorder {
         return updateEvent(eventKey, newEventData, null, null);
     }
 
-    private Object createEventStr(RecordedEvent newEventData) throws EventStoreException {
+    private String createEventStr(RecordedEvent newEventData) throws EventStoreException {
         try {
             return objectMapper.writerWithView(Views.RecordedOnly.class).writeValueAsString(newEventData);
         } catch (IllegalArgumentException | JsonProcessingException e) {

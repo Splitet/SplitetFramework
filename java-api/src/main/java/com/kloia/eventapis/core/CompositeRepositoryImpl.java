@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.Views;
-import com.kloia.eventapis.cassandra.ConcurrencyResolver;
 import com.kloia.eventapis.cassandra.ConcurrentEventException;
+import com.kloia.eventapis.cassandra.ConcurrentEventResolver;
 import com.kloia.eventapis.cassandra.DefaultConcurrencyResolver;
 import com.kloia.eventapis.cassandra.EntityEvent;
 import com.kloia.eventapis.common.EventKey;
@@ -61,14 +61,14 @@ public class CompositeRepositoryImpl implements EventRepository {
 
     @Override
     public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
-            Entity entity, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+            Entity entity, P publishedEvent, Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory
     ) throws EventStoreException, T {
         return recordAndPublishInternal(publishedEvent, Optional.of(entity.getEventKey()), concurrencyResolverFactory);
     }
 
     @Override
     public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
-            EventKey previousEventKey, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+            EventKey previousEventKey, P publishedEvent, Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory
     ) throws EventStoreException, T {
         return recordAndPublishInternal(publishedEvent, Optional.of(previousEventKey), concurrencyResolverFactory);
     }
@@ -80,7 +80,7 @@ public class CompositeRepositoryImpl implements EventRepository {
 
 
     private <P extends PublishedEvent, T extends Exception> EventKey recordAndPublishInternal(
-            P publishedEvent, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+            P publishedEvent, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory
     ) throws EventStoreException, T {
         long opDate = System.currentTimeMillis();
         EventKey eventKey = eventRecorder.recordEntityEvent(publishedEvent, opDate, previousEventKey, concurrencyResolverFactory);

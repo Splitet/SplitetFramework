@@ -1,25 +1,18 @@
 package com.kloia.sample.controller;
 
-import com.kloia.eventapis.api.Command;
 import com.kloia.eventapis.api.ViewQuery;
-import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.exception.EventStoreException;
-import com.kloia.sample.dto.command.CreateOrderCommandDto;
-import com.kloia.sample.dto.event.OrderCreatedEvent;
 import com.kloia.sample.model.Orders;
 import com.kloia.sample.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import java.io.IOException;
 
 
