@@ -100,7 +100,6 @@ public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent>
                 throw new StockNotEnoughException("Cannot allocate stock in Max Try: " + maxTry);
         }
 
-
         @Override
         public EventKey calculateNext(EventKey eventKey, int lastVersion) throws StockNotEnoughException, EventStoreException {
             Stock stock = stockQuery.queryEntity(eventKey.getEntityId());
