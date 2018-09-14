@@ -1,6 +1,6 @@
 eventapis:
   storeConfig:
-    contactPoints: test-api:9042
+    contactPoints: dbtest.n11pro.n11.local:9042
     keyspaceName: test
     username: test_order
     password: qwe123
