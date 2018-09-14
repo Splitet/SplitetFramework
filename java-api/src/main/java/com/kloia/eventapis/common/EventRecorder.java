@@ -1,5 +1,6 @@
 package com.kloia.eventapis.common;
 
+import com.kloia.eventapis.cassandra.ConcurrencyResolver;
 import com.kloia.eventapis.cassandra.ConcurrentEventResolver;
 import com.kloia.eventapis.cassandra.EntityEvent;
 import com.kloia.eventapis.exception.EventStoreException;
@@ -19,14 +20,14 @@ public interface EventRecorder {
     <T extends Exception> EventKey recordEntityEvent(
             RecordedEvent event, long date,
             Optional<EventKey> previousEventKey,
-            Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory
+            Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
     )
             throws EventStoreException, T;
 
-    <T extends Exception> EventKey recordEntityEvent(
-            RecordedEvent event, long date,
+    <R extends RecordedEvent, T extends Exception> EventKey recordEntityEvent(
+            R event, long date,
             Optional<EventKey> previousEventKey,
-            Supplier<ConcurrentEventResolver<T>> concurrentEventResolverSupplier)
+            Supplier<ConcurrentEventResolver<R, T>> concurrentEventResolverSupplier)
             throws EventStoreException, T;
 
     List<EntityEvent> markFail(String key);

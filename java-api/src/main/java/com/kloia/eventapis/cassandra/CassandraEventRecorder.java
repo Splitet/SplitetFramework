@@ -80,23 +80,14 @@ public class CassandraEventRecorder implements EventRecorder {
         return tableName;
     }
 
-/*    private EntityEvent convertToEntityEvent(Row entityEventData) throws EventStoreException {
-        EventKey eventKey = new EventKey(entityEventData.getString(ENTITY_ID), entityEventData.getInt(VERSION));
-        String opId = entityEventData.getString(OP_ID);
-        String eventData = entityEventData.getString("eventData");
-        return new EntityEvent(eventKey, opId, entityEventData.getTimestamp(OP_DATE), entityEventData.getString("eventType"), entityEventData.getString("status"), eventData);
-    }*/
-
-    //    private ConcurrencyResolver concurrencyResolver = new DefaultConcurrencyResolver();
-//    private Function<E, ConcurrencyResolver> concurrencyResolverFactory;
-    @Override
-    public <T extends Exception> EventKey recordEntityEvent(
-            RecordedEvent event, long opDate,
+    private <R extends RecordedEvent, T extends Exception> EventKey recordEntityEventInternal(
+            R event,
+            long opDate,
             Optional<EventKey> previousEventKey,
-            Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory)
-            throws EventStoreException, T {
+            Function<EntityEvent, ConcurrentEventResolver<R, T>> concurrencyResolverFactory) throws EventStoreException, T {
 
-        ConcurrentEventResolver<T> concurrencyResolver = null;
+
+        ConcurrentEventResolver<R, T> concurrencyResolver = null;
 
         String eventData = createEventStr(event);
 
@@ -130,7 +121,7 @@ public class CassandraEventRecorder implements EventRecorder {
                 select.where(QueryBuilder.eq(ENTITY_ID, entityEvent.getEventKey().getEntityId()));
                 ResultSet execute = cassandraSession.execute(select);
                 int lastVersion = execute.one().getInt(0);
-                Pair<EventKey, RecordedEvent> newData = concurrencyResolver.calculateNext(event, entityEvent.getEventKey(), lastVersion);
+                Pair<EventKey, ? extends RecordedEvent> newData = concurrencyResolver.calculateNext(event, entityEvent.getEventKey(), lastVersion);
                 entityEvent.setEventKey(newData.getKey());
                 entityEvent.setEventData(createEventStr(newData.getValue()));
             }
@@ -139,12 +130,19 @@ public class CassandraEventRecorder implements EventRecorder {
     }
 
     @Override
-    public <T extends Exception> EventKey recordEntityEvent(
-            RecordedEvent event,
-            long date,
+    public <R extends RecordedEvent, T extends Exception> EventKey recordEntityEvent(
+            R event,
+            long opDate,
             Optional<EventKey> previousEventKey,
-            Supplier<ConcurrentEventResolver<T>> concurrentEventResolverSupplier) throws EventStoreException, T {
-        return recordEntityEvent(event, date, previousEventKey, entityEvent -> concurrentEventResolverSupplier.get());
+            Supplier<ConcurrentEventResolver<R, T>> concurrentEventResolverSupplier) throws EventStoreException, T {
+        return recordEntityEventInternal(event, opDate, previousEventKey, entityEvent -> concurrentEventResolverSupplier.get());
+    }
+
+    @Override
+    public <T extends Exception> EventKey recordEntityEvent(
+            RecordedEvent event, long opDate, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T {
+        return recordEntityEventInternal(event, opDate, previousEventKey, concurrencyResolverFactory::apply);
     }
 
     private Insert createInsertQuery(EntityEvent entityEvent) {
