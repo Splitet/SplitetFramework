@@ -11,6 +11,7 @@ import com.kloia.eventapis.view.Entity;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Created by zeldalozdemir on 21/04/2017.
@@ -31,6 +32,14 @@ public interface EventRepository {
 
     <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
             EventKey eventKey, P publishedEvent, Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T;
+
+    <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
+            Entity entity, P publishedEvent, Supplier<ConcurrentEventResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T;
+
+    <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
+            EventKey eventKey, P publishedEvent, Supplier<ConcurrentEventResolver<T>> concurrencyResolverFactory
     ) throws EventStoreException, T;
 
     EventRecorder getEventRecorder();

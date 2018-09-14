@@ -20,6 +20,7 @@ import com.kloia.eventapis.view.Entity;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Created by zeldalozdemir on 24/04/2017.
@@ -71,6 +72,21 @@ public class CompositeRepositoryImpl implements EventRepository {
             EventKey previousEventKey, P publishedEvent, Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory
     ) throws EventStoreException, T {
         return recordAndPublishInternal(publishedEvent, Optional.of(previousEventKey), concurrencyResolverFactory);
+    }
+
+    @Override
+    public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
+            Entity entity, P publishedEvent, Supplier<ConcurrentEventResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T {
+        return recordAndPublishInternal(publishedEvent, Optional.of(entity.getEventKey()), entityEvent -> concurrencyResolverFactory.get());
+
+    }
+
+    @Override
+    public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
+            EventKey previousEventKey, P publishedEvent, Supplier<ConcurrentEventResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T {
+        return recordAndPublishInternal(publishedEvent, Optional.of(previousEventKey), entityEvent -> concurrencyResolverFactory.get());
     }
 
     @Override
