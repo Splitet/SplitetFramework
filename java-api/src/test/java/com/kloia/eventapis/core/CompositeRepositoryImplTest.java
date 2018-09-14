@@ -66,7 +66,7 @@ public class CompositeRepositoryImplTest {
     @Mock
     private IdCreationStrategy idCreationStrategy = new UUIDCreationStrategy();
     @Captor
-    private ArgumentCaptor<Function<EntityEvent, ConcurrentEventResolver<ConcurrentEventException>>> concurrencyResolverFactoryCaptor;
+    private ArgumentCaptor<Function<EntityEvent, ConcurrencyResolver<ConcurrentEventException>>> concurrencyResolverFactoryCaptor;
 
     @Captor
     private ArgumentCaptor<Optional<EventKey>> previousEventKeyCaptor;
@@ -179,7 +179,7 @@ public class CompositeRepositoryImplTest {
         EventKey previousEntityEventKey = new EventKey();
         when(previousEntity.getEventKey()).thenReturn(previousEntityEventKey);
         ConcurrencyResolver concurrencyResolver = mock(ConcurrencyResolver.class);
-        Function<EntityEvent, ConcurrentEventResolver<ConcurrentEventException>> factory = entityEvent -> concurrencyResolver;
+        Function<EntityEvent, ConcurrencyResolver<ConcurrentEventException>> factory = entityEvent -> concurrencyResolver;
 
         EventKey actual = compositeRepository.recordAndPublish(previousEntity, intermediateEvent, factory);
 
@@ -197,7 +197,7 @@ public class CompositeRepositoryImplTest {
 
         EventKey previousEntityEventKey = new EventKey();
         ConcurrencyResolver concurrencyResolver = mock(ConcurrencyResolver.class);
-        Function<EntityEvent, ConcurrentEventResolver<ConcurrentEventException>> factory = entityEvent -> concurrencyResolver;
+        Function<EntityEvent, ConcurrencyResolver<ConcurrentEventException>> factory = entityEvent -> concurrencyResolver;
 
         EventKey actual = compositeRepository.recordAndPublish(previousEntityEventKey, intermediateEvent, factory);
 
