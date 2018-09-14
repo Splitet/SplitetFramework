@@ -1,5 +1,6 @@
 package com.kloia.eventapis.api;
 
+import com.kloia.eventapis.cassandra.ConcurrencyResolver;
 import com.kloia.eventapis.cassandra.ConcurrentEventException;
 import com.kloia.eventapis.cassandra.ConcurrentEventResolver;
 import com.kloia.eventapis.cassandra.EntityEvent;
@@ -27,19 +28,19 @@ public interface EventRepository {
     <P extends PublishedEvent> EventKey recordAndPublish(EventKey eventKey, P publishedEvent) throws EventStoreException, ConcurrentEventException;
 
     <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
-            Entity entity, P publishedEvent, Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory
+            Entity entity, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
     ) throws EventStoreException, T;
 
     <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
-            EventKey eventKey, P publishedEvent, Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory
+            EventKey eventKey, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
     ) throws EventStoreException, T;
 
     <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
-            Entity entity, P publishedEvent, Supplier<ConcurrentEventResolver<T>> concurrencyResolverFactory
+            Entity entity, P publishedEvent, Supplier<ConcurrentEventResolver<P, T>> concurrencyResolverFactory
     ) throws EventStoreException, T;
 
     <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
-            EventKey eventKey, P publishedEvent, Supplier<ConcurrentEventResolver<T>> concurrencyResolverFactory
+            EventKey eventKey, P publishedEvent, Supplier<ConcurrentEventResolver<P, T>> concurrencyResolverFactory
     ) throws EventStoreException, T;
 
     EventRecorder getEventRecorder();

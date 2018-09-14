@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kloia.eventapis.api.EventRepository;
 import com.kloia.eventapis.api.Views;
+import com.kloia.eventapis.cassandra.ConcurrencyResolver;
 import com.kloia.eventapis.cassandra.ConcurrentEventException;
 import com.kloia.eventapis.cassandra.ConcurrentEventResolver;
 import com.kloia.eventapis.cassandra.DefaultConcurrencyResolver;
@@ -62,31 +63,31 @@ public class CompositeRepositoryImpl implements EventRepository {
 
     @Override
     public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
-            Entity entity, P publishedEvent, Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory
+            Entity previousEntity, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T {
+        return recordAndPublishInternal(publishedEvent, Optional.of(previousEntity.getEventKey()), concurrencyResolverFactory);
+    }
+
+    @Override
+    public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
+            EventKey eventKey, P publishedEvent, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T {
+        return recordAndPublishInternal(publishedEvent, Optional.of(eventKey), concurrencyResolverFactory);
+    }
+
+    @Override
+    public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
+            Entity entity, P publishedEvent, Supplier<ConcurrentEventResolver<P, T>> concurrencyResolverFactory
     ) throws EventStoreException, T {
         return recordAndPublishInternal(publishedEvent, Optional.of(entity.getEventKey()), concurrencyResolverFactory);
+
     }
 
     @Override
     public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
-            EventKey previousEventKey, P publishedEvent, Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory
+            EventKey previousEventKey, P publishedEvent, Supplier<ConcurrentEventResolver<P, T>> concurrencyResolverFactory
     ) throws EventStoreException, T {
         return recordAndPublishInternal(publishedEvent, Optional.of(previousEventKey), concurrencyResolverFactory);
-    }
-
-    @Override
-    public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
-            Entity entity, P publishedEvent, Supplier<ConcurrentEventResolver<T>> concurrencyResolverFactory
-    ) throws EventStoreException, T {
-        return recordAndPublishInternal(publishedEvent, Optional.of(entity.getEventKey()), entityEvent -> concurrencyResolverFactory.get());
-
-    }
-
-    @Override
-    public <P extends PublishedEvent, T extends Exception> EventKey recordAndPublish(
-            EventKey previousEventKey, P publishedEvent, Supplier<ConcurrentEventResolver<T>> concurrencyResolverFactory
-    ) throws EventStoreException, T {
-        return recordAndPublishInternal(publishedEvent, Optional.of(previousEventKey), entityEvent -> concurrencyResolverFactory.get());
     }
 
     @Override
@@ -96,10 +97,26 @@ public class CompositeRepositoryImpl implements EventRepository {
 
 
     private <P extends PublishedEvent, T extends Exception> EventKey recordAndPublishInternal(
-            P publishedEvent, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrentEventResolver<T>> concurrencyResolverFactory
+            P publishedEvent, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
     ) throws EventStoreException, T {
-        long opDate = System.currentTimeMillis();
+        long opDate = createOpDate();
         EventKey eventKey = eventRecorder.recordEntityEvent(publishedEvent, opDate, previousEventKey, concurrencyResolverFactory);
+        return publishInternal(publishedEvent, opDate, eventKey);
+    }
+
+    private <P extends PublishedEvent, T extends Exception> EventKey recordAndPublishInternal(
+            P publishedEvent, Optional<EventKey> previousEventKey, Supplier<ConcurrentEventResolver<P, T>> concurrencyResolverFactory
+    ) throws EventStoreException, T {
+        long opDate = createOpDate();
+        EventKey eventKey = eventRecorder.recordEntityEvent(publishedEvent, opDate, previousEventKey, concurrencyResolverFactory);
+        return publishInternal(publishedEvent, opDate, eventKey);
+    }
+
+    private long createOpDate() {
+        return System.currentTimeMillis();
+    }
+
+    private <P extends PublishedEvent> EventKey publishInternal(P publishedEvent, long opDate, EventKey eventKey) throws EventStoreException {
         publishedEvent.setSender(eventKey);
         String event;
         try {

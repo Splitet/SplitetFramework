@@ -6,7 +6,7 @@ import com.kloia.eventapis.exception.EventStoreException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-public interface ConcurrencyResolver<T extends Exception> extends ConcurrentEventResolver<T> {
+public interface ConcurrencyResolver<T extends Exception> extends ConcurrentEventResolver<RecordedEvent, T> {
 
     void tryMore() throws T;
 
