@@ -4,9 +4,13 @@ import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.TopicPartition;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 @Slf4j
 public class MultipleEventMessageListener implements EventMessageListener {
@@ -16,11 +20,10 @@ public class MultipleEventMessageListener implements EventMessageListener {
         this.eventMessageListeners = eventMessageListeners;
     }
 
-    @Override
-    public void onOperationMessage(ConsumerRecord<String, Serializable> record, Operation value) {
+    public void applyForEach(Consumer<EventMessageListener> listenerConsumer) {
         eventMessageListeners.forEach(eventMessageListener -> {
             try {
-                eventMessageListener.onOperationMessage(record, value);
+                listenerConsumer.accept(eventMessageListener);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -28,13 +31,38 @@ public class MultipleEventMessageListener implements EventMessageListener {
     }
 
     @Override
+    public void onOperationMessage(ConsumerRecord<String, Serializable> record, Operation value) {
+        applyForEach(eventMessageListener -> eventMessageListener.onOperationMessage(record, value));
+    }
+
+    @Override
     public void onEventMessage(ConsumerRecord<String, Serializable> record, PublishedEventWrapper value) {
-        eventMessageListeners.forEach(eventMessageListener -> {
-            try {
-                eventMessageListener.onEventMessage(record, value);
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-        });
+        applyForEach(eventMessageListener -> eventMessageListener.onEventMessage(record, value));
+    }
+
+    @Override
+    public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+        applyForEach(eventMessageListener -> eventMessageListener.onPartitionsRevoked(partitions));
+    }
+
+    @Override
+    public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+        applyForEach(eventMessageListener -> eventMessageListener.onPartitionsAssigned(partitions));
+    }
+
+    @Override
+    public void registerSeekCallback(ConsumerSeekCallback callback) {
+        applyForEach(eventMessageListener -> eventMessageListener.registerSeekCallback(callback));
+    }
+
+    @Override
+    public void onPartitionsAssigned(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
+        applyForEach(eventMessageListener -> eventMessageListener.onPartitionsAssigned(assignments, callback));
+    }
+
+    @Override
+    public void onIdleContainer(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
+        applyForEach(eventMessageListener -> eventMessageListener.onIdleContainer(assignments, callback));
+
     }
 }

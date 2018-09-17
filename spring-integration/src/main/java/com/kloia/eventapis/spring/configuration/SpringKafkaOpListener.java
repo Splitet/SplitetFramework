@@ -24,7 +24,7 @@ public class SpringKafkaOpListener {
 
 
     @Transactional(rollbackFor = Exception.class)
-    @KafkaListener(id = "op-listener", topics = Operation.OPERATION_EVENTS, containerFactory = "operationsKafkaListenerContainerFactory")
+    @KafkaListener(topics = Operation.OPERATION_EVENTS, containerFactory = "operationsKafkaListenerContainerFactory")
     void listenOperations(ConsumerRecord<String, Operation> record) throws EventStoreException {
         String key = record.key();
         Operation value = record.value();

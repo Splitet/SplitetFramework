@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @SpringAware
 @Component
 @ConditionalOnProperty(value = "emon.offsetScheduler.enabled", havingValue = "true")
-class TopicEndOffsetSchedule extends ScheduledTask {
+public class TopicEndOffsetSchedule extends ScheduledTask {
 
     private transient Consumer kafkaConsumer;
     private transient IMap<String, Topic> topicsMap;
@@ -38,7 +38,7 @@ class TopicEndOffsetSchedule extends ScheduledTask {
 
         stopWatch.start("collectEndOffsets");
         List<TopicPartition> collect = topicsMap.entrySet().stream().flatMap(
-                topic -> topic.getValue().getPartitions().stream().map(partition -> new TopicPartition(topic.getKey(), partition.getNumber()))
+                topic -> topic.getValue().getPartitions().values().stream().map(partition -> new TopicPartition(topic.getKey(), partition.getNumber()))
         ).collect(Collectors.toList());
         java.util.Map<TopicPartition, Long> map = kafkaConsumer.endOffsets(collect);
         java.util.Map<String, List<Partition>> result = new HashMap<>();

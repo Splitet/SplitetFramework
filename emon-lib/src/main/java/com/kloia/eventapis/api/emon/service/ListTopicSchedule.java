@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @SpringAware
 @Component
 @ConditionalOnProperty(value = "emon.offsetScheduler.enabled", havingValue = "true")
-class ListTopicSchedule extends ScheduledTask {
+public class ListTopicSchedule extends ScheduledTask {
 
     private transient AdminClient adminClient;
     private transient IMap<String, Topic> topicsMap;
@@ -104,15 +104,10 @@ class ListTopicSchedule extends ScheduledTask {
 
         @Override
         public Object process(Map.Entry<String, Topic> entry) {
-            Topic topic = entry.getValue();
-            if (topic == null) {
-                topic = new Topic();
-            }
-            List<Partition> partitions = topic.getPartitions();
-            topic.setPartitions(
-                    this.partitions.stream().map(
-                            number -> partitions.stream().filter(partition -> partition.getNumber() == number).findFirst().orElse(new Partition(number))
-                    ).collect(Collectors.toList()));
+            final Topic topic = entry.getValue() == null ? new Topic() : entry.getValue();
+            partitions.forEach(
+                    partitionNo -> topic.getPartitions()
+                            .putIfAbsent(partitionNo, new Partition(partitionNo)));
             entry.setValue(topic);
             return entry;
         }

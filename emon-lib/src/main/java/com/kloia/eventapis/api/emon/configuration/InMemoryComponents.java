@@ -6,9 +6,11 @@ import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapIndexConfig;
 import com.hazelcast.config.MaxSizeConfig;
+import com.hazelcast.config.ReplicatedMapConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.ReplicatedMap;
 import com.hazelcast.spring.context.SpringManagedContext;
 import com.kloia.eventapis.api.emon.domain.Topic;
 import com.kloia.eventapis.api.emon.domain.Topology;
@@ -75,17 +77,9 @@ public class InMemoryComponents {
                 .setEvictionPolicy(EvictionPolicy.LRU)
                 .setName(OPERATIONS_MAP_HISTORY_NAME)
         );
-        config.addMapConfig(new MapConfig()
+        config.addReplicatedMapConfig(new ReplicatedMapConfig()
                 .setName(TOPICS_MAP_NAME)
         );
-        /*
-        config.setExecutorConfigs(Collections.singletonMap("default",new ExecutorConfig("default",2)));
-        config.setProperty("hazelcast.event.thread.count","2");
-        config.setProperty("hazelcast.operation.generic.thread.count","2");
-        config.setProperty("hazelcast.operation.thread.count","2");
-        config.setProperty("hazelcast.io.thread.count","1");
-        config.setProperty("hazelcast.logging.type", "slf4j");
-        */
         GroupConfig groupConfig = config.getGroupConfig();
         groupConfig.setName(hazelcastGrid);
         groupConfig.setPassword(hazelcastPassword);
