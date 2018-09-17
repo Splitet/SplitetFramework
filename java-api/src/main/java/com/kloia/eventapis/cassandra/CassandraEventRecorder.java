@@ -20,11 +20,14 @@ import com.kloia.eventapis.common.RecordedEvent;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.pojos.EventState;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -73,36 +76,21 @@ public class CassandraEventRecorder implements EventRecorder {
         this.idCreationStrategy = idCreationStrategy;
     }
 
-    @Override
     public String getTableName() {
         return tableName;
     }
 
-/*    private EntityEvent convertToEntityEvent(Row entityEventData) throws EventStoreException {
-        EventKey eventKey = new EventKey(entityEventData.getString(ENTITY_ID), entityEventData.getInt(VERSION));
-        String opId = entityEventData.getString(OP_ID);
-        String eventData = entityEventData.getString("eventData");
-        return new EntityEvent(eventKey, opId, entityEventData.getTimestamp(OP_DATE), entityEventData.getString("eventType"), entityEventData.getString("status"), eventData);
-    }*/
-
-    //    private ConcurrencyResolver concurrencyResolver = new DefaultConcurrencyResolver();
-//    private Function<E, ConcurrencyResolver> concurrencyResolverFactory;
-
-    @Override
-    public <T extends Exception> EventKey recordEntityEvent(
-            RecordedEvent event, long opDate,
+    private <R extends RecordedEvent, T extends Exception> EventKey recordEntityEventInternal(
+            R event,
+            long opDate,
             Optional<EventKey> previousEventKey,
-            Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory)
-            throws EventStoreException, T {
+            Function<EntityEvent, ConcurrentEventResolver<R, T>> concurrencyResolverFactory) throws EventStoreException, T {
 
-        ConcurrencyResolver<T> concurrencyResolver = null;
 
-        String eventData = null;
-        try {
-            eventData = objectMapper.writerWithView(Views.RecordedOnly.class).writeValueAsString(event);
-        } catch (IllegalArgumentException | JsonProcessingException e) {
-            throw new EventStoreException(e.getMessage(), e);
-        }
+        ConcurrentEventResolver<R, T> concurrencyResolver = null;
+
+        String eventData = createEventStr(event);
+
         EventKey eventKey;
         if (previousEventKey.isPresent()) {
             eventKey = new EventKey(previousEventKey.get().getEntityId(), previousEventKey.get().getVersion() + 1);
@@ -133,10 +121,28 @@ public class CassandraEventRecorder implements EventRecorder {
                 select.where(QueryBuilder.eq(ENTITY_ID, entityEvent.getEventKey().getEntityId()));
                 ResultSet execute = cassandraSession.execute(select);
                 int lastVersion = execute.one().getInt(0);
-                entityEvent.setEventKey(concurrencyResolver.calculateNext(entityEvent.getEventKey(), lastVersion));
+                Pair<EventKey, ? extends RecordedEvent> newData = concurrencyResolver.calculateNext(event, entityEvent.getEventKey(), lastVersion);
+                entityEvent.setEventKey(newData.getKey());
+                entityEvent.setEventData(createEventStr(newData.getValue()));
             }
 
         }
+    }
+
+    @Override
+    public <R extends RecordedEvent, T extends Exception> EventKey recordEntityEvent(
+            R event,
+            long opDate,
+            Optional<EventKey> previousEventKey,
+            Supplier<ConcurrentEventResolver<R, T>> concurrentEventResolverSupplier) throws EventStoreException, T {
+        return recordEntityEventInternal(event, opDate, previousEventKey, entityEvent -> concurrentEventResolverSupplier.get());
+    }
+
+    @Override
+    public <T extends Exception> EventKey recordEntityEvent(
+            RecordedEvent event, long opDate, Optional<EventKey> previousEventKey, Function<EntityEvent, ConcurrencyResolver<T>> concurrencyResolverFactory
+    ) throws EventStoreException, T {
+        return recordEntityEventInternal(event, opDate, previousEventKey, concurrencyResolverFactory::apply);
     }
 
     private Insert createInsertQuery(EntityEvent entityEvent) {
@@ -178,6 +184,43 @@ public class CassandraEventRecorder implements EventRecorder {
             }
         }).collect(Collectors.toList());
 
+    }
+
+
+    @Override
+    public String updateEvent(EventKey eventKey, @Nullable RecordedEvent newEventData, @Nullable EventState newEventState, @Nullable String newEventType) throws EventStoreException {
+        Update update = QueryBuilder.update(tableName);
+        update.where(QueryBuilder.eq(ENTITY_ID, eventKey.getEntityId()))
+                .and(QueryBuilder.eq(VERSION, eventKey.getVersion()))
+                .ifExists();
+        if (newEventData != null)
+            update.with(QueryBuilder.set(EVENT_DATA, createEventStr(newEventData)));
+        if (newEventState != null)
+            update.with(QueryBuilder.set(STATUS, newEventState.name()));
+        if (newEventType != null)
+            update.with(QueryBuilder.set(EVENT_TYPE, newEventType));
+        try {
+            ResultSet execute = cassandraSession.execute(update);
+            log.debug("Update Event, Result:" + execute.toString() + " Update: " + update.toString());
+            return execute.toString();
+        } catch (Exception e) {
+            log.warn(e.getMessage(), e);
+            throw new EventStoreException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public String updateEvent(EventKey eventKey, RecordedEvent newEventData) throws EventStoreException {
+        assert newEventData != null;
+        return updateEvent(eventKey, newEventData, null, null);
+    }
+
+    private String createEventStr(RecordedEvent newEventData) throws EventStoreException {
+        try {
+            return objectMapper.writerWithView(Views.RecordedOnly.class).writeValueAsString(newEventData);
+        } catch (IllegalArgumentException | JsonProcessingException e) {
+            throw new EventStoreException(e.getMessage(), e);
+        }
     }
 
 

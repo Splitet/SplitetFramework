@@ -29,4 +29,8 @@ emon:
     group:
       name: emon
       password: emon123
+  listenTopology:
+    enabled: true
+  offsetScheduler:
+    enabled: true
 

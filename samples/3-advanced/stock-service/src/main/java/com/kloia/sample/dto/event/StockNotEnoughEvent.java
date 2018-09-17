@@ -11,6 +11,6 @@ public class StockNotEnoughEvent extends PublishedEvent {
 
     @Override
     public EventType getEventType() {
-        return EventType.OP_FAIL;
+        return EventType.OP_SUCCESS;
     }
 }
