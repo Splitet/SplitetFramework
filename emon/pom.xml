@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.kloia.eventapis</groupId>
         <artifactId>eventapis-parent</artifactId>
-        <version>0.6.0</version>
+        <version>0.6.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>emon</artifactId>
@@ -15,10 +15,10 @@
     <name>Eventapis Store and Monitoring</name>
 
     <properties>
-        <spring.version>1.5.10.RELEASE</spring.version>
-        <spring.cloud.version>Edgware.SR2</spring.cloud.version>
+        <spring.version>1.5.12.RELEASE</spring.version>
+        <spring.cloud.version>Dalston.SR5</spring.cloud.version>
         <hazelcast.version>3.9.3</hazelcast.version>
-        <spring-kafka.version>1.3.3.RELEASE</spring-kafka.version>
+        <spring-kafka.version>1.3.4.RELEASE</spring-kafka.version>
     </properties>
     <dependencyManagement>
         <dependencies>
