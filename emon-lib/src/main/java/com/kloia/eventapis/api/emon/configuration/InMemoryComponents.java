@@ -10,7 +10,6 @@ import com.hazelcast.config.ReplicatedMapConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.ReplicatedMap;
 import com.hazelcast.spring.context.SpringManagedContext;
 import com.kloia.eventapis.api.emon.domain.Topic;
 import com.kloia.eventapis.api.emon.domain.Topology;
@@ -29,7 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@Import({InMemoryConfig.class, InMemoryInterfacesConfig.class, InMemoryUserCodeDeploymentConfig.class})
+@Import({HazelcastMulticastConfig.class, InMemoryInterfacesConfig.class, InMemoryUserCodeDeploymentConfig.class})
 @Slf4j
 public class InMemoryComponents {
 
@@ -46,8 +45,6 @@ public class InMemoryComponents {
     @Value("${emon.hazelcast.evict.freeHeapPercentage:20}")
     private Integer evictFreePercentage;
     @Autowired(required = false)
-    private InMemoryConfig inMemoryConfig;
-    @Autowired(required = false)
     private InMemoryInterfacesConfig inMemoryInterfacesConfig;
     @Autowired(required = false)
     private InMemoryUserCodeDeploymentConfig inMemoryUserCodeDeploymentConfig;
@@ -55,6 +52,9 @@ public class InMemoryComponents {
 //    @Value("${info.build.artifact}")
     private String artifactId;
     private HazelcastInstance hazelcastInstance;
+
+    @Autowired
+    private List<HazelcastConfigurer> hazelcastConfigurers;
 
     @Bean
     public Config config() {
@@ -83,8 +83,8 @@ public class InMemoryComponents {
         GroupConfig groupConfig = config.getGroupConfig();
         groupConfig.setName(hazelcastGrid);
         groupConfig.setPassword(hazelcastPassword);
-        if (inMemoryConfig != null) {
-            config.getNetworkConfig().getJoin().setMulticastConfig(inMemoryConfig);
+        for (HazelcastConfigurer hazelcastConfigurer : hazelcastConfigurers) {
+            config = hazelcastConfigurer.configure(config);
         }
         if (inMemoryInterfacesConfig != null) {
             config.getNetworkConfig().setInterfaces(inMemoryInterfacesConfig);
