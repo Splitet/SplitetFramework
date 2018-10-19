@@ -78,12 +78,11 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <!-- Import dependency management from Spring Boot -->
-                <groupId>com.n11.wholesale</groupId>
-                <artifactId>grand-pom</artifactId>
-                <version>0.3.12-SNAPSHOT</version>
-                <type>pom</type>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-bom.version}</version>
                 <scope>import</scope>
+                <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
