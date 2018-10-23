@@ -9,7 +9,6 @@ import com.kloia.eventapis.spring.configuration.EventApisConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +19,6 @@ import org.springframework.kafka.listener.AbstractMessageListenerContainer;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.config.ContainerProperties;
 
-import javax.annotation.PreDestroy;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -28,16 +26,13 @@ import java.util.regex.Pattern;
 @Configuration
 @Slf4j
 @Import(EventApisConfiguration.class)
-public class EventListenConfiguration implements InitializingBean {
+public class EventListenConfiguration {
 
     @Autowired
     private EventApisConfiguration eventApisConfiguration;
 
     @Autowired
     private List<EventMessageListener> eventMessageListeners;
-
-    private ConcurrentMessageListenerContainer<String, PublishedEventWrapper> messageListenerContainer;
-    private ConcurrentMessageListenerContainer<String, Operation> operationListenerContainer;
 
     @Value(value = "${eventapis.eventBus.eventTopicRegex:^.+Event$}")
     private String eventTopicRegexStr;
@@ -55,19 +50,8 @@ public class EventListenConfiguration implements InitializingBean {
         return Pattern.compile(consumerGroupRegexStr);
     }
 
-    @Override
-    public void afterPropertiesSet() {
-        if (eventMessageListeners != null && !eventMessageListeners.isEmpty()) {
-            startEvents();
-            startOperations();
-        }
-    }
-
-    public boolean isRunning() {
-        return messageListenerContainer.isRunning() && operationListenerContainer.isRunning();
-    }
-
-    private void startOperations() {
+    @Bean(name = "operationListenerContainer")
+    public ConcurrentMessageListenerContainer<String, Operation> operationListenerContainer() {
         Map<String, Object> consumerProperties = eventApisConfiguration.getEventBus().buildConsumerProperties();
         consumerProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
@@ -77,12 +61,13 @@ public class EventListenConfiguration implements InitializingBean {
         ContainerProperties containerProperties = new ContainerProperties(Operation.OPERATION_EVENTS);
         containerProperties.setMessageListener(new MultipleEventMessageListener(eventMessageListeners));
         containerProperties.setAckMode(AbstractMessageListenerContainer.AckMode.BATCH);
-        operationListenerContainer = new ConcurrentMessageListenerContainer<>(operationConsumerFactory, containerProperties);
+        ConcurrentMessageListenerContainer<String, Operation> operationListenerContainer = new ConcurrentMessageListenerContainer<>(operationConsumerFactory, containerProperties);
         operationListenerContainer.setBeanName("emon-operations");
-        operationListenerContainer.start();
+        return operationListenerContainer;
     }
 
-    private void startEvents() {
+    @Bean(name = "messageListenerContainer")
+    public ConcurrentMessageListenerContainer<String, PublishedEventWrapper> messageListenerContainer() {
         Map<String, Object> consumerProperties = eventApisConfiguration.getEventBus().buildConsumerProperties();
         consumerProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         consumerProperties.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, 3000);
@@ -93,21 +78,9 @@ public class EventListenConfiguration implements InitializingBean {
         ContainerProperties containerProperties = new ContainerProperties(Pattern.compile(eventTopicRegexStr));
         containerProperties.setMessageListener(new MultipleEventMessageListener(eventMessageListeners));
         containerProperties.setAckMode(AbstractMessageListenerContainer.AckMode.BATCH);
-        messageListenerContainer = new ConcurrentMessageListenerContainer<>(consumerFactory, containerProperties);
+        ConcurrentMessageListenerContainer<String, PublishedEventWrapper> messageListenerContainer = new ConcurrentMessageListenerContainer<>(consumerFactory, containerProperties);
         messageListenerContainer.setBeanName("emon-events");
-        messageListenerContainer.start();
-    }
-
-    @PreDestroy
-    public void stopListen() {
-
-        if (messageListenerContainer != null && messageListenerContainer.isRunning()) {
-            messageListenerContainer.stop();
-        }
-
-        if (operationListenerContainer != null && operationListenerContainer.isRunning()) {
-            operationListenerContainer.stop();
-        }
+        return messageListenerContainer;
     }
 
 }

@@ -1,16 +1,14 @@
 package com.kloia.eventapis.api.emon.configuration;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.config.EvictionPolicy;
 import com.hazelcast.config.GroupConfig;
-import com.hazelcast.config.MapConfig;
-import com.hazelcast.config.MapIndexConfig;
-import com.hazelcast.config.MaxSizeConfig;
-import com.hazelcast.config.ReplicatedMapConfig;
+import com.hazelcast.config.InterfacesConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.spring.context.SpringManagedContext;
+import com.kloia.eventapis.api.emon.configuration.hazelcast.MulticastConfig;
+import com.kloia.eventapis.api.emon.configuration.hazelcast.UserCodeDeploymentConfig;
 import com.kloia.eventapis.api.emon.domain.Topic;
 import com.kloia.eventapis.api.emon.domain.Topology;
 import com.kloia.eventapis.api.emon.service.OperationExpirationListener;
@@ -24,19 +22,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
 import javax.annotation.PreDestroy;
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@Import({HazelcastMulticastConfig.class, InMemoryInterfacesConfig.class, InMemoryUserCodeDeploymentConfig.class})
+@Import({MulticastConfig.class, InterfacesConfig.class, UserCodeDeploymentConfig.class})
 @Slf4j
 public class InMemoryComponents {
 
-    public static final int OPERATIONS_MAX_TTL_INSEC = 60000;
-    public static final String OPERATIONS_MAP_NAME = "operations";
-    public static final String OPERATIONS_MAP_HISTORY_NAME = "operations-history";
-    public static final String META_MAP_NAME = "meta";
-    public static final String TOPICS_MAP_NAME = "topics";
 
     @Value("${emon.hazelcast.group.name:'emon'}")
     private String hazelcastGrid;
@@ -44,10 +36,7 @@ public class InMemoryComponents {
     private String hazelcastPassword;
     @Value("${emon.hazelcast.evict.freeHeapPercentage:20}")
     private Integer evictFreePercentage;
-    @Autowired(required = false)
-    private InMemoryInterfacesConfig inMemoryInterfacesConfig;
-    @Autowired(required = false)
-    private InMemoryUserCodeDeploymentConfig inMemoryUserCodeDeploymentConfig;
+
     @Value("${eventapis.eventBus.consumer.groupId}")
 //    @Value("${info.build.artifact}")
     private String artifactId;
@@ -59,41 +48,15 @@ public class InMemoryComponents {
     @Bean
     public Config config() {
         Config config = new Config();
-
-        List<MapIndexConfig> indexes = Arrays.asList(
-                new MapIndexConfig("startTime", true),
-                new MapIndexConfig("operationState", true)
-        );
-
-        config.addMapConfig(new MapConfig()
-                .setTimeToLiveSeconds(OPERATIONS_MAX_TTL_INSEC)
-                .setMapIndexConfigs(indexes)
-                .setName(OPERATIONS_MAP_NAME)
-        );
-
-        config.addMapConfig(new MapConfig()
-                .setMapIndexConfigs(indexes)
-                .setMaxSizeConfig(new MaxSizeConfig(evictFreePercentage, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_PERCENTAGE))
-                .setEvictionPolicy(EvictionPolicy.LRU)
-                .setName(OPERATIONS_MAP_HISTORY_NAME)
-        );
-        config.addReplicatedMapConfig(new ReplicatedMapConfig()
-                .setName(TOPICS_MAP_NAME)
-        );
         GroupConfig groupConfig = config.getGroupConfig();
         groupConfig.setName(hazelcastGrid);
         groupConfig.setPassword(hazelcastPassword);
+        config.setGroupConfig(groupConfig);
+        config.setInstanceName(artifactId);
+
         for (HazelcastConfigurer hazelcastConfigurer : hazelcastConfigurers) {
             config = hazelcastConfigurer.configure(config);
         }
-        if (inMemoryInterfacesConfig != null) {
-            config.getNetworkConfig().setInterfaces(inMemoryInterfacesConfig);
-        }
-        if (inMemoryUserCodeDeploymentConfig != null)
-            config.setUserCodeDeploymentConfig(inMemoryUserCodeDeploymentConfig);
-
-        config.setGroupConfig(groupConfig);
-        config.setInstanceName(artifactId);
         return config;
     }
 
@@ -111,31 +74,9 @@ public class InMemoryComponents {
     }
 
     @Bean
-    public IMap<String, Topology> operationsHistoryMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
-        return hazelcastInstance.getMap(OPERATIONS_MAP_HISTORY_NAME);
-    }
-
-    @Bean
-    public IMap<String, Object> metaMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
-        return hazelcastInstance.getMap(META_MAP_NAME);
-    }
-
-    @Bean
     public OperationExpirationListener operationExpirationListener(@Autowired @Qualifier("operationsHistoryMap") IMap<String, Topology> operationsHistoryMap,
                                                                    @Autowired @Qualifier("topicsMap") IMap<String, Topic> topicsMap) {
         return new OperationExpirationListener(operationsHistoryMap, topicsMap);
-    }
-
-    @Bean
-    public IMap<String, Topology> operationsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance, OperationExpirationListener operationExpirationListener) {
-        IMap<String, Topology> operationsMap = hazelcastInstance.getMap(OPERATIONS_MAP_NAME);
-        operationsMap.addLocalEntryListener(operationExpirationListener);
-        return operationsMap;
-    }
-
-    @Bean
-    public IMap<String, Topic> topicsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
-        return hazelcastInstance.getMap(TOPICS_MAP_NAME);
     }
 
     @PreDestroy
