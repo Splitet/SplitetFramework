@@ -21,6 +21,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.config.SslConfigs;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,7 +59,9 @@ public class KafkaProperties implements Cloneable {
      */
     private Map<String, String> properties = new HashMap<String, String>();
 
-    private Map<String, Object> buildCommonProperties() {
+    private final Ssl ssl = new Ssl();
+
+    public Map<String, Object> buildCommonProperties() {
         Map<String, Object> commonProperties = new HashMap<String, Object>();
         if (this.bootstrapServers != null) {
             commonProperties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,
@@ -69,11 +72,36 @@ public class KafkaProperties implements Cloneable {
         } else if (this.consumer.groupId != null)
             commonProperties.put(CommonClientConfigs.CLIENT_ID_CONFIG, this.consumer.groupId + "-" + new Random().nextInt(1000));
 
+        buildSslOptions(this.ssl, commonProperties);
 
         if (!MapUtils.isEmpty(this.properties)) {
             commonProperties.putAll(this.properties);
         }
         return commonProperties;
+    }
+
+    static void buildSslOptions(Ssl ssl, Map<String, Object> properties) {
+
+        if (ssl.getKeyPassword() != null) {
+            properties.put(SslConfigs.SSL_KEY_PASSWORD_CONFIG,
+                    ssl.getKeyPassword());
+        }
+        if (ssl.getKeystoreLocation() != null) {
+            properties.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG,
+                    ssl.getKeystoreLocation());
+        }
+        if (ssl.getKeystorePassword() != null) {
+            properties.put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG,
+                    ssl.getKeystorePassword());
+        }
+        if (ssl.getTruststoreLocation() != null) {
+            properties.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG,
+                    ssl.getTruststoreLocation());
+        }
+        if (ssl.getTruststorePassword() != null) {
+            properties.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG,
+                    ssl.getTruststorePassword());
+        }
     }
 
     /**
@@ -118,6 +146,13 @@ public class KafkaProperties implements Cloneable {
 
     @Data
     public static class Consumer implements Cloneable {
+
+        private final Ssl ssl = new Ssl();
+
+        /**
+         * Frequency in milliseconds that the consumer offsets are auto-committed to Kafka
+         * if 'enable.auto.commit' true.
+         */
 
         private Integer autoCommitInterval;
 
@@ -209,6 +244,9 @@ public class KafkaProperties implements Cloneable {
                 properties.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG,
                         this.heartbeatInterval);
             }
+
+            buildSslOptions(this.ssl, properties);
+
             if (this.maxPollRecords != null) {
                 properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,
                         this.maxPollRecords);
@@ -220,6 +258,7 @@ public class KafkaProperties implements Cloneable {
             return properties;
         }
 
+
         @Override
         public Object clone() throws CloneNotSupportedException {
             return super.clone();
@@ -229,6 +268,8 @@ public class KafkaProperties implements Cloneable {
 
     @Data
     public static class Producer implements Cloneable {
+
+        private final Ssl ssl = new Ssl();
         /**
          * Number of acknowledgments the producer requires the leader to have received
          * before considering a request complete.
@@ -294,6 +335,8 @@ public class KafkaProperties implements Cloneable {
                 properties.put(ProducerConfig.RETRIES_CONFIG, this.retries);
             }
 
+            buildSslOptions(ssl, properties);
+
             return properties;
         }
 
@@ -301,6 +344,76 @@ public class KafkaProperties implements Cloneable {
         public Object clone() throws CloneNotSupportedException {
             return super.clone();
         }
+    }
+
+    @Data
+    public static class Ssl {
+
+        /**
+         * Password of the private key in the key store file.
+         */
+        private String keyPassword;
+
+        /**
+         * Location of the key store file.
+         */
+        private String keystoreLocation;
+
+        /**
+         * Store password for the key store file.
+         */
+        private String keystorePassword;
+
+        /**
+         * Location of the trust store file.
+         */
+        private String truststoreLocation;
+
+        /**
+         * Store password for the trust store file.
+         */
+        private String truststorePassword;
+
+        public String getKeyPassword() {
+            return this.keyPassword;
+        }
+
+        public void setKeyPassword(String keyPassword) {
+            this.keyPassword = keyPassword;
+        }
+
+        public String getKeystoreLocation() {
+            return this.keystoreLocation;
+        }
+
+        public void setKeystoreLocation(String keystoreLocation) {
+            this.keystoreLocation = keystoreLocation;
+        }
+
+        public String getKeystorePassword() {
+            return this.keystorePassword;
+        }
+
+        public void setKeystorePassword(String keystorePassword) {
+            this.keystorePassword = keystorePassword;
+        }
+
+        public String getTruststoreLocation() {
+            return this.truststoreLocation;
+        }
+
+        public void setTruststoreLocation(String truststoreLocation) {
+            this.truststoreLocation = truststoreLocation;
+        }
+
+        public String getTruststorePassword() {
+            return this.truststorePassword;
+        }
+
+        public void setTruststorePassword(String truststorePassword) {
+            this.truststorePassword = truststorePassword;
+        }
+
     }
 
 }

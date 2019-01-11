@@ -28,9 +28,8 @@ public class AutomaticTopicConfiguration {
     private EventApisConfiguration eventApisConfiguration;
 
     private AdminClient adminClient() {
-        String bootstrapServers = String.join(",", eventApisConfiguration.getEventBus().getBootstrapServers());
         Properties properties = new Properties();
-        properties.put("bootstrap.servers", bootstrapServers);
+        properties.putAll(eventApisConfiguration.getEventBus().buildCommonProperties());
         return AdminClient.create(properties);
     }
 
@@ -80,7 +79,7 @@ public class AutomaticTopicConfiguration {
                     .all().get().values().iterator().next()
                     .partitions().size();
         } catch (InterruptedException | ExecutionException | NullPointerException e) {
-            log.warn("Error while Calculating Number of Partitions from Topic: " + Operation.OPERATION_EVENTS + " Assuming 1");
+            log.warn("Error while Calculating Number of Partitions from Topic: " + Operation.OPERATION_EVENTS + " Assuming " + DEFAULT_NUM_PARTITIONS);
             return DEFAULT_NUM_PARTITIONS;
         }
     }

@@ -32,6 +32,7 @@ public class TopologyConfiguration {
         String bootstrapServers = String.join(",", eventApisConfiguration.getEventBus().getBootstrapServers());
         String zookeeperServers = String.join(",", eventApisConfiguration.getEventBus().getZookeeperServers());
         Properties properties = new Properties();
+        properties.putAll(eventApisConfiguration.getEventBus().buildCommonProperties());
         properties.put("zookeeper", zookeeperServers);
         properties.put("bootstrap.servers", bootstrapServers);
         return properties;
