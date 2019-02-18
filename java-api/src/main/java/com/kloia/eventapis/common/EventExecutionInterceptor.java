@@ -38,7 +38,7 @@ public class EventExecutionInterceptor {
     public void afterReturning(Object retVal) throws Throwable {
         log.debug("AfterReturning:" + (retVal == null ? "" : retVal.toString()));
         operationContext.clearCommandContext();
-        userContext.getUserContext();
+        userContext.clearUserContext();
     }
 
     @AfterThrowing(value = "this(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", throwing = "exception")
@@ -48,7 +48,7 @@ public class EventExecutionInterceptor {
             kafkaOperationRepository.failOperation(operationContext.getCommandContext(), event -> event.setEventState(EventState.TXN_FAILED));
         } finally {
             operationContext.clearCommandContext();
-            userContext.getUserContext();
+            userContext.clearUserContext();
         }
     }
 
