@@ -211,7 +211,7 @@ public class KafkaProperties implements Cloneable {
         /**
          * Maximum number of records returned in a single call to poll().
          */
-        private Integer maxPollRecords;
+        private Integer maxPollRecords = 1;
 
         private Integer sessionTimeout;
 
