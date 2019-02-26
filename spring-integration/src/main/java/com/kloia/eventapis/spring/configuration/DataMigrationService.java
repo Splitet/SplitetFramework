@@ -35,4 +35,9 @@ public class DataMigrationService<T extends Entity> {
     public T updateEvent(EventKey eventKey, boolean snapshot, RecordedEvent newEventData) throws EventStoreException {
         return this.updateEvent(eventKey, snapshot, newEventData, null, null);
     }
+
+    public T snapshotOnly(String entityId) throws EventStoreException {
+        T entity = viewQuery.queryEntity(entityId);
+        return snapshotRepository.save(entity);
+    }
 }
