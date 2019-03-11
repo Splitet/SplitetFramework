@@ -63,6 +63,7 @@ public class EventListenConfiguration {
         containerProperties.setAckMode(AbstractMessageListenerContainer.AckMode.BATCH);
         ConcurrentMessageListenerContainer<String, Operation> operationListenerContainer = new ConcurrentMessageListenerContainer<>(operationConsumerFactory, containerProperties);
         operationListenerContainer.setBeanName("emon-operations");
+        operationListenerContainer.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getOperationConcurrency());
         return operationListenerContainer;
     }
 
@@ -79,6 +80,7 @@ public class EventListenConfiguration {
         containerProperties.setMessageListener(new MultipleEventMessageListener(eventMessageListeners));
         containerProperties.setAckMode(AbstractMessageListenerContainer.AckMode.BATCH);
         ConcurrentMessageListenerContainer<String, PublishedEventWrapper> messageListenerContainer = new ConcurrentMessageListenerContainer<>(consumerFactory, containerProperties);
+        messageListenerContainer.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getEventConcurrency());
         messageListenerContainer.setBeanName("emon-events");
         return messageListenerContainer;
     }
