@@ -8,7 +8,6 @@ import com.kloia.eventapis.api.Views;
 import com.kloia.eventapis.api.impl.UUIDCreationStrategy;
 import com.kloia.eventapis.cassandra.ConcurrencyResolver;
 import com.kloia.eventapis.cassandra.ConcurrentEventException;
-import com.kloia.eventapis.cassandra.ConcurrentEventResolver;
 import com.kloia.eventapis.cassandra.DefaultConcurrencyResolver;
 import com.kloia.eventapis.cassandra.EntityEvent;
 import com.kloia.eventapis.common.EventKey;
@@ -54,17 +53,22 @@ public class CompositeRepositoryImplTest {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
+
     @InjectMocks
     private CompositeRepositoryImpl compositeRepository;
+
     @Mock
     private EventRecorder eventRecorder;
+
     @Mock
     private ObjectMapper objectMapper;
+
     @Mock
     private IOperationRepository operationRepository;
 
     @Mock
     private IdCreationStrategy idCreationStrategy = new UUIDCreationStrategy();
+
     @Captor
     private ArgumentCaptor<Function<EntityEvent, ConcurrencyResolver<ConcurrentEventException>>> concurrencyResolverFactoryCaptor;
 
@@ -109,6 +113,13 @@ public class CompositeRepositoryImplTest {
         compositeRepository.markFail("opId");
 
         verify(eventRecorder).markFail("opId");
+    }
+
+    @Test
+    public void shouldMarkSuccess() {
+        compositeRepository.markSuccess("opId");
+
+        verify(eventRecorder).markSuccess("opId");
     }
 
     private void mockCommon(PublishedEvent event) throws EventStoreException, ConcurrentEventException, JsonProcessingException {

@@ -32,6 +32,8 @@ public interface EventRecorder {
 
     List<EntityEvent> markFail(String key);
 
+    List<EntityEvent> markSuccess(String key);
+
     String updateEvent(EventKey eventKey, @Nullable RecordedEvent newEventData, @Nullable EventState newEventState, @Nullable String newEventType) throws EventStoreException;
 
     String updateEvent(EventKey eventKey, RecordedEvent newEventData) throws EventStoreException;

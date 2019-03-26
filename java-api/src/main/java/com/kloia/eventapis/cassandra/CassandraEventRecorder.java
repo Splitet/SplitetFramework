@@ -174,9 +174,35 @@ public class CassandraEventRecorder implements EventRecorder {
                 update.where(QueryBuilder.eq(ENTITY_ID, entityEvent.getEventKey().getEntityId()))
                         .and(QueryBuilder.eq(VERSION, entityEvent.getEventKey().getVersion()))
                         .ifExists();
-                update.with(QueryBuilder.set(STATUS, "FAILED"));
+                update.with(QueryBuilder.set(STATUS, EventState.FAILED.name()));
                 ResultSet execute = cassandraSession.execute(update);
                 log.debug("Failure Mark Result:" + execute.toString() + " Update: " + update.toString());
+                return true;
+            } catch (Exception e) {
+                log.warn(e.getMessage(), e);
+                return false;
+            }
+        }).collect(Collectors.toList());
+
+    }
+
+    @Override
+    public List<EntityEvent> markSuccess(String key) {
+        Select select = QueryBuilder.select().from(tableNameByOps);
+        select.where(QueryBuilder.eq(OP_ID, key));
+        List<Row> entityEventDatas = cassandraSession.execute(select, PagingIterable::all);
+
+        return entityEventDatas.stream().map(
+                CassandraViewQuery::convertToEntityEvent
+        ).filter(entityEvent -> {
+            try {
+                Update update = QueryBuilder.update(tableName);
+                update.where(QueryBuilder.eq(ENTITY_ID, entityEvent.getEventKey().getEntityId()))
+                        .and(QueryBuilder.eq(VERSION, entityEvent.getEventKey().getVersion()))
+                        .ifExists();
+                update.with(QueryBuilder.set(STATUS, EventState.CREATED.name()));
+                ResultSet execute = cassandraSession.execute(update);
+                log.debug("Success Mark Result:" + execute.toString() + " Update: " + update.toString());
                 return true;
             } catch (Exception e) {
                 log.warn(e.getMessage(), e);
