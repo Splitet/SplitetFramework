@@ -31,6 +31,9 @@ import org.springframework.kafka.listener.AbstractMessageListenerContainer;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionStatus;
 
 import javax.annotation.PreDestroy;
 import javax.servlet.DispatcherType;
@@ -154,8 +157,7 @@ public class EventApisFactory {
 
     @Bean("operationsKafkaListenerContainerFactory")
     public ConcurrentKafkaListenerContainerFactory<String, Operation> operationsKafkaListenerContainerFactory(
-            ConsumerFactory<String, Operation> consumerFactory,
-            PlatformTransactionManager platformTransactionManager) {
+            ConsumerFactory<String, Operation> consumerFactory) {
         ConcurrentKafkaListenerContainerFactory<String, Operation> factory
                 = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
@@ -177,7 +179,13 @@ public class EventApisFactory {
         factory.getContainerProperties().setAckOnError(false);
         factory.getContainerProperties().setConsumerTaskExecutor(consumerScheduler);
         factory.getContainerProperties().setAckMode(AbstractMessageListenerContainer.AckMode.RECORD);
-        factory.getContainerProperties().setTransactionManager(platformTransactionManager);
+        /**
+         * This is Fix for Spring Kafka versions which does not have ConsumerAwareErrorHandler handler till 2.0
+         * When Listener faces with error, it retries snapshot operation
+         * See https://github.com/kloiasoft/eventapis/issues/44
+         */
+        factory.getContainerProperties().setTransactionManager(new EmptyTransactionManager());
+//        factory.getContainerProperties().setTransactionManager(platformTransactionManager);
         return factory;
     }
 
@@ -185,6 +193,23 @@ public class EventApisFactory {
     @ConditionalOnMissingBean(IUserContext.class)
     public IUserContext getUserContext() {
         return new EmptyUserContext();
+    }
+
+    private static class EmptyTransactionManager implements PlatformTransactionManager {
+        @Override
+        public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
+            return null;
+        }
+
+        @Override
+        public void commit(TransactionStatus status) throws TransactionException {
+
+        }
+
+        @Override
+        public void rollback(TransactionStatus status) throws TransactionException {
+
+        }
     }
 
 }
