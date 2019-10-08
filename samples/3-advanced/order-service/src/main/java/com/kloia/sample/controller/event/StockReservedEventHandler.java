@@ -24,6 +24,7 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 @Controller
 public class StockReservedEventHandler implements EventHandler<StockReservedEvent> {
+
     private final EventRepository eventRepository;
     private final ViewQuery<Orders> orderQuery;
 

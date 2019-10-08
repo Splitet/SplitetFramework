@@ -25,12 +25,16 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 public class StockReleasedEventHandler implements EventHandler<StockReleasedEvent> {
-    @Autowired
-    private EventRepository eventRepository;
-    @Autowired
-    private ViewQuery<Orders> orderQuery;
-    @Autowired
-    private PaymentClient paymentClient;
+
+    private final EventRepository eventRepository;
+    private final ViewQuery<Orders> orderQuery;
+    private final PaymentClient paymentClient;
+
+    public StockReleasedEventHandler(EventRepository eventRepository, ViewQuery<Orders> orderQuery, PaymentClient paymentClient) {
+        this.eventRepository = eventRepository;
+        this.orderQuery = orderQuery;
+        this.paymentClient = paymentClient;
+    }
 
 
     @KafkaListener(topics = "StockReleasedEvent", containerFactory = "eventsKafkaListenerContainerFactory")

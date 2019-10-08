@@ -3,7 +3,6 @@ package com.kloia.sample.commands;
 import com.kloia.eventapis.api.Command;
 import com.kloia.eventapis.api.CommandHandler;
 import com.kloia.eventapis.api.EventRepository;
-import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.sample.dto.command.AddStockCommandDto;
@@ -13,7 +12,6 @@ import com.kloia.sample.model.Stock;
 import com.kloia.sample.model.StockState;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,12 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class CreateStockCommandHandler implements CommandHandler {
 
-    @Autowired
-    private EventRepository eventRepository;
-    @Autowired
-    private ViewQuery<Stock> orderQuery;
-    @Autowired
-    private AddStockCommandHandler addStockCommandHandler;
+    private final EventRepository eventRepository;
+    private final AddStockCommandHandler addStockCommandHandler;
+
+    public CreateStockCommandHandler(EventRepository eventRepository, AddStockCommandHandler addStockCommandHandler) {
+        this.eventRepository = eventRepository;
+        this.addStockCommandHandler = addStockCommandHandler;
+    }
 
     @RequestMapping(value = "/stock/create", method = RequestMethod.POST)
     @Command
@@ -41,7 +40,8 @@ public class CreateStockCommandHandler implements CommandHandler {
         BeanUtils.copyProperties(dto, stockCreatedEvent);
         EventKey eventKey = eventRepository.recordAndPublish(stockCreatedEvent);
         try {
-            addStockCommandHandler.execute(eventKey.getEntityId(), new AddStockCommandDto(dto.getRemainingStock(), eventKey.getEntityId()));
+            AddStockCommandDto addStockCommandDto = new AddStockCommandDto(dto.getRemainingStock(), eventKey.getEntityId());
+            addStockCommandHandler.execute(eventKey.getEntityId(), addStockCommandDto);
         } catch (Exception e) {
             log.warn("Sub Command Failed:" + e.getMessage());
         }
@@ -60,6 +60,5 @@ public class CreateStockCommandHandler implements CommandHandler {
             });
         }
     }
-
 
 }

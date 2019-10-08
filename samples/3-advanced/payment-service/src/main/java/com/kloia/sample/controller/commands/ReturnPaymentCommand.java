@@ -28,6 +28,7 @@ import javax.validation.Valid;
 @Slf4j
 @RestController
 public class ReturnPaymentCommand implements CommandHandler {
+
     private final EventRepository eventRepository;
     private final ViewQuery<Payment> paymentViewQuery;
 
@@ -39,7 +40,10 @@ public class ReturnPaymentCommand implements CommandHandler {
 
     @RequestMapping(value = "/payment/{paymentId}/return", method = RequestMethod.POST)
     @Command
-    public EventKey execute(@PathVariable("paymentId") String paymentId, @RequestBody @Valid ReturnPaymentCommandDto dto) throws Exception {
+    public EventKey execute(
+            @PathVariable("paymentId") String paymentId,
+            @RequestBody @Valid ReturnPaymentCommandDto dto
+    ) throws Exception {
         dto.setPaymentId(paymentId);
         Payment payment = paymentViewQuery.queryEntity(dto.getPaymentId());
 
@@ -51,8 +55,8 @@ public class ReturnPaymentCommand implements CommandHandler {
     }
 
     @Component
-    public static class ProcessOrderSpec extends EntityFunctionSpec<Payment, PaymentReturnedEvent> {
-        public ProcessOrderSpec() {
+    public static class PaymentReturnedSpec extends EntityFunctionSpec<Payment, PaymentReturnedEvent> {
+        public PaymentReturnedSpec() {
             super((payment, event) -> {
                 PaymentReturnedEvent eventData = event.getEventData();
                 payment.setAmount(payment.getAmount() - eventData.getAmount());

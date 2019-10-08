@@ -28,6 +28,7 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 @Controller
 public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent> {
+
     private final EventRepository eventRepository;
     private final ViewQuery<Stock> stockQuery;
 
@@ -64,8 +65,8 @@ public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent>
     }
 
     @Component
-    public static class ReserveStockSpec extends EntityFunctionSpec<Stock, StockReservedEvent> {
-        public ReserveStockSpec() {
+    public static class StockReservedSpec extends EntityFunctionSpec<Stock, StockReservedEvent> {
+        public StockReservedSpec() {
             super((stock, event) -> {
                 StockReservedEvent eventData = event.getEventData();
                 stock.setRemainingStock(stock.getRemainingStock() - eventData.getNumberOfItemsSold());
@@ -86,8 +87,10 @@ public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent>
     }
 
     private static class StockConcurrencyResolver implements ConcurrentEventResolver<StockReservedEvent, StockNotEnoughException> {
-        ViewQuery<Stock> stockQuery;
-        ReserveStockEvent reserveStockEvent;
+
+        private ViewQuery<Stock> stockQuery;
+        private ReserveStockEvent reserveStockEvent;
+
         private int maxTry = 3;
         private int currentTry = 0;
 
@@ -103,7 +106,9 @@ public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent>
         }
 
         @Override
-        public Pair<EventKey, StockReservedEvent> calculateNext(StockReservedEvent failedEvent, EventKey failedEventKey, int lastVersion) throws StockNotEnoughException, EventStoreException {
+        public Pair<EventKey, StockReservedEvent> calculateNext(
+                StockReservedEvent failedEvent, EventKey failedEventKey, int lastVersion
+        ) throws StockNotEnoughException, EventStoreException {
             Stock stock = stockQuery.queryEntity(failedEventKey.getEntityId());
             if (stock.getRemainingStock() < reserveStockEvent.getNumberOfItemsSold()) {
                 throw new StockNotEnoughException("Out Of Stock Event");
@@ -112,7 +117,8 @@ public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent>
             }
         }
 
-/*        @Override
+        /*
+        @Override
         public EventKey calculateNext(EventKey eventKey, int lastVersion) throws StockNotEnoughException, EventStoreException {
             Stock stock = stockQuery.queryEntity(eventKey.getEntityId());
             if (stock.getRemainingStock() < reserveStockEvent.getNumberOfItemsSold()) {
@@ -120,6 +126,7 @@ public class ReserveStockEventHandler implements EventHandler<ReserveStockEvent>
             } else {
                 return new EventKey(eventKey.getEntityId(), stock.getVersion() + 1);
             }
-        }*/
+        }
+        */
     }
 }

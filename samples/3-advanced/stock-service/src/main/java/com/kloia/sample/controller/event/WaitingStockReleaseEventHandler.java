@@ -45,8 +45,8 @@ public class WaitingStockReleaseEventHandler implements EventHandler<WaitingStoc
     }
 
     @Component
-    public static class ReserveStockSpec extends EntityFunctionSpec<Stock, StockReleasedEvent> {
-        public ReserveStockSpec() {
+    public static class StockReleasedSpec extends EntityFunctionSpec<Stock, StockReleasedEvent> {
+        public StockReleasedSpec() {
             super((stock, event) -> {
                 StockReleasedEvent eventData = event.getEventData();
                 stock.setRemainingStock(stock.getRemainingStock() + eventData.getNumberOfItemsReleased());
@@ -66,7 +66,6 @@ public class WaitingStockReleaseEventHandler implements EventHandler<WaitingStoc
             if (maxTry <= currentTry++)
                 throw new StockNotEnoughException("Cannot allocate stock in Max Try: " + maxTry);
         }
-
 
         @Override
         public EventKey calculateNext(EventKey eventKey, int lastVersion) {

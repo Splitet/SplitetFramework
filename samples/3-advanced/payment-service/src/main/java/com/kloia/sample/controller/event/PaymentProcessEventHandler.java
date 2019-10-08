@@ -2,10 +2,8 @@ package com.kloia.sample.controller.event;
 
 import com.kloia.eventapis.api.EventHandler;
 import com.kloia.eventapis.api.EventRepository;
-import com.kloia.eventapis.api.ViewQuery;
 import com.kloia.eventapis.cassandra.ConcurrentEventException;
 import com.kloia.eventapis.common.EventKey;
-import com.kloia.eventapis.exception.EventPulisherException;
 import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.eventapis.view.EntityFunctionSpec;
 import com.kloia.sample.dto.event.PaymentFailedEvent;
@@ -25,18 +23,17 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-public class DoPaymentEventHandler implements EventHandler<PaymentProcessEvent> {
+public class PaymentProcessEventHandler implements EventHandler<PaymentProcessEvent> {
+
     private final EventRepository eventRepository;
 
-
     @Autowired
-    public DoPaymentEventHandler(EventRepository eventRepository, ViewQuery<Payment> paymentQuery) {
+    public PaymentProcessEventHandler(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
     }
 
     @KafkaListener(topics = "PaymentProcessEvent", containerFactory = "eventsKafkaListenerContainerFactory")
-    public EventKey execute(PaymentProcessEvent dto) throws EventStoreException, EventPulisherException, ConcurrentEventException {
-
+    public EventKey execute(PaymentProcessEvent dto) throws EventStoreException, ConcurrentEventException {
         PaymentSuccessEvent paymentSuccessEvent = new PaymentSuccessEvent();
         BeanUtils.copyProperties(dto.getPaymentInformation(), paymentSuccessEvent);
         paymentSuccessEvent.setOrderId(dto.getSender().getEntityId());
@@ -54,8 +51,8 @@ public class DoPaymentEventHandler implements EventHandler<PaymentProcessEvent> 
     }
 
     @Component
-    public static class DoPaymentSpec extends EntityFunctionSpec<Payment, PaymentSuccessEvent> {
-        public DoPaymentSpec() {
+    public static class PaymentSuccessSpec extends EntityFunctionSpec<Payment, PaymentSuccessEvent> {
+        public PaymentSuccessSpec() {
             super((payment, event) -> {
                 PaymentSuccessEvent createOrderCommandDto = event.getEventData();
                 payment.setOrderId(createOrderCommandDto.getOrderId());

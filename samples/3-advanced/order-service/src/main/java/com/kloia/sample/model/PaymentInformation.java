@@ -11,7 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentInformation {
+
     private String paymentAddress;
+
     private float amount;
+
     private String cardInformation;
+
 }

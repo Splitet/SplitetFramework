@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 public class CancelOrderCommand implements CommandHandler {
+
     private final EventRepository eventRepository;
     private final ViewQuery<Orders> orderQuery;
 

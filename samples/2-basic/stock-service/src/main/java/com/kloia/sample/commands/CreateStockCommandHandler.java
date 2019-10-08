@@ -34,7 +34,6 @@ public class CreateStockCommandHandler implements CommandHandler {
         this.orderQuery = orderQuery;
     }
 
-    @Override
     @RequestMapping(value = "/stock/v1/create", method = RequestMethod.POST)
     public EventKey execute(@RequestBody CreateStockCommandDto dto) throws Exception {
         StockCreatedEvent stockCreatedEvent = new StockCreatedEvent();

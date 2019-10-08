@@ -30,9 +30,8 @@ import java.util.Optional;
 @Slf4j
 public class Components {
 
-
     @Autowired
-    CassandraSession cassandraSession;
+    private CassandraSession cassandraSession;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -41,21 +40,34 @@ public class Components {
     private OperationContext operationContext;
 
     @Bean
-    AggregateListener snapshotRecorder(ViewQuery<Stock> stockViewRepository, EventRepository stockEventRepository, StockRepository stockRepository,
-                                       Optional<List<RollbackSpec>> rollbackSpecs) {
+    AggregateListener snapshotRecorder(
+            ViewQuery<Stock> stockViewRepository,
+            EventRepository stockEventRepository,
+            StockRepository stockRepository,
+            Optional<List<RollbackSpec>> rollbackSpecs
+    ) {
         return new AggregateListener(stockViewRepository, stockEventRepository, stockRepository, rollbackSpecs.orElseGet(ArrayList::new), objectMapper);
     }
 
     @Bean
-    ViewQuery<Stock> stockViewRepository(List<EntityFunctionSpec<Stock, ?>> functionSpecs, EventApisConfiguration eventApisConfiguration) {
+    ViewQuery<Stock> stockViewRepository(
+            List<EntityFunctionSpec<Stock, ?>> functionSpecs, EventApisConfiguration eventApisConfiguration
+    ) {
         return new CassandraViewQuery<>(
                 eventApisConfiguration.getTableNameForEvents("stock"),
-                cassandraSession, objectMapper, functionSpecs);
+                cassandraSession, objectMapper, functionSpecs
+        );
     }
 
     @Bean
     EventRecorder stockPersistentEventRepository(EventApisConfiguration eventApisConfiguration, IUserContext userContext) {
-        return new CassandraEventRecorder(eventApisConfiguration.getTableNameForEvents("stock"), cassandraSession, operationContext, userContext, new ObjectMapper());
+        return new CassandraEventRecorder(
+                eventApisConfiguration.getTableNameForEvents("stock"),
+                cassandraSession,
+                operationContext,
+                userContext,
+                new ObjectMapper()
+        );
     }
 
     @Bean
@@ -63,8 +75,4 @@ public class Components {
         return new CompositeRepositoryImpl(stockEventRecorder, new ObjectMapper(), operationRepository);
     }
 
-/*    @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }*/
 }

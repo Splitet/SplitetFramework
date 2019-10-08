@@ -23,6 +23,7 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 @Controller
 public class PaymentSuccessEventHandler implements EventHandler<PaymentSuccessEvent> {
+
     private final EventRepository eventRepository;
     private final ViewQuery<Orders> orderQuery;
 

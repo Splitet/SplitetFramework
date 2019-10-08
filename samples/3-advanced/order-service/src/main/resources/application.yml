@@ -2,8 +2,10 @@ eventapis:
   storeConfig:
     contactPoints: test-api:9042
     keyspaceName: test
-    username: test_order
-    password: qwe123
+    #    username: test_order
+    username: cassandra
+    #    password: qwe123
+    password: cassandra
   eventRecords:
     order: orderevents
   eventBus:

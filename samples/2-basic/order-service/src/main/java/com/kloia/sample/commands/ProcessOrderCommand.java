@@ -44,7 +44,6 @@ public class ProcessOrderCommand implements CommandHandler {
         return this.execute(dto);
     }
 
-    @Override
     public EventKey execute(@RequestBody ProcessOrderCommandDto dto) throws Exception {
         Orders order = orderQuery.queryEntity(dto.getOrderId());
 
