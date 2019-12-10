@@ -1,0 +1,57 @@
+{
+  "id": "34fe3a8c-0620-4c86-9704-b84b30aaa897",
+  "handlerName": "OrderProcessCommand",
+  "serviceName": "order-command-query-service",
+  "snapshot-status": "DONE",
+  "snapshotTimeInMillis": 200,
+  "operationCompletionTimeInMillis": 1500,
+  "events": {
+    "OrderIsReadyForProcess": {
+      "type": "OP_EVENT",
+      "listeners": {
+        "stock-command-service": {
+          "handlerName": "OrderIsReadyForProcessHandler",
+          "serviceName": "stock-command-service",
+          "events": {
+            "StockReserved": {
+              "type": "OP_EVENT",
+              "listeners": {
+                "order-command-query-service": {
+                  "handlerName": "StockReservedHandler",
+                  "serviceName": "order-command-query-service",
+                  "events": {
+                    "OrderReadyForPayment": {
+                      "type": "OP_EVENT",
+                      "listeners": {
+                        "payment-command-service": {
+                          "handlerName": "OrderReadyForPaymentHandler",
+                          "serviceName": "payment-command-service",
+                          "events": {
+                            "PaymentSuccessful": {
+                              "type": "OP_EVENT",
+                              "listeners": {
+                                "order-command-query-service": {
+                                  "handlerName": "PaymentSuccessfulHandler",
+                                  "serviceName": "order-command-query-service",
+                                  "events": {
+                                    "OrderProcessedSuccessfully": {
+                                      "type": "TX_SUCCESS"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

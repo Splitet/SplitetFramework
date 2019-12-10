@@ -1,0 +1,12 @@
+{
+  "id": "598f430f-fe08-401c-8285-e26cf0258748",
+  "handlerName": "OrderCreateCommand",
+  "serviceName": "order-command-query-service",
+  "snapshotStatus": "DONE",
+  "completedTimeInMillis":500,
+  "events": {
+    "OrderCreated": {
+      "type": "OP_SINGLE"
+    }
+  }
+}
