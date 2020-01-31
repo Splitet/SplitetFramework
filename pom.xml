@@ -35,7 +35,7 @@
         <plugin.surefire.version>2.22.1</plugin.surefire.version>
 
         <!--QA-->
-        <checkstyle.version>8.8</checkstyle.version>
+        <checkstyle.version>8.29</checkstyle.version>
         <findbugs.version>3.0.1</findbugs.version>
 
         <!-- Flags -->
