@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/eventapis.command.json",
+  "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/command.response.json",
   "title": "EventApis Command Response",
   "description": "EventApis Command Response Schema",
   "type": "object",
@@ -31,21 +31,10 @@
       ]
     },
     "body": {
-      "type": "object",
-      "properties": {
-        "entityId": {
-          "type": "string",
-          "description": "Aggregation Id of related Default Entity, UUIDs can be used but not mandatory"
-        },
-        "version": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Aggregation Version of related Default Entity"
+      "allOf": [
+        {
+          "$ref": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/event.key.json"
         }
-      },
-      "required": [
-        "entityId",
-        "version"
       ],
       "additionalProperties": true
     }

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/published-event.json",
+  "title": "EventApis Published Event",
+  "description": "EventApis Published Event Content Schema",
+  "type": "object",
+  "properties": {
+    "sender": {
+      "$ref": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/published-event.json"
+    },
+    "eventType": {
+      "type": "string",
+      "description": "State Change of the event for Operation",
+      "enum": [
+        "OP_SINGLE",
+        "OP_START",
+        "EVENT",
+        "OP_SUCCESS",
+        "OP_FAIL"
+      ]
+    },
+    "eventName": {
+      "type": "string",
+      "description": "Name of the Event"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "sender",
+    "eventType",
+    "eventName"
+  ]
+}

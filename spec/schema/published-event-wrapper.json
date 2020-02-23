@@ -1,13 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/eventapis.command.json",
-  "title": "EventApis Event",
-  "description": "EventApis Event Schema",
+  "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/published-event-wrapper.json",
+  "title": "EventApis Event Wrapper",
+  "description": "EventApis Event Wrapper Schema",
   "type": "object",
   "properties": {
     "event": {
       "type": "string",
-      "description": "Encapsulated Event see event.json"
+      "description": "Encapsulated Published Event see event.json"
     },
     "context": {
       "$ref": "#/definitions/Context"
@@ -25,7 +25,6 @@
       "description": "User Context extension to carry with events"
     }
   },
-  "additionalProperties": true,
   "required": [],
   "definitions": {
     "Context": {
