@@ -15,9 +15,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.listener.AbstractMessageListenerContainer;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
-import org.springframework.kafka.listener.config.ContainerProperties;
+import org.springframework.kafka.listener.ContainerProperties;
 
 import java.util.List;
 import java.util.Map;
@@ -60,7 +59,7 @@ public class EventListenConfiguration {
 
         ContainerProperties containerProperties = new ContainerProperties(Operation.OPERATION_EVENTS);
         containerProperties.setMessageListener(new MultipleEventMessageListener(eventMessageListeners));
-        containerProperties.setAckMode(AbstractMessageListenerContainer.AckMode.BATCH);
+        containerProperties.setAckMode(ContainerProperties.AckMode.BATCH);
         ConcurrentMessageListenerContainer<String, Operation> operationListenerContainer = new ConcurrentMessageListenerContainer<>(operationConsumerFactory, containerProperties);
         operationListenerContainer.setBeanName("emon-operations");
         operationListenerContainer.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getOperationConcurrency());
@@ -78,7 +77,7 @@ public class EventListenConfiguration {
 
         ContainerProperties containerProperties = new ContainerProperties(Pattern.compile(eventTopicRegexStr));
         containerProperties.setMessageListener(new MultipleEventMessageListener(eventMessageListeners));
-        containerProperties.setAckMode(AbstractMessageListenerContainer.AckMode.BATCH);
+        containerProperties.setAckMode(ContainerProperties.AckMode.BATCH);
         ConcurrentMessageListenerContainer<String, PublishedEventWrapper> messageListenerContainer = new ConcurrentMessageListenerContainer<>(consumerFactory, containerProperties);
         messageListenerContainer.setConcurrency(eventApisConfiguration.getEventBus().getConsumer().getEventConcurrency());
         messageListenerContainer.setBeanName("emon-events");

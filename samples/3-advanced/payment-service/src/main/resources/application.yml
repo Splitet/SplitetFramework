@@ -1,6 +1,6 @@
 eventapis:
   storeConfig:
-    contactPoints: test-api:9042
+    contactPoints: localhost:9042
     keyspaceName: test
     #    username: test_order
     username: cassandra
@@ -16,7 +16,7 @@ eventapis:
 
 spring:
   datasource:
-    url: jdbc:oracle:thin:@test-api:1521:xe
+    url: jdbc:oracle:thin:@localhost:1521:xe
     username: TEST_ORDER
     password: qwe123
     platform: ORACLE
@@ -35,7 +35,7 @@ spring:
       log-validation-errors: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
 
 server:

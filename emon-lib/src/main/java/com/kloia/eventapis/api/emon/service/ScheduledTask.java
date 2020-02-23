@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 @Component
 abstract class ScheduledTask implements Runnable, NamedTask, Serializable {
 
+    public static final String LAST_SUCCESS_PREFIX = "_LAST_SUCCESS";
     transient IMap<String, Long> metaMap;
     transient Long scheduleRateInMillis;
 
@@ -36,7 +37,7 @@ abstract class ScheduledTask implements Runnable, NamedTask, Serializable {
     }
 
     private String getLastSuccessKey() {
-        return this.getName() + TopicServiceScheduler.LAST_SUCCESS_PREFIX;
+        return this.getName() + LAST_SUCCESS_PREFIX;
     }
 
     abstract boolean runInternal(StopWatch stopWatch) throws InterruptedException, ExecutionException;

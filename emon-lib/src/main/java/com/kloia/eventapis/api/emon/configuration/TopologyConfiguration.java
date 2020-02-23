@@ -43,11 +43,6 @@ public class TopologyConfiguration {
         return AdminClient.create(kafkaAdminProperties);
     }
 
-    @Bean("adminToolsClient")
-    public kafka.admin.AdminClient adminToolsClient(@Autowired @Qualifier("kafkaAdminProperties") Properties kafkaAdminProperties) {
-        return kafka.admin.AdminClient.create(kafkaAdminProperties);
-    }
-
     @Bean
     public Consumer<String, Operation> kafkaConsumer() {
         return new DefaultKafkaConsumerFactory<>(

@@ -2,7 +2,7 @@ package com.kloia.sample.client;
 
 import com.kloia.eventapis.common.EventKey;
 import com.kloia.sample.dto.command.ReturnPaymentCommandDto;
-import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;

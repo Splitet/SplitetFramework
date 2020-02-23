@@ -18,20 +18,15 @@ import javax.annotation.PreDestroy;
 public class EventListenContainerService {
 
 
+    private final Object listenerManagementLock = new Object();
     @Autowired
     @Qualifier("messageListenerContainer")
     private ConcurrentMessageListenerContainer<String, PublishedEventWrapper> messageListenerContainer;
-
     @Autowired
     @Qualifier("operationListenerContainer")
     private ConcurrentMessageListenerContainer<String, Operation> operationListenerContainer;
-
     @Autowired(required = false)
     private Quorum defaultQuorum;
-
-
-    private final Object listenerManagementLock = new Object();
-
     private boolean started = false;
 
     public EventListenContainerService() {

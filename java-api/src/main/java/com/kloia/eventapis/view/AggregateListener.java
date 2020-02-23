@@ -47,9 +47,9 @@ public class AggregateListener<T extends Entity> {
             if (data.value().getTransactionState() == TransactionState.TXN_FAILED) {
                 List<EntityEvent> entityEvents = eventRepository.markFail(data.key());
                 runRollbacks(entityEvents);
-                snapshotRepository.save(viewQuery.queryByOpId(data.key())); // We may not need this
+                snapshotRepository.saveAll(viewQuery.queryByOpId(data.key())); // We may not need this
             } else if (data.value().getTransactionState() == TransactionState.TXN_SUCCEEDED) {
-                snapshotRepository.save(viewQuery.queryByOpId(data.key()));
+                snapshotRepository.saveAll(viewQuery.queryByOpId(data.key()));
             }
             snapshotRepository.flush();
         } catch (EventStoreException e) {
