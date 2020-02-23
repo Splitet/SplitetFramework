@@ -32,7 +32,6 @@
         <slf4j-api.version>1.7.30</slf4j-api.version>
 
 
-
         <!-- Plugin Versions -->
         <plugin.compiler.version>3.8.0</plugin.compiler.version>
         <plugin.jacoco.version>0.8.2</plugin.jacoco.version>
@@ -67,7 +66,7 @@
         <module>spring-integration</module>
         <module>spring-jpa-view</module>
         <!--<module>samples</module>-->
-<!--        <module>samples/3-advanced</module>-->
+        <!--        <module>samples/3-advanced</module>-->
         <!--<module>kafka-tester</module>-->
         <module>emon</module>
         <module>emon-lib</module>
@@ -307,6 +306,14 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>with-samples</id>
+            <modules>
+                <module>samples/3-advanced</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <distributionManagement>
         <snapshotRepository>
