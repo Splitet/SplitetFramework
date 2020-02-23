@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/eventapis.command.json",
+  "title": "EventApis Command",
+  "description": "EventApis Command Schema",
+  "type": "object",
+  "properties": {
+    "headers": {
+      "type": "object",
+      "properties": {
+        "X-OPID": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Command starts operation with this ID"
+        },
+        "X-OP-TIMEOUT": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Timeout in Milliseconds, Requester can assume Operation will be finished(success or fail), meaning underlying System will guarantee that it should reach consistent state after that timeout"
+        },
+        "X-OP-START-TIME": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Reference starting time of Operation, especially to use X-OP-TIMEOUT"
+        }
+      },
+      "required": [
+        "X-OPID",
+        "X-OP-TIMEOUT",
+        "X-OP-START-TIME"
+      ]
+    },
+    "body": {
+      "type": "object",
+      "properties": {
+        "entityId": {
+          "type": "string",
+          "description": "Aggregation Id of related Default Entity, UUIDs can be used but not mandatory"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Aggregation Version of related Default Entity"
+        }
+      },
+      "required": [
+        "entityId",
+        "version"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "body"
+  ]
+}
