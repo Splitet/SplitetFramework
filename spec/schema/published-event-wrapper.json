@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/published-event-wrapper.json",
-  "title": "EventApis Event Wrapper",
-  "description": "EventApis Event Wrapper Schema",
+  "title": "EventApis Published Event Wrapper",
+  "description": "EventApis Published Event Wrapper Schema",
   "type": "object",
   "properties": {
     "event": {
@@ -10,7 +10,7 @@
       "description": "Encapsulated Published Event see event.json"
     },
     "context": {
-      "$ref": "#/definitions/Context"
+      "$ref": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/context.json"
     },
     "sender": {
       "type": "string",
@@ -22,36 +22,9 @@
     },
     "userContext": {
       "type": "object",
-      "description": "User Context extension to carry with events"
+      "description": "User Context extension to carry with events",
+      "additionalProperties": true
     }
   },
-  "required": [],
-  "definitions": {
-    "Context": {
-      "type": "object",
-      "properties": {
-        "opId": {
-          "type": "string"
-        },
-        "parentOpId": {
-          "type": "string"
-        },
-        "commandContext": {
-          "type": "string"
-        },
-        "commandTimeout": {
-          "type": "integer"
-        },
-        "startTime": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "opId",
-        "commandContext",
-        "commandTimeout",
-        "startTime"
-      ]
-    }
-  }
+  "required": []
 }
