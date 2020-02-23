@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/eventapis.command.json",
-  "title": "EventApis Command",
-  "description": "EventApis Command Schema",
+  "title": "EventApis Command Response",
+  "description": "EventApis Command Response Schema",
   "type": "object",
   "properties": {
     "headers": {

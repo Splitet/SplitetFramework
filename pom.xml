@@ -67,7 +67,7 @@
         <module>spring-integration</module>
         <module>spring-jpa-view</module>
         <!--<module>samples</module>-->
-        <module>samples/3-advanced</module>
+<!--        <module>samples/3-advanced</module>-->
         <!--<module>kafka-tester</module>-->
         <module>emon</module>
         <module>emon-lib</module>
