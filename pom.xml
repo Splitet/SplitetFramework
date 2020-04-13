@@ -35,12 +35,12 @@
         <!-- Plugin Versions -->
         <plugin.compiler.version>3.8.0</plugin.compiler.version>
         <plugin.jacoco.version>0.8.2</plugin.jacoco.version>
-        <plugin.checkstyle.version>2.17</plugin.checkstyle.version>
+        <plugin.checkstyle.version>3.1.1</plugin.checkstyle.version>
         <plugin.findbugs.version>3.0.5</plugin.findbugs.version>
         <plugin.surefire.version>2.22.1</plugin.surefire.version>
 
         <!--QA-->
-        <checkstyle.version>8.8</checkstyle.version>
+        <checkstyle.version>8.31</checkstyle.version>
         <findbugs.version>3.0.1</findbugs.version>
         <mockito-all.version>1.9.5</mockito-all.version>
         <junit.version>4.12</junit.version>

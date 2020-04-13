@@ -42,6 +42,9 @@ public class EventController {
     @RequestMapping(value = "/{opId}", method = RequestMethod.GET)
     public ResponseEntity<?> getOperation(@PathVariable(OperationContext.OP_ID) String opId) throws IOException, EventStoreException {
         Topology topology = operationsMap.get(opId);
+        if (topology == null) {
+            topology = operationsHistoryMap.get(opId);
+        }
         if (topology == null)
             return ResponseEntity.notFound().build();
         return new ResponseEntity<Object>(topology, HttpStatus.OK);
@@ -62,20 +65,7 @@ public class EventController {
         }
     }
 
-    @RequestMapping(value = "/_all", method = RequestMethod.GET)
-    public ResponseEntity<ResponseDto> getTopics(@PageableDefault Pageable pageable) {
-        try {
-            ResponseDto responseDto = new ResponseDto();
-            responseDto.setTopics(topicsMap.entrySet());
-            responseDto.setOperations(operationsMap.entrySet());
-            return new ResponseEntity<>(responseDto, HttpStatus.OK);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return ResponseEntity.status(500).build();
-        }
-    }
-
-    @RequestMapping(value = "/_history", method = RequestMethod.GET)
+    @RequestMapping(value = "/history", method = RequestMethod.GET)
     public ResponseEntity<ResponseDto> getTopicsHistory(@PageableDefault Pageable pageable) {
         try {
             ResponseDto responseDto = new ResponseDto();

@@ -10,11 +10,12 @@
     </module>
     <module name="UniqueProperties"/>
     <module name="SuppressWarningsFilter"/>
+    <module name="LineLength">
+        <property name="max" value="200"/>
+        <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
+    </module>
 
     <module name="TreeWalker">
-        <module name="LineLength">
-            <property name="max" value="200"/>
-        </module>
         <module name="SuppressWarnings"/>
         <module name="SuppressWarningsHolder"/>
         <module name="SuppressionCommentFilter"/>
@@ -180,10 +181,6 @@
         </module>
         <module name="TypeName">
             <message value="Type name ''{0}'' must match pattern ''{1}''." key="name.invalidPattern"/>
-        </module>
-        <module name="LineLength">
-            <property name="max" value="200"/>
-            <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
         </module>
         <module name="EmptyLineSeparator">
             <property name="allowNoEmptyLineBetweenFields" value="true"/>

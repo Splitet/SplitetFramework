@@ -11,6 +11,7 @@ eventapis:
     zookeeperServers: localhost:2181
     consumer:
       groupId: ${info.build.artifact}
+    consumerGroupRegex: "^(.+-service)$"
 
 emon:
   hazelcast:
