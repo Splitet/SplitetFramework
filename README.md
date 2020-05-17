@@ -8,7 +8,7 @@ eventapis is a Java based Event Sourcing framework which can be benefited by the
 
 It has a unique architecture called Operation Store™ together with the stack elements including Docker, Kafka, Hazelcast and Cassandra.
 
-- Website: https://eventapis.kloia.com
+- Website: https://www.klunge.io
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/eventapis/Lobby)
 
 ## Build
