@@ -21,7 +21,6 @@
 
         <plugin.compiler.version>3.6.1</plugin.compiler.version>
 
-
         <spring.version>2.2.4.RELEASE</spring.version>
         <spring.cloud.version>Hoxton.SR1</spring.cloud.version>
         <powermock.version>1.6.6</powermock.version>
@@ -131,12 +130,12 @@
         <dependency>
             <groupId>com.kloia.eventapis</groupId>
             <artifactId>spring-integration</artifactId>
-            <version>${eventapis.version}</version>
+            <version>0.7.0</version>
         </dependency>
         <dependency>
             <groupId>com.kloia.eventapis</groupId>
             <artifactId>spring-jpa-view</artifactId>
-            <version>${eventapis.version}</version>
+            <version>0.7.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -156,6 +155,11 @@
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-jpa</artifactId>
             <version>${querydsl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
     <build>
@@ -188,37 +192,4 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <id>maven.oracle.com</id>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </releases>
-            <url>https://maven.oracle.com</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>maven.oracle.com</id>
-            <url>https://maven.oracle.com</url>
-        </pluginRepository>
-    </pluginRepositories>
-
-    <profiles>
-        <profile>
-            <id>oracle-view</id>
-            <properties>
-                <ojdbc.version>19.3.0.0</ojdbc.version>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>com.oracle.ojdbc</groupId>
-                    <artifactId>ojdbc8</artifactId>
-                    <version>${ojdbc.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>
