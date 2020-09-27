@@ -10,7 +10,9 @@ Klunge is a Java based Event Sourcing framework which can be benefited by the te
 
 It has a unique architecture called Operation Store™ together with the stack elements including Docker, Kafka, Hazelcast and Cassandra.
 
-You can reach various samples from this link [Demo](https://github.com/kloiasoft/eventapis/tree/master/samples)
+You can reach sample projects from following links:
+
+* [eventapis-example-ecommerce](https://github.com/kloiasoft/eventapis-example-ecommerce) - demonstrates how to maintain data consistency in an Spring Boot, Cassandra and Kafka based microservice architecture using choreography-based sagas.
 
 ## Installation
 
@@ -121,8 +123,6 @@ You have to add properties to pom.xml, too.
     </dependency>
 </dependencies>
 ```
-## Prerequisites
-Before run your built services you have to run [Docker Compose](https://github.com/kloiasoft/eventapis/blob/master/samples/3-advanced/docker/docker-compose.yml) it will run minumum external resources Cassandra, Kafka etc.
 
 ## Build
 If you're using different java versions you have to set in bash prompt before run at bottom of commands, you can use [SDKMAN](https://sdkman.io/)

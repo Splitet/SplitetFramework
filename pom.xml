@@ -65,8 +65,6 @@
         <!--<module>evented-common</module>-->
         <module>spring-integration</module>
         <module>spring-jpa-view</module>
-        <!--<module>samples</module>-->
-        <!--        <module>samples/3-advanced</module>-->
         <!--<module>kafka-tester</module>-->
         <module>emon</module>
         <module>emon-lib</module>
@@ -307,12 +305,6 @@
     </build>
 
     <profiles>
-        <profile>
-            <id>with-samples</id>
-            <modules>
-                <module>samples/3-advanced</module>
-            </modules>
-        </profile>
     </profiles>
 
     <distributionManagement>
