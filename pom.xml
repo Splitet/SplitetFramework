@@ -62,10 +62,8 @@
 
     <modules>
         <module>java-api</module>
-        <!--<module>evented-common</module>-->
         <module>spring-integration</module>
         <module>spring-jpa-view</module>
-        <!--<module>kafka-tester</module>-->
         <module>emon</module>
         <module>emon-lib</module>
     </modules>
