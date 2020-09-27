@@ -64,8 +64,6 @@
         <module>java-api</module>
         <module>spring-integration</module>
         <module>spring-jpa-view</module>
-        <module>emon</module>
-        <module>emon-lib</module>
     </modules>
 
     <dependencies>
