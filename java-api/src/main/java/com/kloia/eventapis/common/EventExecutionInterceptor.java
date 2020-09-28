@@ -27,13 +27,6 @@ public class EventExecutionInterceptor {
         this.userContext = userContext;
     }
 
-/*    @Before("this(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..)) && args(object)")
-    public void before(JoinPoint jp, Object object) throws Throwable {
-        String commandContext = object == null ? jp.getTarget().getClass().getSimpleName() : object.getClass().getSimpleName();
-        operationContext.setCommandContext(commandContext);
-        log.debug("before method:" + (object == null ? "" : object.toString()));
-    }*/
-
     @AfterReturning(value = "this(com.kloia.eventapis.api.EventHandler+) && execution(* execute(..))", returning = "retVal")
     public void afterReturning(Object retVal) throws Throwable {
         log.debug("AfterReturning:" + (retVal == null ? "" : retVal.toString()));
@@ -51,11 +44,4 @@ public class EventExecutionInterceptor {
             userContext.clearUserContext();
         }
     }
-
-/*    @Around(value = " @annotation(org.springframework.kafka.annotation.KafkaListener))")
-    public Object aroundListen(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        log.info("Event Here:"+proceedingJoinPoint.getArgs()[0].toString());
-        return proceedingJoinPoint.proceed();
-    }*/
-
 }

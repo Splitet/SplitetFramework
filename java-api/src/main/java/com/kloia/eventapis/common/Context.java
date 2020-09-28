@@ -36,13 +36,4 @@ public class Context implements Serializable {
         preGenerated = false;
         preGenerationConsumers.forEach(contextConsumer -> contextConsumer.accept(this));
     }
-
-//    private long getExpireTime() {
-//        return startTime + commandTimeout;
-//    }
-//
-//    public boolean isEmpty() {
-//        return opId == null;
-//    }
-
 }

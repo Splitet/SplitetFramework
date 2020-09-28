@@ -34,9 +34,4 @@ public interface ViewQuery<E extends Entity> {
     <T extends PublishedEvent> T queryEventData(String entityId, int version) throws EventStoreException;
 
     List<EventKey> queryEventKeysByOpId(String opId);
-
-/*    List<T> queryByField(List<Clause> clauses) throws EventStoreException;
-
-    List<T> multipleQueryByField(List<List<Clause>> clauses) throws EventStoreException;*/
-
 }

@@ -31,16 +31,6 @@ public class KafkaOperationRepository implements IOperationRepository {
         this.senderGroupId = senderGroupId;
     }
 
-    /*    private KafkaTemplate<UUID,Operation> operationsKafka;
-    private KafkaTemplate<UUID,PublishedEventWrapper> eventsKafka;
-
-    @Autowired
-    public KafkaOperationRepository(@Qualifier("operationsKafka") KafkaTemplate<UUID,Operation> operationsKafka,
-                                    @Qualifier("eventsKafka") KafkaTemplate<UUID,PublishedEventWrapper> eventsKafka) {
-        this.eventsKafka = eventsKafka;
-        this.operationsKafka = operationsKafka;
-    }*/
-
     @Override
     public void failOperation(String eventId, SerializableConsumer<Event> action) {
         Operation operation = new Operation();

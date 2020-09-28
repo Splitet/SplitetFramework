@@ -44,7 +44,6 @@ public class OpContextFilter extends OncePerRequestFilter {
                 String opId = operationContext.generateContext(StringUtils.hasText(parentOpId) ? parentOpId : null, true);
                 httpServletResponse.setHeader(OperationContext.OP_ID, opId); //legacy
                 httpServletResponse.setHeader(OP_ID_HEADER, opId);
-//                httpServletResponse.setHeader(PARENT_OP_ID_HEADER, parentOpId);
                 operationContext.getContext().getPreGenerationConsumers().add(generatedContext -> {
                     httpServletResponse.setHeader(OP_TIMEOUT_HEADER, String.valueOf(generatedContext.getCommandTimeout()));
                     httpServletResponse.setHeader(OP_START_TIME_HEADER, String.valueOf(generatedContext.getStartTime()));

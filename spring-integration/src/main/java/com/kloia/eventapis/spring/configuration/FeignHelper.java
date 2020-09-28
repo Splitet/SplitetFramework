@@ -39,19 +39,6 @@ public class FeignHelper {
             }
         };
     }
-/*
-  @Bean
-    @Scope("prototype")
-    public RequestInterceptor opIdInterceptor() {
-        return template -> {
-            String key = this.operationContext.getContextOpId();
-            if (key != null) {
-                template.header(OpContextFilter.OP_ID_HEADER, key);
-//                template.header(OperationContext.OP_ID, key); // legacy
-            }
-
-        };
-    }*/
 
     @Bean
     public Feign.Builder feignBuilder(@Autowired List<RequestInterceptor> interceptors, @Autowired ErrorDecoder errorDecoder) {

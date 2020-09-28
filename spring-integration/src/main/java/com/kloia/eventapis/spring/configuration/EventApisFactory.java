@@ -74,7 +74,6 @@ public class EventApisFactory {
     public FilterRegistrationBean createOpContextFilter(@Autowired OperationContext operationContext) {
         FilterRegistrationBean registration = new FilterRegistrationBean();
         registration.setFilter(new OpContextFilter(operationContext));
-//        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
         registration.setDispatcherTypes(EnumSet.allOf(DispatcherType.class));
         return registration;
     }
@@ -86,7 +85,6 @@ public class EventApisFactory {
             String key = operationContext.getContextOpId();
             if (key != null) {
                 template.header(OpContextFilter.OP_ID_HEADER, key);
-//                template.header(OperationContext.OP_ID, key); // legacy
             }
         };
     }
@@ -186,7 +184,6 @@ public class EventApisFactory {
          * See https://github.com/kloiasoft/eventapis/issues/44
          */
         factory.getContainerProperties().setTransactionManager(new EmptyTransactionManager());
-//        factory.getContainerProperties().setTransactionManager(platformTransactionManager);
         return factory;
     }
 

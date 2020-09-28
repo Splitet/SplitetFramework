@@ -228,7 +228,6 @@ class BaseCassandraViewQuery<E extends Entity> implements ViewQuery<E> {
         select.where(QueryBuilder.eq(CassandraEventRecorder.OP_ID, opId));
         return cassandraSession.execute(select, PagingIterable::all)
                 .stream()
-//                .filter(row -> !row.getString(CassandraEventRecorder.EVENT_TYPE).endsWith("Command")) // ugly to put in here
                 .map(row -> new EventKey(row.getString(CassandraEventRecorder.ENTITY_ID), row.getInt(CassandraEventRecorder.VERSION)))
                 .collect(Collectors.toList());
     }

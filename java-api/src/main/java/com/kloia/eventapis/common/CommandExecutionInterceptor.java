@@ -53,21 +53,12 @@ public class CommandExecutionInterceptor {
 
     private CommandRecord recordCommand(JoinPoint jp, CommandHandler commandHandler, Command command) throws ConcurrentEventException, EventStoreException {
         EventRepository eventRepository;
-        CommandDto commandDto = null;
         CommandRecord commandRecord = new CommandRecord();
         commandRecord.setEventName(commandHandler.getClass().getSimpleName());
         for (int i = 0; i < jp.getArgs().length; i++) {
             Object arg = jp.getArgs()[i];
             commandRecord.getParameters().put(i, arg);
         }
-//        for (Object arg : jp.getArgs()) {
-//            if (arg instanceof CommandDto)
-//                commandDto = (CommandDto) arg;
-//        }
-//        if (commandDto == null) {
-//            log.warn("Command" + jp.getTarget().getClass().getSimpleName() + " does not have CommandDto");
-//            return null;
-//        }
         try {
             Field declaredField = commandHandler.getClass().getDeclaredField(command.eventRepository());
             if (!declaredField.isAccessible())
@@ -99,11 +90,4 @@ public class CommandExecutionInterceptor {
             operationContext.clearCommandContext();
         }
     }
-
-/*    @Around(value = " @annotation(org.springframework.kafka.annotation.KafkaListener))")
-    public Object aroundListen(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        log.info("Event Here:"+proceedingJoinPoint.getArgs()[0].toString());
-        return proceedingJoinPoint.proceed();
-    }*/
-
 }

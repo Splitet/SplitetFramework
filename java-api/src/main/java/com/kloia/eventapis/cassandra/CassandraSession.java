@@ -41,18 +41,6 @@ public class CassandraSession {
         }
     }
 
-    /*    private Cluster cluster() {
-            Cluster.Builder builder = Cluster.builder();
-            Arrays.stream(eventStoreConfig.getContactPoints().split(";")).forEach(s -> {
-                String[] hostPort = s.split(":");
-                builder.addContactPointsWithPorts(new InetSocketAddress(hostPort[0], Integer.parseInt(hostPort[1])));
-            });
-            builder.withPoolingOptions(eventStoreConfig.getPoolingOptions());
-
-            Cluster cluster = builder.build();
-            cluster.register(QueryLogger.builder().build());
-            return cluster.init();
-        }*/
     private Cluster cluster() {
         EventStoreConfig properties = eventStoreConfig;
         Cluster.Builder builder = Cluster.builder()
@@ -129,15 +117,10 @@ public class CassandraSession {
         return execute(st, Optional.ofNullable(tf));
     }
 
-    public <R, E extends Exception> R execute(Statement st, Optional<ThrowingFunction<ResultSet, R, E>> tf) throws E {
-//        try (Session session = getCluster().connect(eventStoreConfig.getKeyspaceName())) {
+    public <R, E extends Exception> R execute(Statement st, Optional<ThrowingFunction<ResultSet, R, E>> function) throws E {
         log.trace("Session:" + getSession());
         ResultSet execute = getSession().execute(st);
-        if (tf.isPresent())
-            return tf.get().apply(execute);
-        else
-            return (R) execute;
-//        }
+        return function.isPresent() ? function.get().apply(execute) : (R) execute;
     }
 
     public ResultSet execute(Statement st) {
@@ -152,64 +135,4 @@ public class CassandraSession {
         getSession().close();
         getSession().getCluster().close();
     }
-
-
-
-
-
-
-
-
-/*    @Bean
-    public CassandraMappingContext cassandraMapping() {
-        return new BasicCassandraMappingContext();
-    }*/
-
-/*    @Bean
-    public CassandraConverter converter(@Autowired CassandraMappingContext cassandraMappingContext) {
-        return new MappingCassandraConverter(cassandraMappingContext);
-    }*/
-
-
-/*    @Bean
-    public CassandraTemplate cassandraTemplate(@Autowired Session session) throws Exception {
-        return new CassandraTemplate(session);
-    }*/
-
-/*    private static class StringToJsonNodeConverter implements Converter<String, JsonNode> {
-        private ObjectMapper objectMapper;
-
-        public StringToJsonNodeConverter(ObjectMapper objectMapper) {
-
-            this.objectMapper = objectMapper;
-        }
-
-        @Override
-        public JsonNode convert(String source) {
-            try {
-                return objectMapper.readTree(source);
-            } catch (IOException e) {
-                log.error(e.getMessage(),e);
-                throw new RuntimeException(e);
-            }
-        }
-    }
-    private static class JsonNodeToStringConverter implements Converter<JsonNode,String> {
-        private ObjectMapper objectMapper;
-
-        public JsonNodeToStringConverter(ObjectMapper objectMapper) {
-
-            this.objectMapper = objectMapper;
-        }
-
-        @Override
-        public String convert(JsonNode source) {
-            try {
-                return objectMapper.writeValueAsString(source);
-            } catch (IOException e) {
-                log.error(e.getMessage(),e);
-                throw new RuntimeException(e);
-            }
-        }
-    }*/
 }
