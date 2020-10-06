@@ -1,6 +1,6 @@
 # Klunge
 
-![eventapis](resources/klunge_logo.png)
+![klunge](resources/klunge_logo.png)
 [![Build Status](https://travis-ci.org/kloiasoft/eventapis.svg?branch=master)](https://travis-ci.org/kloiasoft/eventapis) [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/eventapis/Lobby)
 Offical Website: [Klunge.io](https://www.klunge.io)
 
