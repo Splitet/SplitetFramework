@@ -47,6 +47,11 @@ public class CompositeRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public List<EntityEvent> markSuccess(String opId) {
+        return eventRecorder.markSuccess(opId);
+    }
+
+    @Override
     public <P extends PublishedEvent> EventKey recordAndPublish(P publishedEvent) throws EventStoreException, ConcurrentEventException {
         return recordAndPublishInternal(publishedEvent, Optional.empty(), entityEvent -> new DefaultConcurrencyResolver());
     }

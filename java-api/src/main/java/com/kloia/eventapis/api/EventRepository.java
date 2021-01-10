@@ -21,6 +21,8 @@ public interface EventRepository {
 
     List<EntityEvent> markFail(String opId);
 
+    List<EntityEvent> markSuccess(String opId);
+
     <P extends PublishedEvent> EventKey recordAndPublish(P publishedEvent) throws EventStoreException, ConcurrentEventException;
 
     <P extends PublishedEvent> EventKey recordAndPublish(Entity entity, P publishedEvent) throws EventStoreException, ConcurrentEventException;
