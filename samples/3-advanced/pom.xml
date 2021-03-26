@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.kloia.test</groupId>
+    <groupId>io.splitet.test</groupId>
     <artifactId>samples-advanced</artifactId>
-    <version>0.6.6</version>
+    <version>0.8.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -25,7 +25,7 @@
         <spring.cloud.version>Hoxton.SR1</spring.cloud.version>
         <powermock.version>1.6.6</powermock.version>
         <lombok.version>1.18.12</lombok.version>
-        <eventapis.version>0.7.0-SNAPSHOT</eventapis.version>
+        <eventapis.version>0.8.0-SNAPSHOT</eventapis.version>
         <querydsl.version>4.2.2</querydsl.version>
         <apt.maven.version>1.1.3</apt.maven.version>
         <cassandra-driver-core.version>3.8.0</cassandra-driver-core.version>
@@ -128,14 +128,14 @@
             <version>${cassandra-driver-core.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.kloia.eventapis</groupId>
+            <groupId>io.splitet.core</groupId>
             <artifactId>spring-integration</artifactId>
-            <version>0.7.0</version>
+            <version>${eventapis.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.kloia.eventapis</groupId>
+            <groupId>io.splitet.core</groupId>
             <artifactId>spring-jpa-view</artifactId>
-            <version>0.7.0</version>
+            <version>${eventapis.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
