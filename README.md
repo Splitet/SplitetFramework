@@ -67,19 +67,19 @@ You have to add properties to pom.xml
 ```xml
 <dependencies>
     <dependency>
-        <groupId>com.kloia.eventapis</groupId>
+        <groupId>io.splitet.core</groupId>
         <artifactId>spring-integration</artifactId>
-        <version>0.7.0</version>
+        <version>0.8.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-        <groupId>com.kloia.eventapis</groupId>
+        <groupId>io.splitet.core</groupId>
         <artifactId>spring-jpa-view</artifactId>
-        <version>0.7.0</version>
+        <version>0.8.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-        <groupId>com.kloia.eventapis</groupId>
+        <groupId>io.splitet.core</groupId>
         <artifactId>java-api</artifactId>
-        <version>0.7.0</version>
+        <version>0.8.0-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```

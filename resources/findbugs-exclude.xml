@@ -3,7 +3,7 @@
         <Class name="~.*\.generated-sources\..*"/>
     </Match>
     <Match>
-        <Class name="com.kloia.eventapis.spring.model.QJpaEntity"/>
+        <Class name="io.splitet.core.spring.model.QJpaEntity"/>
     </Match>
 
     <Match>

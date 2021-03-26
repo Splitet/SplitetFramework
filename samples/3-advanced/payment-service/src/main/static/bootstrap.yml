@@ -4,7 +4,7 @@ spring:
   hateoas:
     use-hal-as-default-json-media-type: false
 eventapis:
-  baseEventsPackage: com.kloia.sample.dto
+  baseEventsPackage: io.splitet.sample.dto
 info:
    build:
       artifact: ${project.artifactId}
