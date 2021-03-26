@@ -6,6 +6,7 @@ import com.hazelcast.config.InterfacesConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.ITopic;
 import com.hazelcast.spring.context.SpringManagedContext;
 import com.kloia.eventapis.api.emon.configuration.hazelcast.MulticastConfig;
 import com.kloia.eventapis.api.emon.configuration.hazelcast.UserCodeDeploymentConfig;
@@ -75,8 +76,9 @@ public class InMemoryComponents {
 
     @Bean
     public OperationExpirationListener operationExpirationListener(@Autowired @Qualifier("operationsHistoryMap") IMap<String, Topology> operationsHistoryMap,
-                                                                   @Autowired @Qualifier("topicsMap") IMap<String, Topic> topicsMap) {
-        return new OperationExpirationListener(operationsHistoryMap, topicsMap);
+                                                                   @Autowired @Qualifier("topicsMap") IMap<String, Topic> topicsMap,
+                                                                   @Autowired @Qualifier("operationsTopic") ITopic<Topology> operationsTopic) {
+        return new OperationExpirationListener(operationsHistoryMap, topicsMap, operationsTopic);
     }
 
     @PreDestroy

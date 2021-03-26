@@ -2,7 +2,7 @@
 
 ![klunge](resources/klunge_logo.png)
 [![Build Status](https://travis-ci.org/kloiasoft/eventapis.svg?branch=master)](https://travis-ci.org/kloiasoft/eventapis) [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/eventapis/Lobby)
-Offical Website: [Klunge.io](https://www.klunge.io)
+Offical Website: [klunge.io](https://www.klunge.io)
 
 Enterprise-Scale Eventually Consistent CQRS Framework
 
@@ -10,7 +10,7 @@ Klunge is a Java based Event Sourcing framework which can be benefited by the te
 
 It has a unique architecture called Operation Store™ together with the stack elements including Docker, Kafka, Hazelcast and Cassandra.
 
-You can reach various samples from this link [Demo](https://github.com/kloiasoft/eventapis/tree/master/samples)
+You can reach various samples from this link [Demo](https://github.com/KlungeFramework/KlungeFramework/tree/master/samples)
 
 ## Installation
 

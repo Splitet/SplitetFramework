@@ -5,6 +5,7 @@ import com.kloia.eventapis.api.IUserContext;
 import java.util.Map;
 
 public class EmptyUserContext implements IUserContext {
+
     @Override
     public Map<String, String> getUserContext() {
         return null;
@@ -24,4 +25,5 @@ public class EmptyUserContext implements IUserContext {
     public String getAuditInfo() {
         return null;
     }
+
 }

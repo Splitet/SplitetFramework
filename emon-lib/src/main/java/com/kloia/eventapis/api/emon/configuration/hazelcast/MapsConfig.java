@@ -7,6 +7,7 @@ import com.hazelcast.config.MaxSizeConfig;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.ITopic;
 import com.kloia.eventapis.api.emon.configuration.HazelcastConfigurer;
 import com.kloia.eventapis.api.emon.domain.Topic;
 import com.kloia.eventapis.api.emon.domain.Topology;
@@ -31,6 +32,7 @@ public class MapsConfig extends MulticastConfig implements HazelcastConfigurer {
     public static final String OPERATIONS_MAP_HISTORY_NAME = "operations-history";
     public static final String META_MAP_NAME = "meta";
     public static final String TOPICS_MAP_NAME = "topics";
+    public static final String OPERATIONS_TOPICS_NAME = "operations_topic";
 
     @Value("${emon.hazelcast.evict.freeHeapPercentage:20}")
     private Integer evictFreePercentage;
@@ -52,10 +54,13 @@ public class MapsConfig extends MulticastConfig implements HazelcastConfigurer {
                 .setEvictionPolicy(EvictionPolicy.LRU);
         config.getReplicatedMapConfig(TOPICS_MAP_NAME);
 
+        config.getTopicConfig(OPERATIONS_TOPICS_NAME);
+
         return config;
     }
 
     @Bean
+    @Qualifier("operationsMap")
     public IMap<String, Topology> operationsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance, OperationExpirationListener operationExpirationListener) {
         IMap<String, Topology> operationsMap = hazelcastInstance.getMap(OPERATIONS_MAP_NAME);
         operationsMap.addLocalEntryListener(operationExpirationListener);
@@ -63,17 +68,26 @@ public class MapsConfig extends MulticastConfig implements HazelcastConfigurer {
     }
 
     @Bean
+    @Qualifier("operationsHistoryMap")
     public IMap<String, Topology> operationsHistoryMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
         return hazelcastInstance.getMap(OPERATIONS_MAP_HISTORY_NAME);
     }
 
     @Bean
+    @Qualifier("metaMap")
     public IMap<String, Object> metaMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
         return hazelcastInstance.getMap(META_MAP_NAME);
     }
 
     @Bean
+    @Qualifier("topicsMap")
     public IMap<String, Topic> topicsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
         return hazelcastInstance.getMap(TOPICS_MAP_NAME);
+    }
+
+    @Bean
+    @Qualifier("operationsTopic")
+    public ITopic<Topology> operationsTopic(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
+        return hazelcastInstance.getTopic(OPERATIONS_TOPICS_NAME);
     }
 }

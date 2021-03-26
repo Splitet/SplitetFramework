@@ -1,0 +1,81 @@
+### Create Stock
+POST http://localhost:8162/stock/create
+Content-Type: application/json
+
+{
+  "stockName": "test stock",
+  "remainingStock": 1000
+}
+
+> {%
+    client.test("Request executed successfully", function() { client.assert(response.status === 200 || response.status === 201, "Response status is not 200"); });
+    client.global.set("stockId", response.body.entityId);
+%}
+
+### Create Order
+POST http://localhost:8160/order/create
+Content-Type: application/json
+
+{
+  "stockId":"{{stockId}}",
+  "orderAmount":500,
+  "description": "test order"
+}
+
+> {%
+    client.test("Request executed successfully", function() { client.assert(response.status === 200 || response.status === 201, "Response status is not 200"); });
+    client.global.set("orderId", response.body.entityId);
+    client.global.set("opId", response.headers.valueOf('X-OPID'));
+%}
+
+### Process Order
+POST http://localhost:8160/order/{{orderId}}/process
+Content-Type: application/json
+
+{
+  "orderId":"{{orderId}}",
+  "paymentInformation":{
+     "paymentAddress":"test  address kadikoy",
+     "amount": 200,
+     "cardInformation":"440004440040444400"
+  }
+}
+
+> {%
+    client.test("Request executed successfully", function() { client.assert(response.status === 200 || response.status === 201, "Response status is not 200"); });
+    client.global.set("opId", response.headers.valueOf('X-OPID'));
+
+%}
+
+
+
+### Get Order
+GET http://localhost:8160/order/{{orderId}}
+
+
+
+### Get Order History
+GET http://localhost:8160/order/{{orderId}}/history
+
+
+
+### Get Stock History
+GET http://localhost:8162/stock/{{stockId}}
+
+
+
+### Get Stock History
+GET http://localhost:8162/stock/{{stockId}}/history
+
+
+### history
+GET http://localhost:7800/operations/{{opId}}
+
+### Active Operations
+GET http://localhost:7800/operations
+### history
+GET http://localhost:7800/operations/history
+
+### history
+GET http://localhost:7800/topics
+

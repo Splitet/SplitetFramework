@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EventStoreConfig {
+
     private PoolingOptions poolingOptions = new PoolingOptions(); // default options
     /**
      * Keyspace name to use.

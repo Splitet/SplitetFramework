@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-/**
- * Created by zeldalozdemir on 07/02/2017.
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,6 +26,5 @@ public class EntityEvent {
     private String auditInfo;
 
     private String eventData;
-
 
 }

@@ -2,6 +2,7 @@ package com.kloia.eventapis.api.emon.service;
 
 import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.ITopic;
 import com.hazelcast.map.listener.EntryExpiredListener;
 import com.kloia.eventapis.api.emon.domain.HandledEvent;
 import com.kloia.eventapis.api.emon.domain.NoneHandled;
@@ -18,10 +19,12 @@ import java.util.concurrent.TimeUnit;
 public class OperationExpirationListener implements EntryExpiredListener<String, Topology> {
     private IMap<String, Topology> operationsHistoryMap;
     private IMap<String, Topic> topicsMap;
+    private ITopic<Topology> operationsTopic;
 
-    public OperationExpirationListener(IMap<String, Topology> operationsHistoryMap, IMap<String, Topic> topicsMap) {
+    public OperationExpirationListener(IMap<String, Topology> operationsHistoryMap, IMap<String, Topic> topicsMap, ITopic<Topology> operationsTopic) {
         this.operationsHistoryMap = operationsHistoryMap;
         this.topicsMap = topicsMap;
+        this.operationsTopic = operationsTopic;
     }
 
     @Override
@@ -33,6 +36,9 @@ public class OperationExpirationListener implements EntryExpiredListener<String,
         } catch (Exception ex) {
             log.warn("Error while trying to check Leafs:" + ex.getMessage());
         }
+
+        operationsTopic.publish(topology);
+
         if (!topology.isFinished()) {
             log.warn("Topology Doesn't Finished:" + topology.toString());
             operationsHistoryMap.putIfAbsent(event.getKey(), event.getOldValue(), 1, TimeUnit.DAYS);
@@ -52,7 +58,7 @@ public class OperationExpirationListener implements EntryExpiredListener<String,
                 Partition eventPartition = producedEvent.getPartition();
                 ((NoneHandled) iHandledEvent).setFinishedAsLeaf(
                         serviceData.getPartitions().get(eventPartition.getNumber()) != null
-                        && serviceData.getPartitions().get(eventPartition.getNumber()).getNumber() >= eventPartition.getOffset()
+                                && serviceData.getPartitions().get(eventPartition.getNumber()).getNumber() >= eventPartition.getOffset()
                 );
             }
         });

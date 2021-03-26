@@ -34,7 +34,7 @@
 
         <!-- Plugin Versions -->
         <plugin.compiler.version>3.8.0</plugin.compiler.version>
-        <plugin.jacoco.version>0.8.2</plugin.jacoco.version>
+        <plugin.jacoco.version>0.8.5</plugin.jacoco.version>
         <plugin.checkstyle.version>3.1.1</plugin.checkstyle.version>
         <plugin.findbugs.version>3.0.5</plugin.findbugs.version>
         <plugin.surefire.version>2.22.1</plugin.surefire.version>

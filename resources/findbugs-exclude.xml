@@ -1,6 +1,9 @@
 <FindBugsFilter>
     <Match>
-        <Class name="~.*\.generated\..*"/>
+        <Class name="~.*\.generated-sources\..*"/>
+    </Match>
+    <Match>
+        <Class name="com.kloia.eventapis.spring.model.QJpaEntity"/>
     </Match>
 
     <Match>
