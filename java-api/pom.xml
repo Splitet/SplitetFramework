@@ -13,7 +13,7 @@
     <artifactId>java-api</artifactId>
 
     <properties>
-        <commons-io.version>2.6</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-lang3.version>3.9</commons-lang3.version>
         <guava.version>29.0-jre</guava.version>
