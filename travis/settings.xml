@@ -2,14 +2,14 @@
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
     <servers>
         <server>
-            <id>bintray-kloia-eventapis</id>
-            <username>${env.MVN_USERNAME}</username>
-            <password>${env.MVN_PASSWORD}</password>
+            <id>jfrog-releases</id>
+            <username>${env.MVN_JFROG_USERNAME}</username>
+            <password>${env.MVN_JFROG_PASSWORD}</password>
         </server>
         <server>
-            <id>oss-snapshots</id>
-            <username>${env.MVN_SNAPSHOT_USERNAME}</username>
-            <password>${env.MVN_SNAPSHOT_PASSWORD}</password>
+            <id>jfrog-snapshots</id>
+            <username>${env.MVN_JFROG_SNAPSHOT_USERNAME}</username>
+            <password>${env.MVN_JFROG_SNAPSHOT_PASSWORD}</password>
         </server>
         <server>
             <id>maven.oracle.com</id>
