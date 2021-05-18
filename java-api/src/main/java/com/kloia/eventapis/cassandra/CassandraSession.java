@@ -57,6 +57,7 @@ public class CassandraSession {
         EventStoreConfig properties = eventStoreConfig;
         Cluster.Builder builder = Cluster.builder()
                 .withClusterName(properties.getClusterName())
+                .withoutJMXReporting()
                 .withPort(properties.getPort());
         if (properties.getUsername() != null) {
             builder.withCredentials(properties.getUsername(), properties.getPassword());

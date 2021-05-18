@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/context.json",
+  "title": "EventApis Event Context",
+  "description": "EventApis Event Context Schema",
+  "type": "object",
+  "properties": {
+    "opId": {
+      "type": "string",
+      "description": "Operation Id initially given while invoking command"
+    },
+    "parentOpId": {
+      "type": "string",
+      "description": "Parent Operation Id for nested invocations"
+    },
+    "commandContext": {
+      "type": "string",
+      "description": "Name of Initial Command"
+    },
+    "commandTimeout": {
+      "type": "integer",
+      "description": "Timeout in Milliseconds, After this timeout Operation will be assumed as finalized"
+    },
+    "startTime": {
+      "type": "integer",
+      "description": "Reference starting time of Operation"
+    }
+  },
+  "required": [
+    "opId",
+    "commandContext",
+    "commandTimeout",
+    "startTime"
+  ]
+}

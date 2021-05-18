@@ -14,6 +14,7 @@ import com.kloia.eventapis.kafka.KafkaProperties;
 import com.kloia.eventapis.kafka.PublishedEventWrapper;
 import com.kloia.eventapis.pojos.Operation;
 import com.kloia.eventapis.spring.filter.OpContextFilter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import feign.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -27,7 +28,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.listener.AbstractMessageListenerContainer;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -151,7 +152,7 @@ public class EventApisFactory {
         scheduler.initialize();
 
         factory.getContainerProperties().setScheduler(scheduler);
-        factory.getContainerProperties().setAckMode(AbstractMessageListenerContainer.AckMode.RECORD);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
         return factory;
     }
 
@@ -178,7 +179,7 @@ public class EventApisFactory {
         factory.getContainerProperties().setPollTimeout(3000L);
         factory.getContainerProperties().setAckOnError(false);
         factory.getContainerProperties().setConsumerTaskExecutor(consumerScheduler);
-        factory.getContainerProperties().setAckMode(AbstractMessageListenerContainer.AckMode.RECORD);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
         /**
          * This is Fix for Spring Kafka versions which does not have ConsumerAwareErrorHandler handler till 2.0
          * When Listener faces with error, it retries snapshot operation
@@ -197,6 +198,7 @@ public class EventApisFactory {
 
     private static class EmptyTransactionManager implements PlatformTransactionManager {
         @Override
+        @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
         public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
             return null;
         }

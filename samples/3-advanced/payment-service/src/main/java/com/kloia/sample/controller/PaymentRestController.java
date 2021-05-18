@@ -5,7 +5,7 @@ import com.kloia.eventapis.exception.EventStoreException;
 import com.kloia.sample.model.Payment;
 import com.kloia.sample.repository.PaymentRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +34,7 @@ public class PaymentRestController {
 
     @RequestMapping(value = "/{paymentId}", method = RequestMethod.GET)
     public ResponseEntity<?> getPayment(@PathVariable("paymentId") String paymentId) {
-        return new ResponseEntity<Object>(paymentRepository.findOne(paymentId), HttpStatus.CREATED);
+        return new ResponseEntity<Object>(paymentRepository.findById(paymentId).get(), HttpStatus.CREATED);
     }
 
     @RequestMapping(method = RequestMethod.GET)

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/command.request.json",
+  "title": "EventApis Command Request",
+  "description": "EventApis Command Request Schema",
+  "type": "object",
+  "properties": {
+    "body": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true,
+  "required": []
+}

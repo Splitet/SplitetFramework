@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/operation.json",
+  "title": "EventApis Event Wrapper",
+  "description": "EventApis Event Wrapper Schema",
+  "type": "object",
+  "properties": {
+    "event": {
+      "transactionState": "string",
+      "description": "Published state of Operation",
+      "enum": [
+        "RUNNING",
+        "TXN_FAILED",
+        "TXN_SUCCEEDED"
+      ]
+    },
+    "aggregateId": {
+      "type": "string",
+      "description": "Aggregate Id of Operation"
+    },
+    "parentId": {
+      "type": "string",
+      "description": "Sender of Event - Service Name"
+    },
+    "sender": {
+      "type": "string",
+      "description": "Sender of Event - Service Name"
+    },
+    "opDate": {
+      "type": "integer",
+      "description": "Event Send Epoch"
+    },
+    "context": {
+      "$ref": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/context.json"
+    },
+    "userContext": {
+      "type": "object",
+      "description": "User Context extension to carry with events",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "event",
+    "sender",
+    "aggregateId",
+    "context",
+    "opDate",
+    "userContext"
+  ]
+}

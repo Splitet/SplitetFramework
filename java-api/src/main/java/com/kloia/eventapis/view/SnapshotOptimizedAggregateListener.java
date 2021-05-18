@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -92,19 +93,19 @@ public class SnapshotOptimizedAggregateListener<T extends Entity> extends Aggreg
         Map<String, Pair<Integer, Integer>> minMaxVersions = getMinMax(eventKeys);
         List<T> entities = new ArrayList<>();
         for (Map.Entry<String, Pair<Integer, Integer>> entry : minMaxVersions.entrySet()) {
-            T previous = snapshotRepository.findOne(entry.getKey());
+            Optional<T> previous = snapshotRepository.findById(entry.getKey());
             T result = null;
-            if (previous == null) {
+            if (!previous.isPresent()) {
                 // there is no snapshot available...
                 result = viewQuery.queryEntity(entry.getKey(), entry.getValue().getRight(), null);
-            } else if (previous.getVersion() < entry.getValue().getRight()) {
-                result = viewQuery.queryEntity(entry.getKey(), entry.getValue().getRight(), previous);
+            } else if (previous.get().getVersion() < entry.getValue().getRight()) {
+                result = viewQuery.queryEntity(entry.getKey(), entry.getValue().getRight(), previous.get());
             }
             if (result != null) {
                 entities.add(result);
             }
         }
-        snapshotRepository.save(entities);
+        snapshotRepository.saveAll(entities);
     }
 
     /**
@@ -128,19 +129,19 @@ public class SnapshotOptimizedAggregateListener<T extends Entity> extends Aggreg
         );
         List<T> entities = new ArrayList<>();
         for (Map.Entry<String, Pair<Integer, Integer>> entry : minMaxVersions.entrySet()) {
-            T previous = snapshotRepository.findOne(entry.getKey());
+            Optional<T> previous = snapshotRepository.findById(entry.getKey());
             T result = null;
-            if (previous == null) {
+            if (!previous.isPresent()) {
                 // there is no snapshot available...
                 result = viewQuery.queryEntity(entry.getKey(), entry.getValue().getRight(), null);
-            } else if (previous.getVersion() >= entry.getValue().getLeft()) {
+            } else if (previous.get().getVersion() >= entry.getValue().getLeft()) {
                 // snapshot is taken near events
-                result = viewQuery.queryEntity(entry.getKey(), Math.max(previous.getVersion(), entry.getValue().getRight()), null);
+                result = viewQuery.queryEntity(entry.getKey(), Math.max(previous.get().getVersion(), entry.getValue().getRight()), null);
             }
             if (result != null)
                 entities.add(result);
         }
-        snapshotRepository.save(entities);
+        snapshotRepository.saveAll(entities);
     }
 
     private Map<String, Pair<Integer, Integer>> getMinMax(List<EventKey> entityEvents) {

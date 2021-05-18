@@ -14,7 +14,6 @@ import com.kloia.sample.dto.event.StockReleasedEvent;
 import com.kloia.sample.model.OrderState;
 import com.kloia.sample.model.Orders;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestController;

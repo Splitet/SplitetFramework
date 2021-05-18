@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/entity-event.json",
+  "title": "EventApis Published Event Wrapper",
+  "description": "EventApis Published Event Wrapper Schema",
+  "type": "object",
+  "properties": {
+    "eventKey": {
+      "$ref": "https://github.com/kloiasoft/eventapis/blob/master/spec/schema/event.key.json"
+    },
+    "opId": {
+      "type": "string",
+      "description": "Operation Id initially given while invoking command"
+    },
+    "opDate": {
+      "type": "integer",
+      "description": "Event Recorded Epoch"
+    },
+    "eventType": {
+      "type": "string",
+      "description": "Type/Name of Event"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "CREATED",
+        "TXN_FAILED"
+      ]
+    },
+    "auditInfo": {
+      "type": "string",
+      "description": "Custom Audit Info for User Extension"
+    },
+    "eventData": {
+      "type": "string",
+      "description": "Event Data as Json"
+    }
+  },
+  "required": [
+    "eventKey",
+    "opId",
+    "opDate",
+    "eventType",
+    "status",
+    "eventData"
+  ]
+}
