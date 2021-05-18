@@ -317,14 +317,14 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>oss-snapshots</id>
-            <name>OSS Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>jfrog-snapshots</id>
+            <name>JFROG Snapshots</name>
+            <url>https://kloia.jfrog.io/artifactory/splitet-snapshot</url>
         </snapshotRepository>
         <repository>
-            <id>bintray-kloia-eventapis</id>
-            <name>kloia-eventapis</name>
-            <url>https://api.bintray.com/maven/kloia/eventapis/${project.artifactId}/;publish=1</url>
+            <id>jfrog-releases</id>
+            <name>JFROG Releases</name>
+            <url>https://kloia.jfrog.io/artifactory/splitet-releases</url>
         </repository>
     </distributionManagement>
 
