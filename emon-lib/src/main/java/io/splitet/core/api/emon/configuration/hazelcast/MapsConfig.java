@@ -32,6 +32,7 @@ public class MapsConfig extends MulticastConfig implements HazelcastConfigurer {
     public static final String OPERATIONS_MAP_HISTORY_NAME = "operations-history";
     public static final String META_MAP_NAME = "meta";
     public static final String TOPICS_MAP_NAME = "topics";
+    public static final String COMMANDS_MAP_NAME = "commands";
     public static final String OPERATIONS_TOPICS_NAME = "operations_topic";
 
     @Value("${emon.hazelcast.evict.freeHeapPercentage:20}")
@@ -74,15 +75,15 @@ public class MapsConfig extends MulticastConfig implements HazelcastConfigurer {
     }
 
     @Bean
-    @Qualifier("metaMap")
-    public IMap<String, Object> metaMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
-        return hazelcastInstance.getMap(META_MAP_NAME);
-    }
-
-    @Bean
     @Qualifier("topicsMap")
     public IMap<String, Topic> topicsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
         return hazelcastInstance.getMap(TOPICS_MAP_NAME);
+    }
+
+    @Bean
+    @Qualifier("commandsMap")
+    public IMap<String, String> commandsMap(@Autowired @Qualifier("hazelcastInstance") HazelcastInstance hazelcastInstance) {
+        return hazelcastInstance.getMap(COMMANDS_MAP_NAME);
     }
 
     @Bean

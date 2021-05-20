@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class ServiceData implements Serializable {
         return partitions.put(partition.getNumber(), partition);
     }
 
-    public void setPartitions(List<Partition> partitionList) {
+    public void setPartitions(Collection<Partition> partitionList) {
         partitions = partitionList.stream().collect(Collectors.toMap(Partition::getNumber, Function.identity()));
     }
 }
