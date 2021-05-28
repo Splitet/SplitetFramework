@@ -3,8 +3,8 @@
     <servers>
         <server>
             <id>jfrog-releases</id>
-            <username>${env.MVN_JFROG_USERNAME}</username>
-            <password>${env.MVN_JFROG_PASSWORD}</password>
+            <username>${env.MVN_JFROG_SNAPSHOT_USERNAME}</username>
+            <password>${env.MVN_JFROG_SNAPSHOT_PASSWORD}</password>
         </server>
         <server>
             <id>jfrog-snapshots</id>
