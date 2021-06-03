@@ -5,7 +5,7 @@
 
     <groupId>com.kloia.eventapis</groupId>
     <artifactId>eventapis-parent</artifactId>
-    <version>0.7.0</version>
+    <version>0.7.1</version>
     <packaging>pom</packaging>
 
     <name>eventapis-parent</name>
@@ -20,10 +20,10 @@
         <maven.compiler.target>1.8</maven.compiler.target>
 
         <!--Spring-->
-        <spring.version>2.2.4.RELEASE</spring.version>
-        <spring.cloud.version>Hoxton.SR1</spring.cloud.version>
-        <spring-kafka.version>2.4.2.RELEASE</spring-kafka.version>
-        <kafka-clients.version>2.4.0</kafka-clients.version>
+        <spring.version>2.5.0</spring.version>
+        <spring.cloud.version>2020.0.3</spring.cloud.version>
+        <spring-kafka.version>2.7.1</spring-kafka.version>
+        <kafka-clients.version>2.7.1</kafka-clients.version>
 
         <cassandra-driver.version>3.8.0</cassandra-driver.version>
         <kafka-clients.version>2.4.0</kafka-clients.version>

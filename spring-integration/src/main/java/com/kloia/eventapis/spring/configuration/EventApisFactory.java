@@ -177,7 +177,7 @@ public class EventApisFactory {
         consumerScheduler.initialize();
 
         factory.getContainerProperties().setPollTimeout(3000L);
-        factory.getContainerProperties().setAckOnError(false);
+        //factory.getContainerProperties().setAckOnError(false);
         factory.getContainerProperties().setConsumerTaskExecutor(consumerScheduler);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
         /**
