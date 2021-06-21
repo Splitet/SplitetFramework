@@ -42,6 +42,9 @@ public class TopologyService implements EventMessageListener {
     private IMap<String, Topology> operationsMap;
 
     @Autowired
+    private IMap<String, String> commandsMap;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     private ObjectReader eventReader;
@@ -71,6 +74,8 @@ public class TopologyService implements EventMessageListener {
                     calculateTimeout(eventWrapper.getContext()), TimeUnit.MILLISECONDS);
             operationsMap.executeOnKey(key, new EventTopologyUpdater(
                     eventWrapper, baseEvent.getEventType(), baseEvent.getSender(), targetList, topic, new Partition(record.partition(), record.offset())));
+
+            commandsMap.put(eventWrapper.getContext().getCommandContext(),eventWrapper.getSender());
 
         } catch (IOException e) {
             log.error("Error While Handling Event:" + e.getMessage(), e);

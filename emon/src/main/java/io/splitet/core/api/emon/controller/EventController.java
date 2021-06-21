@@ -1,101 +1,83 @@
 package io.splitet.core.api.emon.controller;
 
+
 import com.hazelcast.core.IMap;
-import com.hazelcast.query.PagingPredicate;
+
+import io.splitet.core.api.emon.domain.ServiceData;
 import io.splitet.core.api.emon.domain.Topic;
-import io.splitet.core.api.emon.domain.Topology;
-import io.splitet.core.api.emon.service.OperationsBroadcaster;
-import io.splitet.core.common.OperationContext;
-import io.splitet.core.exception.EventStoreException;
+import io.splitet.core.api.emon.dto.TopicResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.AbstractMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * Created by zeldalozdemir on 22/01/2017.
+ * Created by zeldalozdemir on 04/2020.
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/operations")
+@RequestMapping(
+        value = EventController.ENDPOINT
+)
 public class EventController {
 
-    @Autowired
-    private IMap<String, Topology> operationsMap;
-    @Autowired
-    private IMap<String, Topology> operationsHistoryMap;
+    static final String ENDPOINT = "/events";
+
     @Autowired
     private IMap<String, Topic> topicsMap;
 
-    @Autowired
-    OperationsBroadcaster operationsBroadcaster;
 
-    @RequestMapping(value = "/{opId}", method = RequestMethod.GET)
-    public ResponseEntity<?> getOperation(@PathVariable(OperationContext.OP_ID) String opId) throws IOException, EventStoreException {
-        Topology topology = operationsMap.get(opId);
-        if (topology == null) {
-            topology = operationsHistoryMap.get(opId);
-        }
-        if (topology == null)
-            return ResponseEntity.notFound().build();
-        return new ResponseEntity<Object>(topology, HttpStatus.OK);
-    }
-
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<Collection<Topology>> getOperations(@PageableDefault Pageable pageable) throws IOException, EventStoreException {
+    @GetMapping
+    public ResponseEntity<Map<String, TopicResponseDto>> getEvents() {
         try {
-            Collection<Topology> values = operationsMap.values(
-                    new PagingPredicate<>((Comparator<Map.Entry<String, Topology>> & Serializable) (o1, o2) -> -1 * Long.compare(o1.getValue().getStartTime(), o2.getValue().getStartTime()),
-                            pageable.getPageSize()));
-            return new ResponseEntity<>(values, HttpStatus.OK);
+            Map<String, TopicResponseDto> result = topicsMap.entrySet().stream().collect(Collectors.toMap(
+                    Map.Entry::getKey, o -> new TopicResponseDto(o.getValue().getServiceDataHashMap(), o.getValue().getPartitions())
+            ));
+            return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return ResponseEntity.status(500).build();
         }
     }
 
-    @GetMapping(value = "/listen")
-    public SseEmitter listenOperations() throws IOException, EventStoreException {
-        SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
-
-        operationsBroadcaster.registerEmitter(sseEmitter);
-
-        sseEmitter.onCompletion(() -> {
-            log.info("SseEmitter is completed");
-            operationsBroadcaster.deregisterEmitter(sseEmitter);
-        });
-
-        sseEmitter.onTimeout(() -> {
-            log.info("SseEmitter is timed out");
-            operationsBroadcaster.deregisterEmitter(sseEmitter);
-        });
-
-        sseEmitter.onError(ex -> {
-            log.info("SseEmitter got error:", ex);
-            operationsBroadcaster.deregisterEmitter(sseEmitter);
-        });
-        log.info("Returning SSE Emitter");
-        return sseEmitter;
-    }
-
-    @RequestMapping(value = "/history", method = RequestMethod.GET)
-    public ResponseEntity<Collection<Topology>> getTopicsHistory(@PageableDefault Pageable pageable) {
+    @GetMapping(value = "lag")
+    public ResponseEntity<Map<String, TopicResponseDto>> getLaggedTopics() {
         try {
-            return new ResponseEntity<>(operationsHistoryMap.values(), HttpStatus.OK);
+            Map<String, TopicResponseDto> result = topicsMap.entrySet().stream()
+                    .map(entry -> new AbstractMap.SimpleEntry<>(
+                                    entry.getKey(),
+                                    new TopicResponseDto(
+                                            entry.getValue()
+                                                    .getServiceDataHashMap()
+                                                    .entrySet().stream()
+                                                    .map(serviceDataEntry -> new AbstractMap.SimpleEntry<>(
+                                                            serviceDataEntry.getKey(),
+                                                            new ServiceData(
+                                                                    serviceDataEntry.getKey(),
+                                                                    serviceDataEntry.getValue().getPartitions().values()
+                                                                            .stream().filter(partition -> partition.getLag() != null && partition.getLag() > 0L)
+                                                                            .collect(Collectors.toList())
+                                                            ))
+
+                                                    )
+                                                    .filter(serviceData -> serviceData.getValue().getPartitions().size() > 0)
+                                                    .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue)),
+                                            entry.getValue().getPartitions()
+                                    )
+                            )
+                    )
+                    .filter(topicsDtpEntry -> topicsDtpEntry.getValue().getServiceDataHashMap().size() > 0L)
+                    .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
+
+            return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return ResponseEntity.status(500).build();
@@ -103,4 +85,15 @@ public class EventController {
     }
 
 
+    @GetMapping(value = "{topic}")
+    public ResponseEntity<TopicResponseDto> getTopic(@PathVariable("topic") String topic) {
+        try {
+            Topic found = topicsMap.get(topic);
+            TopicResponseDto result = new TopicResponseDto(found.getServiceDataHashMap(), found.getPartitions());
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
+    }
 }
