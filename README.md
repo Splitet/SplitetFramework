@@ -1,6 +1,5 @@
-# Splitet
-
 ![splitet](resources/splitet_logo.png)
+
 [![Build Status](https://travis-ci.org/kloiasoft/eventapis.svg?branch=master)](https://travis-ci.org/kloiasoft/eventapis) [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/eventapis/Lobby)
 Offical Website: [get.splitet.io](https://get.splitet.io)
 
