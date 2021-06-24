@@ -13,7 +13,7 @@ You can reach various samples from this link [Demo](https://github.com/Splitet/s
 
 ## Installation
 
-If you're using [MAVEN](https://maven.apache.org/), you have to add this properties to super pom file.
+If you're using [MAVEN](https://maven.apache.org/), you have to add these properties to super pom file.
 
 .m2/settings.xml
 ```xml
@@ -62,7 +62,7 @@ repositories {
 for another using options you can visit [Bintray Repo](https://bintray.com/kloia/eventapis/)
 
 ## Usage
-You have to add properties to pom.xml
+You have to add these dependencies to pom.xml
 ```xml
 <dependencies>
     <dependency>
@@ -83,7 +83,7 @@ You have to add properties to pom.xml
 </dependencies>
 ```
 ## External Dependencies
-You have to add properties to pom.xml, too.
+You have to add these dependencies to pom.xml, too.
 ```xml
 <dependencies>
 	<dependency>
@@ -114,14 +114,10 @@ You have to add properties to pom.xml, too.
 		<groupId>org.springframework.kafka</groupId>
 		<artifactId>spring-kafka</artifactId>
 	</dependency>
-	<dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-starter-openfeign</artifactId>
-    </dependency>
 </dependencies>
 ```
 ## Prerequisites
-Before run your built services you have to run [Docker Compose](https://github.com/kloiasoft/eventapis/blob/master/samples/3-advanced/docker/docker-compose.yml) it will run minumum external resources Cassandra, Kafka etc.
+Before run your built services you have to run [Docker Compose](https://github.com/kloiasoft/eventapis/blob/master/samples/3-advanced/docker/docker-compose.yml) it will run minimum external resources Cassandra, Kafka etc.
 
 ## Build
 If you're using different java versions you have to set in bash prompt before run at bottom of commands, you can use [SDKMAN](https://sdkman.io/)
