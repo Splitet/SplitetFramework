@@ -9,7 +9,7 @@ Splitet is a Java based Event Sourcing framework which can be benefited by the t
 
 It has a unique architecture called Operation Store™ together with the stack elements including Docker, Kafka, Hazelcast and Cassandra.
 
-You can reach various samples from this link [Demo](https://github.com/Splitet/splitet/tree/master/samples)
+You can reach ECommerce samples from this link [Demo](https://github.com/Splitet/ecommerce-example) and more examples are coming, please follow [Splitet](https://github.com/Splitet)
 
 ## Installation
 
