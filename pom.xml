@@ -312,16 +312,16 @@
     </profiles>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>jfrog-snapshots</id>
-            <name>JFROG Snapshots</name>
-            <url>https://kloia.jfrog.io/artifactory/splitet-snapshot</url>
-        </snapshotRepository>
         <repository>
-            <id>jfrog-releases</id>
-            <name>JFROG Releases</name>
-            <url>https://kloia.jfrog.io/artifactory/splitet-releases</url>
+            <id>github</id>
+            <name>GitHub OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/Splitet/SplitetFramework</url>
         </repository>
+        <snapshotRepository>
+            <id>github-snapshots</id>
+            <name>GitHub OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/Splitet/SplitetFramework</url>
+        </snapshotRepository>
     </distributionManagement>
 
 </project>
