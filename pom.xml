@@ -318,7 +318,7 @@
             <url>https://maven.pkg.github.com/Splitet/SplitetFramework</url>
         </repository>
         <snapshotRepository>
-            <id>github-snapshots</id>
+            <id>github</id>
             <name>GitHub OWNER Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/Splitet/SplitetFramework</url>
         </snapshotRepository>
