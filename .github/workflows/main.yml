@@ -17,6 +17,6 @@ jobs:
           distribution: 'adopt'
           architecture: x64
       - name: Build with Maven
-        run: mvn --batch-mode clean deploy
+        run: mvn --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn clean deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
