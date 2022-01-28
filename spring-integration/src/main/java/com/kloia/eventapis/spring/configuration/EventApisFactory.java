@@ -36,7 +36,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 
-import javax.annotation.PreDestroy;
 import javax.servlet.DispatcherType;
 import java.util.EnumSet;
 
@@ -51,9 +50,6 @@ public class EventApisFactory {
     @Autowired
     private EventApisConfiguration eventApisConfiguration;
 
-    @Autowired
-    private CassandraSession cassandraSession;
-
     @Bean
     public OperationContext createOperationContext() {
         return new OperationContext();
@@ -63,12 +59,6 @@ public class EventApisFactory {
     CassandraSession cassandraSession() {
         return new CassandraSession(eventApisConfiguration.getStoreConfig());
     }
-
-    @PreDestroy
-    public void destroy() {
-        cassandraSession.destroy();
-    }
-
 
     @Bean
     public FilterRegistrationBean createOpContextFilter(@Autowired OperationContext operationContext) {
