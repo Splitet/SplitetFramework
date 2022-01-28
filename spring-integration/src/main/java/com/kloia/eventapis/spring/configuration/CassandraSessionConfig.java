@@ -2,11 +2,11 @@ package com.kloia.eventapis.spring.configuration;
 
 import com.kloia.eventapis.cassandra.CassandraSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PreDestroy;
 
-@Component
+@Configuration
 public class CassandraSessionConfig {
 
     @Autowired
