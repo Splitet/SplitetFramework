@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/kloiasoft/eventapis.svg?branch=master)](https://travis-ci.com/kloiasoft/eventapis) [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/eventapis/Lobby)
 Offical Website: [www.splitet.io](https://www.splitet.io)
 
-Enterprise-Scale Eventually Consistent CQRS Framework
+Enterprise-Scale Eventually Consistent CQRS Framework by [kloia.com](https://www.kloia.com)
 
 Splitet is a Java based Event Sourcing framework which can be benefited by the teams who are planning to make CQRS transitions with minimum learning curve and ease of adaptation.
 
