@@ -1,7 +1,6 @@
 ![splitet](resources/splitet_logo.png)
 
 [![Build Status](https://travis-ci.com/kloiasoft/eventapis.svg?branch=master)](https://travis-ci.com/kloiasoft/eventapis) [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/eventapis/Lobby)
-Offical Website: [www.splitet.io](https://www.splitet.io)
 
 Enterprise-Scale Eventually Consistent CQRS Framework by [kloia.com](https://www.kloia.com)
 
