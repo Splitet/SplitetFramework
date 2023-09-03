@@ -1,6 +1,8 @@
 package io.splitet.core.spring.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import feign.RequestInterceptor;
 import io.splitet.core.api.IUserContext;
 import io.splitet.core.api.impl.EmptyUserContext;
 import io.splitet.core.cassandra.CassandraSession;
@@ -14,8 +16,6 @@ import io.splitet.core.kafka.KafkaProperties;
 import io.splitet.core.kafka.PublishedEventWrapper;
 import io.splitet.core.pojos.Operation;
 import io.splitet.core.spring.filter.OpContextFilter;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import feign.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 
-import javax.annotation.PreDestroy;
 import javax.servlet.DispatcherType;
 import java.util.EnumSet;
 
@@ -51,9 +50,6 @@ public class EventApisFactory {
     @Autowired
     private EventApisConfiguration eventApisConfiguration;
 
-    @Autowired
-    private CassandraSession cassandraSession;
-
     @Bean
     public OperationContext createOperationContext() {
         return new OperationContext();
@@ -63,12 +59,6 @@ public class EventApisFactory {
     CassandraSession cassandraSession() {
         return new CassandraSession(eventApisConfiguration.getStoreConfig());
     }
-
-    @PreDestroy
-    public void destroy() {
-        cassandraSession.destroy();
-    }
-
 
     @Bean
     public FilterRegistrationBean createOpContextFilter(@Autowired OperationContext operationContext) {
